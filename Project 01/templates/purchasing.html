@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBDC Admin - Sales</title>
+    <title>SBDC Admin - Marketing</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,8 +15,8 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-
-</head>
+    
+    </head>
 
 <body>
 
@@ -30,9 +30,9 @@
                 <ul class="nav flex-column nav-admin flex-grow-1">
                     <li><a href="index.html" class="nav-link mt-5"><i class="bi bi-sliders"></i> Overview</a></li>
                     <li><a href="accounting.html" class="nav-link"><i class="bi bi-receipt"></i> Accounting</a></li>
-                    <li><a href="sales.html" class="nav-link active"><i class="bi bi-graph-up"></i> Sales</a></li>
-                    <li><a href="marketing.html" class="nav-link "><i class="bi bi-bar-chart"></i>Sales / Marketing</a></li>
-                    <li><a href="purchasing.html" class="nav-link"><i class="bi bi-cart"></i> Purchasing</a></li>
+                    <li><a href="sales.html" class="nav-link"><i class="bi bi-graph-up"></i> Sales</a></li>
+                    <li><a href="marketing.html" class="nav-link"><i class="bi bi-bar-chart"></i>Sales / Marketing</a></li>
+                    <li><a href="purchasing.html" class="nav-link active"><i class="bi bi-cart"></i> Purchasing</a></li>
                     <li><a href="engineering.html" class="nav-link"><i class="bi bi-cpu"></i> Engineering</a></li>
                     <li><a href="users.html" class="nav-link"><i class="bi bi-people"></i> User's Management</a></li>
                 </ul>
@@ -50,8 +50,8 @@
                 <!-- System Area Greeting Header -->
                 <div class="d-flex justify-content-between align-items-center mb-5">
                     <div>
-                        <h1 class="h3 fw-bold mb-1">Sales</h1>
-                        <p class="text-muted small mb-0">Track and manage your sales records</p>
+                        <h1 class="h3 fw-bold mb-1">Marketing</h1>
+                        <p class="text-muted small mb-0">Track and manage your marketing campaigns  </p>
                     </div>
                     <div class="d-flex gap-2 ms-auto">
                         <button id="newBtn" class="btn btn-brand-action" type="button" data-bs-toggle="modal"
@@ -74,128 +74,117 @@
                             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
 
                                 <div class="row g-6 mb-4">
-                                    <label class="form-label fw-bold mb-2">Sales Information</label>
+                                    <label class="form-label fw-bold mb-2">Project Information</label>
                                     <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">Month</label>
-                                        <input id="month" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Month">
+                                        <label class="form-label" style="font-size: 14px;">Date Received</label>
+                                        <input type="date" class="form-control mb-3" style="font-size: 14px;">
                                     </div>
                                     <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">Project Code</label>
-                                        <input id="project_code" type="text" class="form-control" style="font-size: 14px;" placeholder="Project Code">
+                                        <label class="form-label" style="font-size: 14px;">Status</label>
+                                        <select id="project_code" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Status</option>
+                                            <option value="PC001">Inquiry</option>
+                                            <option value="PC002">Proposal</option>
+                                            <option value="PC003">Contract</option>
+                                            <!-- Add more options as needed -->
+
+                                        </select>
                                     </div>
 
                                     <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">Client Name</label>
-                                        <input id="client_name" type="text" class="form-control" style="font-size: 14px;" placeholder="Client Name">
+                                        <label class="form-label" style="font-size: 14px;">Client's Name / Company</label>
+                                        <input id="client_name" type="text" class="form-control mb-3" style="font-size: 14px;" placeholder="Client's Name / Company">
                                     </div>
 
                                     <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">TIN</label>
-                                        <input id="tin" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="TIN">
-                                    </div>
-                                    <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">PO No.</label>
-                                        <input id="po_no" type="text" class="form-control" style="font-size: 14px;" placeholder="PO No.">
+                                        <label class="form-label" style="font-size: 14px;">Project Name</label>
+                                        <input id="project_name" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                            placeholder="Project Name">
                                     </div>
 
-                                    <div class="col-5 col-md-12">
-                                        <label class="form-label" style="font-size: 14px;">Address</label>
-                                        <input id="address" type="text" class="form-control" style="font-size: 14px;" placeholder="Address">
+                                    <div class="col-5 col-md-4">
+                                        <label class="form-label" style="font-size: 14px;">Project Type</label>
+                                        <select id="project_code" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Project Type</option>
+                                            <option value="PC001">Option 1</option>
+                                            <option value="PC002">Option 2</option>
+                                            <option value="PC003">Option 3</option>
+                                            <!-- Add more options as needed -->
+
+                                        </select>
+                                    </div>
+
+                                    <div class="col-5 col-md-4">
+                                        <label class="form-label" style="font-size: 14px;">Source</label>
+                                        <select id="project_code" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Source</option>
+                                            <option value="PC001">Option 1</option>
+                                            <option value="PC002">Option 2</option>
+                                            <option value="PC003">Option 3</option>
+                                            <!-- Add more options as needed -->
+
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-5 col-md-4">
+                                        <label class="form-label" style="font-size: 14px;">Project Value</label>
+                                        <select id="project_code" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Value</option>
+                                            <option value="PC001">Option 1</option>
+                                            <option value="PC002">Option 2</option>
+                                            <option value="PC003">Option 3</option>
+                                            <!-- Add more options as needed -->
+
+                                        </select>
                                     </div>
 
                                 </div>
 
                                 <div class="row g-6 mb-4">
-                                    <label class="form-label fw-bold mb-2">Invoice Information</label>
+                                    <label class="form-label fw-bold mb-2">Timeline</label>
                                     <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">SI No.</label>
-                                        <input id="si_no" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="SI No.">
+                                        <label class="form-label" style="font-size: 14px;">Deadline of Submission</label>
+                                        <input type="date" class="form-control mb-3" style="font-size: 14px;">
                                     </div>
                                     <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">SI Date</label>
-                                        <input id="si_date" type="date" class="form-control" style="font-size: 14px;">
+                                        <label class="form-label" style="font-size: 14px;">Days of Deadline</label>
+                                        <input type="text" class="form-control" style="font-size: 14px;" placeholder="Days of Deadline">
+                                    </div>
+                                    
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Date Submitted</label>
+                                        <input type="date" class="form-control mb-3" style="font-size: 14px;">
+                                    </div>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Response Time (Days)</label>
+                                        <input type="text" class="form-control" style="font-size: 14px;" placeholder="Response Time (Days)">
+                                    </div>
+                                    
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Follow-up Date</label>
+                                        <input type="date" class="form-control mb-3" style="font-size: 14px;">
+                                    </div>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Days to Follow-up</label>
+                                        <input type="text" class="form-control" style="font-size: 14px;" placeholder="Days to Follow-up">
                                     </div>
                                 </div>
 
                                 <div class="row g-6 mb-4">
-                                    <label class="form-label fw-bold mb-2">Transaction Information</label>
-                                    <div class="col-12">
-                                        <input id="transaction_details" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Transaction Details (textarea)">
+                                    <label class="form-label fw-bold mb-2">Documents</label>
+                                    <div class="col-2 col-md-2">
+                                        <button id="uploadBtn" class="btn btn-brand-action mb-3" type="button"><i class="bi bi-upload me-1"></i> Upload File</button>
                                     </div>
-                                </div>
-
-                                <div class="row g-6 mb-4">
-                                    <label class="form-label fw-bold mb-2">Financial Information</label>
-                                    <div class="col-3 col-md-3">
-                                        <label class="form-label" style="font-size: 14px;">PO Amount</label>
-                                        <input id="po_amount" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="PO Amount">
+                                    <div class="col-10">
+                                        <input id="transaction_details" type="text" class="form-control mb-3" style="font-size: 14px;">
                                     </div>
-                                    <div class="col-2 col-md-3">
-                                        <label class="form-label" style="font-size: 14px;">Inv Amount</label>
-                                        <input id="inv_amount" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Inv Amount">
-                                    </div>
-                                    <div class="col-3 col-md-3">
-                                        <label class="form-label" style="font-size: 14px;">VAT</label>
-                                        <input id="vat" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="VAT">
-                                    </div>
-                                    <div class="col-3 col-md-3">
-                                        <label class="form-label" style="font-size: 14px;">Net of VAT</label>
-                                        <input id="net_of_vat" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Net of VAT">
-                                    </div>
-                                    <div class="col-3 col-md-3">
-                                        <label class="form-label" style="font-size: 14px;">2% WTax</label>
-                                        <input id="wtax_2" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="2% WTax">
-                                    </div>
-                                    <div class="col-3 col-md-3">
-                                        <label class="form-label" style="font-size: 14px;">Net Amount</label>
-                                        <input id="net_amount" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Net Amount">
-                                    </div>
-                                    <div class="col-3 col-md-3">
-                                        <label class="form-label" style="font-size: 14px;">Cash in Bank</label>
-                                        <input id="cash_in_bank" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Cash in Bank">
-                                    </div>
-
-                                </div>
-
-                                <div class="row g-6 mb-4">
-
-                                    <label class="form-label fw-bold mb-2">Bank Information</label>
-                                    <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">Date</label>
-                                        <input id="bank_date" type="date" class="form-control" style="font-size: 14px;">
-                                    </div>
-                                    <div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">Bank</label>
-                                        <input id="bank" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Bank">
-                                    </div>
-
                                 </div>
 
                                 <div class="row g-6 mb-4">
                                     <label class="form-label fw-bold mb-2">Additional Information</label>
                                     <div class="col-12">
-                                        <input id="description" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Description">
-                                    </div>
-                                </div>
-
-                                <div class="row g-6 mb-4">
-                                    <label class="form-label fw-bold mb-2">Remarks</label>
-                                    <div class="col-12">
-                                        <input id="remarks" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Remarks (textarea)">
+                                        <input id="description" type="text" class="form-control mb-3" style="font-size: 14px;" placeholder="No file chosen"
+                                            placeholder="Lost Reason (Text Area)">
                                     </div>
                                 </div>
 
@@ -236,25 +225,22 @@
                     <table class="table table-premium align-middle">
                         <thead>
                             <tr>
-                                <th>Month</th>
-                                <th>Client Name</th>
-                                <th>Proj Code</th>
-                                <th>TIN</th>
-                                <th>Address</th>
-                                <th>Po Amount</th>
-                                <th>SI No.</th>
-                                <th>SI Date</th>
-                                <th>Inv Amount</th>
-                                <th>VAT</th>
-                                <th>Net of VAT</th>
-                                <th>2% WTax</th>
-                                <th>Net Amount</th>
-                                <th>Cash in Bank</th>
-                                <th>Date</th>
-                                <th>Bank</th>
-                                <th>Remarks</th>
-                                <th>PO No.</th>
-                                <th>Description</th>
+                                <th>Date Received</th>
+                                <th>Client's Name/Company</th>
+                                <th>Projects Name</th>
+                                <th>Source</th>
+                                <th>Project Value</th>
+                                <th>Project Type</th>
+                                <th>Deadline of Submission</th>
+                                <th>Days of Deadlines</th>
+                                <th>Status</th>
+                                <th>Date Submitted</th>
+                                <th>Response Time(Days)</th>
+                                <th>Follow-up Date</th>
+                                <th>Days to Follow-up</th>
+                                <th>File</th>
+                                <th>Lost Reason</th>
+                                <th>Action:</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -360,56 +346,6 @@
 
                 const importModal = new bootstrap.Modal(document.getElementById("importFileModal"));
                 importModal.show();
-            });
-        }
-    </script>
-    <script>
-        // Sales modal submission
-        const saveSalesBtn = document.getElementById('saveSalesBtn');
-        if (saveSalesBtn) {
-            saveSalesBtn.addEventListener('click', async () => {
-                const payload = {
-                    month: document.getElementById('month').value,
-                    project_code: document.getElementById('project_code').value,
-                    client_name: document.getElementById('client_name').value,
-                    tin: document.getElementById('tin').value,
-                    po_no: document.getElementById('po_no').value,
-                    address: document.getElementById('address') ? document.getElementById('address').value : '',
-                    si_no: document.getElementById('si_no') ? document.getElementById('si_no').value : '',
-                    si_date: document.getElementById('si_date') ? document.getElementById('si_date').value : '',
-                    transaction_details: document.getElementById('transaction_details').value,
-                    po_amount: document.getElementById('po_amount').value,
-                    inv_amount: document.getElementById('inv_amount').value,
-                    vat: document.getElementById('vat').value,
-                    net_of_vat: document.getElementById('net_of_vat').value,
-                    wtax_2: document.getElementById('wtax_2').value,
-                    net_amount: document.getElementById('net_amount').value,
-                    cash_in_bank: document.getElementById('cash_in_bank').value,
-                    bank_date: document.getElementById('bank_date').value,
-                    bank: document.getElementById('bank').value,
-                    description: document.getElementById('description').value,
-                    remarks: document.getElementById('remarks') ? document.getElementById('remarks').value : '',
-                };
-
-                try {
-                    const res = await fetch('/api/sales', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    });
-                    if (res.ok) {
-                        const modalEl = document.getElementById('newEntryModal');
-                        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                        modal.hide();
-                        alert('Sales entry saved');
-                        window.location.reload();
-                    } else {
-                        const err = await res.json();
-                        alert('Save failed: ' + (err.error || res.statusText));
-                    }
-                } catch (err) {
-                    alert('Save failed: ' + err.message);
-                }
             });
         }
     </script>
