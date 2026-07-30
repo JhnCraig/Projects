@@ -28,16 +28,19 @@
 
                 <ul class="nav flex-column nav-admin flex-grow-1">
                     <li><a href="index.html" class="nav-link mt-5"><i class="bi bi-sliders"></i> Overview</a></li>
-                    <li><a href="accounting.html" class="nav-link active"><i class="bi bi-receipt"></i> Accounting</a></li>
+                    <li><a href="accounting.html" class="nav-link active"><i class="bi bi-receipt"></i> Accounting</a>
+                    </li>
                     <li><a href="sales.html" class="nav-link"><i class="bi bi-graph-up"></i> Sales</a></li>
-                    <li><a href="marketing.html" class="nav-link "><i class="bi bi-bar-chart"></i>Sales / Marketing</a></li>
+                    <li><a href="marketing.html" class="nav-link "><i class="bi bi-bar-chart"></i>Sales / Marketing</a>
+                    </li>
                     <li><a href="purchasing.html" class="nav-link"><i class="bi bi-cart"></i> Purchasing</a></li>
                     <li><a href="engineering.html" class="nav-link"><i class="bi bi-cpu"></i> Engineering</a></li>
                     <li><a href="users.html" class="nav-link"><i class="bi bi-people"></i> User's Management</a></li>
                 </ul>
 
                 <div class="pt-3 border-top border-secondary border-opacity-20">
-                    <a href="login.html" class="nav-link ms-2 text-white-50 small text-decoration-none d-flex align-items-center">
+                    <a href="login.html"
+                        class="nav-link ms-2 text-white-50 small text-decoration-none d-flex align-items-center">
                         Log Out <i class="bi bi-arrow-right-circle ms-2"></i>
                     </a>
                 </div>
@@ -247,6 +250,7 @@
                                 <th>Acct. Name</th>
                                 <th>Project</th>
                                 <th>Remark</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -266,10 +270,14 @@
                                 <td>18 units</td>
                                 <td>18 units</td>
                                 <td>18 units</td>
+                                <td>18 units</td>
+                                <td>18 units</td>
+                                <td>18 units</td>
+                                <td>18 units</td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                        <button class="btn btn-outline-subtle" type="button" data-bs-toggle="modal"
-                                            data-bs-target="#menuModal">Edit</button>
+                                        <button class="btn btn-outline-subtle edit-entry-btn" type="button"
+                                            data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
                                         <button class="btn btn-outline-subtle" type="button">Delete</button>
                                     </div>
                                 </td>
@@ -285,58 +293,260 @@
     </div>
     </div>
 
-    <div class="modal fade" id="menuModal" tabindex="-1" aria-labelledby="menuModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
-                <form method="post">
-                    <input type="hidden" name="action" id="menuAction" value="create">
-                    <input type="hidden" name="id" id="menuId" value="">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="menuModalLabel">Add / Edit Menu Item</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Category</label>
-                            <input type="text" class="form-control" name="category" id="menuCategory"
-                                placeholder="Brownies" required>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2"> Voucher Information</label>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">CV No.</label>
+                            <input id="edit_cv_no" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="CV No.">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Item Name</label>
-                            <input type="text" class="form-control" name="name" id="menuName"
-                                placeholder="Chocolate Fudge Brownie" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Inventory</label>
-                            <input type="number" min="0" class="form-control" name="inventory" id="menuInventory"
-                                value="0" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select class="form-select" name="status" id="menuStatus">
-                                <option value="Active">Active</option>
-                                <option value="Pending">Pending</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes</label>
-                            <textarea class="form-control" name="notes" id="menuNotes" rows="3"
-                                placeholder="Optional notes for this menu item"></textarea>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Date</label>
+                            <input id="edit_date" type="date" class="form-control" style="font-size: 14px;">
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-brand-action">Save Item</button>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Peyee Information</label>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Peyee</label>
+                            <input id="edit_payee" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Peyee">
+                        </div>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Supplier Name</label>
+                            <input id="edit_supplier_name" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Supplier Name">
+                        </div>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">TIN</label>
+                            <input id="edit_tin" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="TIN">
+                        </div>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Address</label>
+                            <input id="edit_address" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Address">
+                        </div>
                     </div>
-                </form>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Transaction Information</label>
+                        <div class="col-12">
+                            <input id="edit_transaction_details" type="text" class="form-control mb-3"
+                                style="font-size: 14px;" placeholder="Transaction Details (textarea)">
+                        </div>
+                    </div>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Financial Details</label>
+                        <div class="col-3 col-md-3">
+                            <label class="form-label" style="font-size: 14px;">Amount</label>
+                            <input id="edit_amount" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Amount">
+                        </div>
+                        <div class="col-2 col-md-3">
+                            <label class="form-label" style="font-size: 14px;">VAT 12%</label>
+                            <input id="edit_vat_12" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="VAT 12%">
+                        </div>
+                        <div class="col-3 col-md-3">
+                            <label class="form-label" style="font-size: 14px;">Net of VAT</label>
+                            <input id="edit_net_of_vat" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Net of VAT">
+                        </div>
+                        <div class="col-3 col-md-3">
+                            <label class="form-label" style="font-size: 14px;">VAT Exempt</label>
+                            <input id="edit_vat_exempt" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="VAT Exempt">
+                        </div>
+                        <div class="col-3 col-md-3">
+                            <label class="form-label" style="font-size: 14px;">Non-VAT</label>
+                            <input id="edit_non_vat" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Non-VAT">
+                        </div>
+                        <div class="col-3 col-md-3">
+                            <label class="form-label" style="font-size: 14px;">WTax</label>
+                            <input id="edit_wtax" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="WTax">
+                        </div>
+                    </div>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Accounting</label>
+                        <div class="col-3 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">Account Code</label>
+                            <input id="edit_account_code" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Account Code">
+                        </div>
+                        <div class="col-2 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">Account Name</label>
+                            <input id="edit_account_name" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Account Name">
+                        </div>
+                        <div class="col-3 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">Project</label>
+                            <input id="edit_project" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Project">
+                        </div>
+                        <div class="col-3 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">SI No.</label>
+                            <input id="edit_si_no" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="SI No.">
+                        </div>
+                        <div class="col-5 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">SI Date</label>
+                            <input id="edit_si_date" type="date" class="form-control" style="font-size: 14px;">
+                        </div>
+                    </div>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Remarks</label>
+                        <div class="col-12">
+                            <input id="edit_remarks" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Remarks (textarea)">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button id="saveEditedAccountingBtn" type="button" class="btn btn-brand-action">Save</button>
+                </div>
             </div>
         </div>
     </div>
+
 
     <script>
         const uploadBtn = document.getElementById("uploadBtn");
         const fileInput = document.getElementById("fileInput");
         const selectedFileName = document.getElementById("selectedFileName");
+        const saveAccountingBtn = document.getElementById("saveAccountingBtn");
+        const saveEditedAccountingBtn = document.getElementById("saveEditedAccountingBtn");
+
+        const accountingFields = [
+            { key: "cv_no", id: "cv_no" },
+            { key: "date", id: "date" },
+            { key: "payee", id: "payee" },
+            { key: "supplier_name", id: "supplier_name" },
+            { key: "tin", id: "tin" },
+            { key: "address", id: "address" },
+            { key: "transaction_details", id: "transaction_details" },
+            { key: "amount", id: "amount" },
+            { key: "vat_12", id: "vat_12" },
+            { key: "net_of_vat", id: "net_of_vat" },
+            { key: "vat_exempt", id: "vat_exempt" },
+            { key: "non_vat", id: "non_vat" },
+            { key: "wtax", id: "wtax" },
+            { key: "account_code", id: "account_code" },
+            { key: "account_name", id: "account_name" },
+            { key: "project", id: "project" },
+            { key: "si_no", id: "si_no" },
+            { key: "si_date", id: "si_date" },
+            { key: "remarks", id: "remarks" }
+        ];
+
+        function getInputValue(id) {
+            const input = document.getElementById(id);
+            return input ? input.value : "";
+        }
+
+        function collectAccountingPayload(mode) {
+            const payload = { kind: "accounting", action: mode === "edit" ? "edit" : "create" };
+            accountingFields.forEach(({ key, id }) => {
+                const inputId = mode === "edit" ? `edit_${id}` : id;
+                payload[key] = getInputValue(inputId);
+            });
+
+            if (mode === "edit") {
+                payload.original_cv_no = getInputValue("edit_cv_no");
+            }
+
+            return payload;
+        }
+
+        async function submitAccountingModal(mode) {
+            const payload = collectAccountingPayload(mode);
+            const button = mode === "edit" ? saveEditedAccountingBtn : saveAccountingBtn;
+            if (button) {
+                button.disabled = true;
+            }
+
+            try {
+                const response = await fetch("/submit-entry", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(result.error || "Unable to save entry");
+                }
+
+                const modalElement = document.getElementById(mode === "edit" ? "editModal" : "newEntryModal");
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.hide();
+                alert(mode === "edit" ? "Entry updated successfully." : "Entry saved successfully.");
+                window.location.reload();
+            } catch (error) {
+                alert(error.message || "Unable to save the accounting entry.");
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                }
+            }
+        }
+
+        document.querySelectorAll(".edit-entry-btn").forEach((button) => {
+            button.addEventListener("click", () => {
+                const row = button.closest("tr");
+                if (!row) {
+                    return;
+                }
+
+                const values = Array.from(row.cells).map((cell) => cell.textContent.trim());
+                const map = [
+                    ["edit_cv_no", 0],
+                    ["edit_date", 1],
+                    ["edit_payee", 2],
+                    ["edit_transaction_details", 3],
+                    ["edit_supplier_name", 4],
+                    ["edit_tin", 5],
+                    ["edit_address", 6],
+                    ["edit_amount", 7],
+                    ["edit_vat_12", 8],
+                    ["edit_net_of_vat", 9],
+                    ["edit_vat_exempt", 10],
+                    ["edit_non_vat", 11],
+                    ["edit_wtax", 12],
+                    ["edit_si_no", 13],
+                    ["edit_si_date", 14],
+                    ["edit_account_code", 15],
+                    ["edit_account_name", 16],
+                    ["edit_project", 17],
+                    ["edit_remarks", 18]
+                ];
+
+                map.forEach(([inputId, index]) => {
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        input.value = values[index] || "";
+                    }
+                });
+            });
+        });
 
         if (uploadBtn && fileInput) {
             uploadBtn.addEventListener("click", () => fileInput.click());
@@ -353,27 +563,14 @@
                 importModal.show();
             });
         }
-    </script>
-    <script>
-        /* Accounting modal submission
-        const saveAccountingBtn = document.getElementById('saveAccountingBtn');
+
         if (saveAccountingBtn) {
-            saveAccountingBtn.addEventListener('click', async () => {
-                const payload = {
-                    cv_no: document.getElementById('cv_no').value,
-                    date: document.getElementById('date').value,
-                        modal.hide();
-                        alert('Accounting entry saved');
-                        window.location.reload();
-                    } else {
-                        const err = await res.json();
-                        alert('Save failed: ' + (err.error || res.statusText));
-                    }
-                } catch (err) {
-                    alert('Save failed: ' + err.message);
-                }
-            });
-        } */
+            saveAccountingBtn.addEventListener("click", () => submitAccountingModal("create"));
+        }
+
+        if (saveEditedAccountingBtn) {
+            saveEditedAccountingBtn.addEventListener("click", () => submitAccountingModal("edit"));
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
