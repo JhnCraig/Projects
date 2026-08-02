@@ -226,7 +226,7 @@
                     </div>
                 </div>
 
-                <!-- CATEGORY INVENTORY TRACKER & DATA MATRIX -->
+                <!-- Table -->
                 <div class="table-responsive shadow rounded-4">
                     <table class="table table-premium align-middle">
                         <thead>
@@ -253,36 +253,10 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="accountingTableBody">
                             <tr>
-                                <td class="fw-semibold text-dark ">1</td>
-                                <td>01/05/2023</td>
-                                <td>18 units</td>
-                                <td><span class="badge badge-admin-status bg-secondary">Viber</span></td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td><span class="badge badge-admin-status status-active">Active</span></td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-outline-subtle edit-entry-btn" type="button"
-                                            data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
-                                        <button class="btn btn-outline-subtle" type="button">Delete</button>
-                                    </div>
-                                </td>
+                                <td colspan="20" class="text-center text-muted py-4">Loading accounting records...</td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
@@ -302,6 +276,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+
+                    <input type="hidden" id="edit_id" />
 
                     <div class="row g-6 mb-4">
                         <label class="form-label fw-bold mb-2"> Voucher Information</label>
@@ -457,6 +433,16 @@
             { key: "remarks", id: "remarks" }
         ];
 
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+        }
+
+        function formatDate(value) {
+            if (!value) return "";
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+        }
+
         function getInputValue(id) {
             const input = document.getElementById(id);
             return input ? input.value : "";
@@ -464,6 +450,9 @@
 
         function collectAccountingPayload(mode) {
             const payload = { kind: "accounting", action: mode === "edit" ? "edit" : "create" };
+            if (mode === "edit") {
+                payload.id = getInputValue("edit_id");
+            }
             accountingFields.forEach(({ key, id }) => {
                 const inputId = mode === "edit" ? `edit_${id}` : id;
                 payload[key] = getInputValue(inputId);
@@ -509,43 +498,104 @@
             }
         }
 
-        document.querySelectorAll(".edit-entry-btn").forEach((button) => {
-            button.addEventListener("click", () => {
-                const row = button.closest("tr");
-                if (!row) {
+        async function loadAccountingRows() {
+            const tbody = document.getElementById("accountingTableBody");
+            if (!tbody) return;
+
+            tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">Loading accounting records...</td></tr>';
+
+            try {
+                const response = await fetch("/api/accounting");
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(result.error || "Failed to load accounting records");
+                }
+
+                const rows = Array.isArray(result.data) ? result.data : [];
+                if (!rows.length) {
+                    tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">No accounting records found.</td></tr>';
                     return;
                 }
 
-                const values = Array.from(row.cells).map((cell) => cell.textContent.trim());
-                const map = [
-                    ["edit_cv_no", 0],
-                    ["edit_date", 1],
-                    ["edit_payee", 2],
-                    ["edit_transaction_details", 3],
-                    ["edit_supplier_name", 4],
-                    ["edit_tin", 5],
-                    ["edit_address", 6],
-                    ["edit_amount", 7],
-                    ["edit_vat_12", 8],
-                    ["edit_net_of_vat", 9],
-                    ["edit_vat_exempt", 10],
-                    ["edit_non_vat", 11],
-                    ["edit_wtax", 12],
-                    ["edit_si_no", 13],
-                    ["edit_si_date", 14],
-                    ["edit_account_code", 15],
-                    ["edit_account_name", 16],
-                    ["edit_project", 17],
-                    ["edit_remarks", 18]
-                ];
+                tbody.innerHTML = rows.map((entry) => `
+                    <tr data-entry="${JSON.stringify(entry).replace(/\"/g, '&quot;')}">
+                        <td>${escapeHtml(entry.cv_no || "")}</td>
+                        <td>${escapeHtml(formatDate(entry.transaction_date || entry.date))}</td>
+                        <td>${escapeHtml(entry.payee || "")}</td>
+                        <td>${escapeHtml(entry.transaction_details || "")}</td>
+                        <td>${escapeHtml(entry.supplier_name || "")}</td>
+                        <td>${escapeHtml(entry.tin || "")}</td>
+                        <td>${escapeHtml(entry.address || "")}</td>
+                        <td>${escapeHtml(entry.amount ?? "")}</td>
+                        <td>${escapeHtml(entry.vat_12 ?? "")}</td>
+                        <td>${escapeHtml(entry.net_of_vat ?? "")}</td>
+                        <td>${escapeHtml(entry.vat_exempt ?? "")}</td>
+                        <td>${escapeHtml(entry.non_vat ?? "")}</td>
+                        <td>${escapeHtml(entry.wtax ?? "")}</td>
+                        <td>${escapeHtml(entry.si_no || "")}</td>
+                        <td>${escapeHtml(formatDate(entry.si_date))}</td>
+                        <td>${escapeHtml(entry.account_code || entry.acct_code || "")}</td>
+                        <td>${escapeHtml(entry.account_name || entry.acct_name || "")}</td>
+                        <td>${escapeHtml(entry.project || "")}</td>
+                        <td>${escapeHtml(entry.remark || entry.remarks || "")}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
+                                <button class="btn btn-outline-subtle delete-entry-btn" type="button" data-id="${entry.id}">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join("");
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger py-4">${escapeHtml(error.message || "Unable to load accounting records")}</td></tr>`;
+            }
+        }
 
-                map.forEach(([inputId, index]) => {
-                    const input = document.getElementById(inputId);
-                    if (input) {
-                        input.value = values[index] || "";
+        document.addEventListener("click", async (event) => {
+            const editButton = event.target.closest(".edit-entry-btn");
+            if (editButton) {
+                const row = editButton.closest("tr");
+                const entry = JSON.parse(row?.getAttribute("data-entry")?.replace(/&quot;/g, '"') || "{}");
+                document.getElementById("edit_cv_no").value = entry.cv_no || "";
+                document.getElementById("edit_date").value = entry.transaction_date || entry.date ? new Date(entry.transaction_date || entry.date).toISOString().split("T")[0] : "";
+                document.getElementById("edit_payee").value = entry.payee || "";
+                document.getElementById("edit_supplier_name").value = entry.supplier_name || "";
+                document.getElementById("edit_tin").value = entry.tin || "";
+                document.getElementById("edit_address").value = entry.address || "";
+                document.getElementById("edit_transaction_details").value = entry.transaction_details || "";
+                document.getElementById("edit_amount").value = entry.amount ?? "";
+                document.getElementById("edit_vat_12").value = entry.vat_12 ?? "";
+                document.getElementById("edit_net_of_vat").value = entry.net_of_vat ?? "";
+                document.getElementById("edit_vat_exempt").value = entry.vat_exempt ?? "";
+                document.getElementById("edit_non_vat").value = entry.non_vat ?? "";
+                document.getElementById("edit_wtax").value = entry.wtax ?? "";
+                document.getElementById("edit_si_no").value = entry.si_no || "";
+                document.getElementById("edit_si_date").value = entry.si_date ? new Date(entry.si_date).toISOString().split("T")[0] : "";
+                document.getElementById("edit_account_code").value = entry.account_code || entry.acct_code || "";
+                document.getElementById("edit_account_name").value = entry.account_name || entry.acct_name || "";
+                document.getElementById("edit_project").value = entry.project || "";
+                document.getElementById("edit_remarks").value = entry.remark || entry.remarks || "";
+                document.getElementById("edit_id").value = editButton.dataset.id || entry.id || "";
+                return;
+            }
+
+            const deleteButton = event.target.closest(".delete-entry-btn");
+            if (deleteButton) {
+                const id = deleteButton.dataset.id;
+                if (!id) return;
+                if (!confirm("Delete this accounting entry?")) return;
+
+                try {
+                    const response = await fetch(`/api/accounting/${id}`, { method: "DELETE" });
+                    const result = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(result.error || "Delete failed");
                     }
-                });
-            });
+                    window.location.reload();
+                } catch (error) {
+                    alert("Delete failed: " + (error.message || error));
+                }
+            }
         });
 
         if (uploadBtn && fileInput) {
@@ -571,6 +621,8 @@
         if (saveEditedAccountingBtn) {
             saveEditedAccountingBtn.addEventListener("click", () => submitAccountingModal("edit"));
         }
+
+        document.addEventListener("DOMContentLoaded", loadAccountingRows);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

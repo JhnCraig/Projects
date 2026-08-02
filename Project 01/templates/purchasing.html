@@ -58,9 +58,9 @@
                     <div class="d-flex gap-2 ms-auto">
                         <button id="newBtn" class="btn btn-brand-action" type="button" data-bs-toggle="modal"
                             data-bs-target="#newEntryModal"><i class="bi bi-plus-lg me-1"></i> New Entry</button>
-                        <button id="uploadBtn" class="btn btn-brand-action" type="button"><i
+                        <button id="importFileBtn" class="btn btn-brand-action" type="button"><i
                                 class="bi bi-plus-lg me-1"></i> Import File</button>
-                        <input id="fileInput" type="file" style="display:none;" />
+                        <input id="importFileInput" type="file" style="display:none;" />
                     </div>
                 </div>
 
@@ -80,12 +80,12 @@
                                     <label class="form-label fw-bold mb-2">Purchase Information</label>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Purchase Order No.</label>
-                                        <input type="text" class="form-control mb-3" style="font-size: 14px;"
+                                        <input id="po_no" type="text" class="form-control mb-3" style="font-size: 14px;"
                                             placeholder="Purchase Order No.">
                                     </div>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Date:</label>
-                                        <input type="date" class="form-control mb-3" style="font-size: 14px;">
+                                        <input id="purchase_date" type="date" class="form-control mb-3" style="font-size: 14px;">
                                     </div>
 
                                 </div>
@@ -94,19 +94,19 @@
                                     <label class="form-label fw-bold mb-2">Supplier Information</label>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Supplier Name</label>
-                                        <input type="text" class="form-control mb-3" style="font-size: 14px;"
+                                        <input id="supplier_name" type="text" class="form-control mb-3" style="font-size: 14px;"
                                             placeholder="Supplier Name">
                                     </div>
 
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">TIN</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
+                                        <input id="tin" type="text" class="form-control" style="font-size: 14px;"
                                             placeholder="TIN">
                                     </div>
 
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Address</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
+                                        <input id="address" type="text" class="form-control" style="font-size: 14px;"
                                             placeholder="Address">
                                     </div>
 
@@ -116,18 +116,18 @@
                                     <label class="form-label fw-bold mb-2">Item Details</label>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Item Code</label>
-                                        <input type="text" class="form-control mb-3" style="font-size: 14px;"
+                                        <input id="item_code" type="text" class="form-control mb-3" style="font-size: 14px;"
                                             placeholder="Item Code">
                                     </div>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Item Name</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
+                                        <input id="item_name" type="text" class="form-control" style="font-size: 14px;"
                                             placeholder="Item Name">
                                     </div>
 
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Description</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
+                                        <input id="description" type="text" class="form-control" style="font-size: 14px;"
                                             placeholder="Description">
                                     </div>
 
@@ -137,26 +137,26 @@
                                     <label class="form-label fw-bold mb-2">Quantity & Price</label>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Quantity</label>
-                                        <input type="number" class="form-control mb-3" style="font-size: 14px;"
+                                        <input id="quantity" type="number" class="form-control mb-3" style="font-size: 14px;"
                                             placeholder="Quantity">
                                     </div>
 
 
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Unit</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
+                                        <input id="unit" type="text" class="form-control" style="font-size: 14px;"
                                             placeholder="Unit">
                                     </div>
 
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Unit Price</label>
-                                        <input type="number" class="form-control" style="font-size: 14px;"
+                                        <input id="unit_price" type="number" class="form-control" style="font-size: 14px;"
                                             placeholder="Unit Price">
                                     </div>
 
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Discount</label>
-                                        <input type="number" class="form-control" style="font-size: 14px;"
+                                        <input id="discount" type="number" class="form-control" style="font-size: 14px;"
                                             placeholder="Discount">
                                     </div>
 
@@ -166,12 +166,12 @@
                                     <label class="form-label fw-bold mb-2">Tax Information</label>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">VAT</label>
-                                        <input type="text" class="form-control mb-3" style="font-size: 14px;"
+                                        <input id="vat" type="text" class="form-control mb-3" style="font-size: 14px;"
                                             placeholder="VAT">
                                     </div>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Total Amount</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
+                                        <input id="total_amount" type="text" class="form-control" style="font-size: 14px;"
                                             placeholder="Total Amount">
                                     </div>
 
@@ -181,19 +181,18 @@
                                     <label class="form-label fw-bold mb-2">Approval</label>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Requested By</label>
-                                        <input type="text" class="form-control mb-3" style="font-size: 14px;"
+                                        <input id="requested_by" type="text" class="form-control mb-3" style="font-size: 14px;"
                                             placeholder="Requested By">
                                     </div>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Approved By</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
+                                        <input id="approved_by" type="text" class="form-control" style="font-size: 14px;"
                                             placeholder="Approved By">
                                     </div>
 
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Date Approved</label>
-                                        <input type="text" class="form-control" style="font-size: 14px;"
-                                            placeholder="Date Approved">
+                                        <input id="date_approved" type="date" class="form-control" style="font-size: 14px;">
                                     </div>
 
                                 </div>
@@ -201,21 +200,22 @@
                                 <div class="row g-6 mb-4">
                                     <label class="form-label fw-bold mb-2">Documents</label>
                                     <div class="col-2 col-md-2">
-                                        <button id="uploadBtn" class="btn btn-brand-action mb-3" type="button"><i
+                                        <button id="newEntryUploadBtn" class="btn btn-brand-action mb-3" type="button"><i
                                                 class="bi bi-upload me-1"></i> Upload File</button>
+                                        <input id="newEntryFileInput" type="file" name="documents_file" style="display:none;" />
                                     </div>
                                     <div class="col-10">
-                                        <input id="transaction_details" type="text" class="form-control mb-3"
-                                            style="font-size: 14px;">
+                                        <input id="documents" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Documents">
+                                        <div id="selectedPurchaseFileName" class="form-text mt-2">No file chosen</div>
                                     </div>
                                 </div>
 
                                 <div class="row g-6 mb-4">
                                     <label class="form-label fw-bold mb-2">Remarks</label>
                                     <div class="col-12">
-                                        <input id="description" type="text" class="form-control mb-3"
-                                            style="font-size: 14px;" placeholder="No file chosen"
-                                            placeholder="Remarks (Text Area)">
+                                        <input id="remarks" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Remarks">
                                     </div>
                                 </div>
 
@@ -223,7 +223,7 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-subtle"
                                     data-bs-dismiss="modal">Cancel</button>
-                                <button id="saveSalesBtn" type="button" class="btn btn-brand-action">Save</button>
+                                <button id="savePurchasingBtn" type="button" class="btn btn-brand-action">Save</button>
                             </div>
                         </div>
                     </div>
@@ -254,7 +254,7 @@
                     </div>
                 </div>
 
-                <!-- CATEGORY INVENTORY TRACKER & DATA MATRIX -->
+                <!-- Table -->
                 <div class="table-responsive shadow rounded-4">
                     <table class="table table-premium align-middle">
                         <thead>
@@ -281,37 +281,10 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="purchasingTableBody">
                             <tr>
-                                <td class="fw-semibold text-dark"><i class="bi bi-grid-3x3-gap text-muted me-2"></i>
-                                    Pastry</td>
-                                <td>Chocolate Fudge Brownie · 18 units</td>
-                                <td>18 units</td>
-                                <td><span class="badge badge-admin-status bg-secondary">Viber</span></td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td><span class="badge badge-admin-status status-active">Active</span></td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-outline-subtle edit-entry-btn" type="button"
-                                            data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
-                                        <button class="btn btn-outline-subtle" type="button">Delete</button>
-                                    </div>
-                                </td>
+                                <td colspan="20" class="text-center text-muted py-4">Loading purchasing records...</td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
@@ -331,6 +304,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <input type="hidden" id="edit_id" />
 
                     <div class="row g-6 mb-4">
                         <label class="form-label fw-bold mb-2">Purchase Information</label>
@@ -457,12 +431,14 @@
                     <div class="row g-6 mb-4">
                         <label class="form-label fw-bold mb-2">Documents</label>
                         <div class="col-2 col-md-2">
-                            <button id="uploadBtn" class="btn btn-brand-action mb-3" type="button"><i
+                            <button id="editUploadBtn" class="btn btn-brand-action mb-3" type="button"><i
                                     class="bi bi-upload me-1"></i> Upload File</button>
+                            <input id="editFileInput" type="file" name="documents_file" style="display:none;" />
                         </div>
                         <div class="col-10">
-                            <input id="edit_transaction_details" type="text" class="form-control mb-3"
-                                style="font-size: 14px;">
+                            <input id="edit_documents" type="text" class="form-control mb-3"
+                                style="font-size: 14px;" placeholder="Document name">
+                            <div id="selectedEditFileName" class="form-text mt-2">No file chosen</div>
                         </div>
                     </div>
 
@@ -484,16 +460,16 @@
     </div>
 
     <script>
-        const uploadBtn = document.getElementById("uploadBtn");
-        const fileInput = document.getElementById("fileInput");
+        const importFileBtn = document.getElementById("importFileBtn");
+        const importFileInput = document.getElementById("importFileInput");
         const selectedFileName = document.getElementById("selectedFileName");
 
-        if (uploadBtn && fileInput) {
-            uploadBtn.addEventListener("click", () => fileInput.click());
+        if (importFileBtn && importFileInput) {
+            importFileBtn.addEventListener("click", () => importFileInput.click());
         }
 
-        if (fileInput) {
-            fileInput.addEventListener("change", (event) => {
+        if (importFileInput) {
+            importFileInput.addEventListener("change", (event) => {
                 const file = event.target.files && event.target.files[0];
                 if (selectedFileName) {
                     selectedFileName.textContent = file ? file.name : "No file chosen";
@@ -503,6 +479,145 @@
                 importModal.show();
             });
         }
+
+        const newEntryUploadBtn = document.getElementById("newEntryUploadBtn");
+        const newEntryFileInput = document.getElementById("newEntryFileInput");
+        const selectedPurchaseFileName = document.getElementById("selectedPurchaseFileName");
+        const purchaseDocumentsInput = document.getElementById("documents");
+        const editUploadBtn = document.getElementById("editUploadBtn");
+        const editFileInput = document.getElementById("editFileInput");
+        const selectedEditFileName = document.getElementById("selectedEditFileName");
+        const editDocumentsInput = document.getElementById("edit_documents");
+
+        if (newEntryUploadBtn && newEntryFileInput) {
+            newEntryUploadBtn.addEventListener("click", () => newEntryFileInput.click());
+        }
+
+        if (newEntryFileInput) {
+            newEntryFileInput.addEventListener("change", (event) => {
+                const file = event.target.files && event.target.files[0];
+                if (selectedPurchaseFileName) {
+                    selectedPurchaseFileName.textContent = file ? file.name : "No file chosen";
+                }
+                if (file && purchaseDocumentsInput) {
+                    purchaseDocumentsInput.value = file.name;
+                }
+            });
+        }
+
+        if (editUploadBtn && editFileInput) {
+            editUploadBtn.addEventListener("click", () => editFileInput.click());
+        }
+
+        if (editFileInput) {
+            editFileInput.addEventListener("change", (event) => {
+                const file = event.target.files && event.target.files[0];
+                if (selectedEditFileName) {
+                    selectedEditFileName.textContent = file ? file.name : "No file chosen";
+                }
+                if (file && editDocumentsInput) {
+                    editDocumentsInput.value = file.name;
+                }
+            });
+        }
+    </script>
+
+    <script>
+        function escapeHtml(value) { return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+        function normalizeDateInputValue(value) { if (!value) return ''; const raw = String(value).trim(); const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/); if (match) return `${match[1]}-${match[2]}-${match[3]}`; const date = new Date(raw); if (!Number.isNaN(date.getTime())) return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; return raw; }
+        function formatDate(value) { if (!value) return ''; const date = new Date(value); return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }); }
+        function formatCurrency(value) { const num = Number(value); return Number.isNaN(num) ? '' : num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function renderDocumentCell(value) {
+            const safeValue = String(value ?? '').trim();
+            if (!safeValue) return '';
+            const label = safeValue.replace(/-[a-f0-9]{32}(?=\.)/, '') || safeValue;
+            const encoded = encodeURIComponent(safeValue);
+            return `<a href="/uploaded/${encoded}" target="_blank" rel="noopener noreferrer" class="d-inline-block text-truncate" style="max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(label)}</a>`;
+        }
+        async function loadPurchasingRows() {
+            const tbody = document.getElementById('purchasingTableBody'); if (!tbody) return; try {
+                const res = await fetch('/api/purchasing'); const result = await res.json().catch(() => ({})); if (!res.ok) throw new Error(result.error || 'Failed to load purchasing records'); const rows = Array.isArray(result.data) ? result.data : [];
+                if (!rows.length) { tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">No purchasing records found.</td></tr>'; return; }
+                tbody.innerHTML = rows.map((entry) => `
+                    <tr data-entry="${JSON.stringify(entry).replace(/"/g, '&quot;')}">
+                        <td>${escapeHtml(entry.po_no || '')}</td><td><div class="d-inline-block" style="white-space: nowrap;">${escapeHtml(formatDate(entry.purchase_date || entry.date))}</div></td><td>${escapeHtml(entry.supplier_name || '')}</td><td>${escapeHtml(entry.tin || '')}</td><td>${escapeHtml(entry.address || '')}</td><td>${escapeHtml(entry.item_code || '')}</td><td>${escapeHtml(entry.item_name || '')}</td><td>${escapeHtml(entry.description || '')}</td><td>${escapeHtml(entry.quantity || '')}</td><td>${escapeHtml(entry.unit || '')}</td><td>${formatCurrency(entry.unit_price)}</td><td>${formatCurrency(entry.discount)}</td><td>${formatCurrency(entry.vat)}</td><td>${formatCurrency(entry.total_amount)}</td><td>${escapeHtml(entry.requested_by || '')}</td><td>${escapeHtml(entry.approved_by || '')}</td><td><div class="d-inline-block" style="white-space: nowrap;">${escapeHtml(formatDate(entry.date_approved))}</div></td><td style="max-width: 220px;"><div class="d-inline-block w-100">${renderDocumentCell(entry.documents)}</div></td><td>${escapeHtml(entry.remarks || '')}</td><td><div class="d-flex gap-2"><button class="btn btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button><button class="btn btn-outline-subtle delete-entry-btn" type="button" data-id="${entry.id}">Delete</button></div></td>
+                    </tr>
+                `).join('');
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger py-4">${escapeHtml(err.message || 'Unable to load purchasing records')}</td></tr>`; }
+        }
+        document.addEventListener('click', async (event) => {
+            const editButton = event.target.closest('.edit-entry-btn');
+            if (editButton) {
+                const row = editButton.closest('tr'); const entry = JSON.parse(row?.getAttribute('data-entry')?.replace(/&quot;/g, '"') || '{}');
+                document.getElementById('edit_po_no').value = entry.po_no || '';
+                document.getElementById('edit_date').value = normalizeDateInputValue(entry.purchase_date || entry.date);
+                document.getElementById('edit_supplier_name').value = entry.supplier_name || '';
+                document.getElementById('edit_tin').value = entry.tin || '';
+                document.getElementById('edit_address').value = entry.address || '';
+                document.getElementById('edit_item_code').value = entry.item_code || '';
+                document.getElementById('edit_item_name').value = entry.item_name || '';
+                document.getElementById('edit_description').value = entry.description || '';
+                document.getElementById('edit_quantity').value = entry.quantity || '';
+                document.getElementById('edit_unit').value = entry.unit || '';
+                document.getElementById('edit_unit_price').value = entry.unit_price || '';
+                document.getElementById('edit_discount').value = entry.discount || '';
+                document.getElementById('edit_vat').value = entry.vat || '';
+                document.getElementById('edit_total_amount').value = entry.total_amount || '';
+                document.getElementById('edit_requested_by').value = entry.requested_by || '';
+                document.getElementById('edit_approved_by').value = entry.approved_by || '';
+                document.getElementById('edit_date_approved').value = normalizeDateInputValue(entry.date_approved);
+                document.getElementById('edit_documents').value = entry.documents || '';
+                document.getElementById('edit_remarks').value = entry.remarks || '';
+                document.getElementById('edit_id').value = entry.id || '';
+                return;
+            }
+            const deleteButton = event.target.closest('.delete-entry-btn');
+            if (deleteButton) { const id = deleteButton.dataset.id; if (!id) return; if (!confirm('Delete this purchasing entry?')) return; try { const res = await fetch(`/api/purchasing/${id}`, { method: 'DELETE' }); const result = await res.json().catch(() => ({})); if (!res.ok) throw new Error(result.error || 'Delete failed'); window.location.reload(); } catch (err) { alert('Delete failed: ' + (err.message || err)); } }
+        });
+        document.addEventListener('DOMContentLoaded', loadPurchasingRows);
+        document.getElementById('savePurchasingBtn')?.addEventListener('click', async () => {
+            const formData = new FormData();
+            formData.append('action', document.getElementById('edit_id')?.value ? 'edit' : 'create');
+            formData.append('id', document.getElementById('edit_id')?.value || '');
+            formData.append('po_no', document.getElementById('po_no')?.value || '');
+            formData.append('purchase_date', document.getElementById('purchase_date')?.value || '');
+            formData.append('date', document.getElementById('purchase_date')?.value || '');
+            formData.append('supplier_name', document.getElementById('supplier_name')?.value || '');
+            formData.append('tin', document.getElementById('tin')?.value || '');
+            formData.append('address', document.getElementById('address')?.value || '');
+            formData.append('item_code', document.getElementById('item_code')?.value || '');
+            formData.append('item_name', document.getElementById('item_name')?.value || '');
+            formData.append('description', document.getElementById('description')?.value || '');
+            formData.append('quantity', document.getElementById('quantity')?.value || '');
+            formData.append('unit', document.getElementById('unit')?.value || '');
+            formData.append('unit_price', document.getElementById('unit_price')?.value || '');
+            formData.append('discount', document.getElementById('discount')?.value || '');
+            formData.append('vat', document.getElementById('vat')?.value || '');
+            formData.append('total_amount', document.getElementById('total_amount')?.value || '');
+            formData.append('requested_by', document.getElementById('requested_by')?.value || '');
+            formData.append('approved_by', document.getElementById('approved_by')?.value || '');
+            formData.append('date_approved', document.getElementById('date_approved')?.value || '');
+            const documentValue = document.getElementById('documents')?.value || '';
+            formData.append('documents', documentValue);
+            formData.append('remarks', document.getElementById('remarks')?.value || '');
+
+            const fileInput = document.getElementById('newEntryFileInput');
+            if (fileInput?.files?.[0]) {
+                formData.append('documents_file', fileInput.files[0]);
+            }
+
+            try {
+                const res = await fetch('/api/purchasing', { method: 'POST', body: formData });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    alert('Save failed: ' + (err.error || res.statusText));
+                }
+            } catch (err) {
+                alert('Save failed: ' + err.message);
+            }
+        });
     </script>
 
     <script>
@@ -537,6 +652,9 @@
 
         function collectPurchasingPayload(mode) {
             const payload = { kind: 'purchasing', action: mode === 'edit' ? 'edit' : 'create' };
+            if (mode === 'edit') {
+                payload.id = getInputValue('edit_id');
+            }
             purchasingFields.forEach(({ key, id }) => {
                 const inputId = mode === 'edit' ? `edit_${id}` : id;
                 payload[key] = getInputValue(inputId);
@@ -546,15 +664,43 @@
         }
 
         async function submitPurchasingModal(mode) {
-            const payload = collectPurchasingPayload(mode);
             const button = mode === 'edit' ? saveEditedPurchasingBtn : null;
             if (button) button.disabled = true;
             try {
-                const res = await fetch('/submit-entry', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const formData = new FormData();
+                formData.append('kind', 'purchasing');
+                formData.append('action', mode === 'edit' ? 'edit' : 'create');
+                if (mode === 'edit') {
+                    formData.append('id', getInputValue('edit_id'));
+                }
+                formData.append('purchase_order_no', getInputValue('edit_po_no'));
+                formData.append('order_date', getInputValue('edit_date'));
+                formData.append('date', getInputValue('edit_date'));
+                formData.append('supplier_name', getInputValue('edit_supplier_name'));
+                formData.append('tin', getInputValue('edit_tin'));
+                formData.append('address', getInputValue('edit_address'));
+                formData.append('item_code', getInputValue('edit_item_code'));
+                formData.append('item_name', getInputValue('edit_item_name'));
+                formData.append('description', getInputValue('edit_description'));
+                formData.append('quantity', getInputValue('edit_quantity'));
+                formData.append('unit', getInputValue('edit_unit'));
+                formData.append('unit_price', getInputValue('edit_unit_price'));
+                formData.append('discount', getInputValue('edit_discount'));
+                formData.append('vat', getInputValue('edit_vat'));
+                formData.append('total_amount', getInputValue('edit_total_amount'));
+                formData.append('requested_by', getInputValue('edit_requested_by'));
+                formData.append('approved_by', getInputValue('edit_approved_by'));
+                formData.append('date_approved', getInputValue('edit_date_approved'));
+                const documentValue = getInputValue('edit_documents');
+                formData.append('documents', documentValue);
+                formData.append('remarks', getInputValue('edit_remarks'));
+
+                const fileInput = document.getElementById('editFileInput');
+                if (fileInput?.files?.[0]) {
+                    formData.append('documents_file', fileInput.files[0]);
+                }
+
+                const res = await fetch('/api/purchasing', { method: 'POST', body: formData });
                 const result = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(result.error || res.statusText || 'Save failed');
                 const modalEl = document.getElementById(mode === 'edit' ? 'editModal' : 'newEntryModal');
