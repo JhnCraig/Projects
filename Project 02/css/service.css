@@ -391,6 +391,9 @@
     transform: translateY(-8px) scale(1.03);
     box-shadow: 0 18px 35px rgba(0, 0, 0, .18);
 }
+.gallery-category {
+    scroll-margin-top: 120px; /* Adjust if needed */
+}
 
 /* Tablet */
 

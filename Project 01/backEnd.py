@@ -1,3 +1,7 @@
+# Note: Flask and mysql-connector-python are need to be installed in the environment for this script to work.
+# Note: pip install Flask or py -m install Flask if the  first command does not work.
+# Note: pip install mysql-connector-python or py -m install mysql-connector-python if the first command does not work.
+
 import json
 import os
 from datetime import datetime
@@ -25,7 +29,7 @@ MYSQL_HOST = os.getenv('MYSQL_HOST', '127.0.0.1')
 MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3306'))
 MYSQL_USER = os.getenv('MYSQL_USER', 'root')
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
-MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'cat_cafe')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'sbdc')
 
 
 def get_db_connection():
@@ -74,6 +78,56 @@ def insert_accounting_entry(data):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        timestamp = datetime.utcnow().isoformat() + 'Z'
+        match_name = (data.get('supplier_name') or data.get('account_name') or data.get('payee') or '').strip()
+        payload = (
+            timestamp,
+            data.get('cv_no'),
+            data.get('date'),
+            data.get('payee'),
+            data.get('supplier_name'),
+            data.get('tin'),
+            data.get('address'),
+            data.get('transaction_details'),
+            data.get('amount'),
+            data.get('vat_12'),
+            data.get('net_of_vat'),
+            data.get('vat_exempt'),
+            data.get('non_vat'),
+            data.get('wtax'),
+            data.get('account_code'),
+            data.get('account_name'),
+            data.get('project'),
+            data.get('si_no'),
+            data.get('si_date'),
+            data.get('remarks'),
+        )
+
+        if match_name:
+            cursor.execute(
+                '''
+                SELECT 1 FROM accounting_entries
+                WHERE LOWER(TRIM(COALESCE(supplier_name, ''))) = LOWER(%s)
+                   OR LOWER(TRIM(COALESCE(account_name, ''))) = LOWER(%s)
+                LIMIT 1
+                ''',
+                (match_name, match_name),
+            )
+            existing = cursor.fetchone()
+            if existing:
+                cursor.execute(
+                    '''
+                    UPDATE accounting_entries
+                    SET timestamp=%s, cv_no=%s, entry_date=%s, payee=%s, supplier_name=%s, tin=%s, address=%s,
+                        transaction_details=%s, amount=%s, vat_12=%s, net_of_vat=%s, vat_exempt=%s, non_vat=%s,
+                        wtax=%s, account_code=%s, account_name=%s, project=%s, si_no=%s, si_date=%s, remarks=%s
+                    WHERE LOWER(TRIM(COALESCE(supplier_name, ''))) = LOWER(%s)
+                       OR LOWER(TRIM(COALESCE(account_name, ''))) = LOWER(%s)
+                    ''',
+                    payload + (match_name, match_name),
+                )
+                return
+
         cursor.execute(
             '''
             INSERT INTO accounting_entries (
@@ -82,28 +136,7 @@ def insert_accounting_entry(data):
                 wtax, account_code, account_name, project, si_no, si_date, remarks
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''',
-            (
-                datetime.utcnow().isoformat() + 'Z',
-                data.get('cv_no'),
-                data.get('date'),
-                data.get('payee'),
-                data.get('supplier_name'),
-                data.get('tin'),
-                data.get('address'),
-                data.get('transaction_details'),
-                data.get('amount'),
-                data.get('vat_12'),
-                data.get('net_of_vat'),
-                data.get('vat_exempt'),
-                data.get('non_vat'),
-                data.get('wtax'),
-                data.get('account_code'),
-                data.get('account_name'),
-                data.get('project'),
-                data.get('si_no'),
-                data.get('si_date'),
-                data.get('remarks'),
-            ),
+            payload,
         )
     finally:
         conn.close()
@@ -113,6 +146,56 @@ def insert_sales_entry(data):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        timestamp = datetime.utcnow().isoformat() + 'Z'
+        match_name = (data.get('client_name') or '').strip()
+        payload = (
+            timestamp,
+            data.get('month'),
+            data.get('project_code'),
+            data.get('client_name'),
+            data.get('tin'),
+            data.get('po_no'),
+            data.get('address'),
+            data.get('si_no'),
+            data.get('si_date'),
+            data.get('transaction_details'),
+            data.get('po_amount'),
+            data.get('inv_amount'),
+            data.get('vat'),
+            data.get('net_of_vat'),
+            data.get('wtax_2'),
+            data.get('net_amount'),
+            data.get('cash_in_bank'),
+            data.get('bank_date'),
+            data.get('bank'),
+            data.get('description'),
+            data.get('remarks'),
+        )
+
+        if match_name:
+            cursor.execute(
+                '''
+                SELECT 1 FROM sales_entries
+                WHERE LOWER(TRIM(COALESCE(client_name, ''))) = LOWER(%s)
+                LIMIT 1
+                ''',
+                (match_name,),
+            )
+            existing = cursor.fetchone()
+            if existing:
+                cursor.execute(
+                    '''
+                    UPDATE sales_entries
+                    SET timestamp=%s, month=%s, project_code=%s, client_name=%s, tin=%s, po_no=%s, address=%s,
+                        si_no=%s, si_date=%s, transaction_details=%s, po_amount=%s, inv_amount=%s, vat=%s,
+                        net_of_vat=%s, wtax_2=%s, net_amount=%s, cash_in_bank=%s, bank_date=%s, bank=%s,
+                        description=%s, remarks=%s
+                    WHERE LOWER(TRIM(COALESCE(client_name, ''))) = LOWER(%s)
+                    ''',
+                    payload + (match_name,),
+                )
+                return
+
         cursor.execute(
             '''
             INSERT INTO sales_entries (
@@ -122,29 +205,7 @@ def insert_sales_entry(data):
                 description, remarks
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''',
-            (
-                datetime.utcnow().isoformat() + 'Z',
-                data.get('month'),
-                data.get('project_code'),
-                data.get('client_name'),
-                data.get('tin'),
-                data.get('po_no'),
-                data.get('address'),
-                data.get('si_no'),
-                data.get('si_date'),
-                data.get('transaction_details'),
-                data.get('po_amount'),
-                data.get('inv_amount'),
-                data.get('vat'),
-                data.get('net_of_vat'),
-                data.get('wtax_2'),
-                data.get('net_amount'),
-                data.get('cash_in_bank'),
-                data.get('bank_date'),
-                data.get('bank'),
-                data.get('description'),
-                data.get('remarks'),
-            ),
+            payload,
         )
     finally:
         conn.close()
@@ -272,6 +333,8 @@ try:
     init_db()
 except Exception as exc:
     app.logger.exception('MySQL initialization failed: %s', exc)
+
+    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

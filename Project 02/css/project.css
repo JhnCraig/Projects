@@ -1,0 +1,159 @@
+/* ==========================
+   HERO SEARCH BAR
+========================== */
+
+.hero-search {
+    width: 100%;
+    max-width: 900px;
+    height: 75px;
+    margin: auto;
+
+    background: rgba(255,255,255,.95);
+
+    border-radius: 60px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 30px;
+
+    box-shadow: 0 15px 40px rgba(0,0,0,.25);
+
+    transition: .3s;
+}
+
+.hero-search:hover,
+.hero-search:focus-within {
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 20px 45px rgba(0,0,0,.30);
+
+}
+
+.hero-search i {
+
+    color: #002850;
+
+    font-size: 24px;
+
+    margin-right: 18px;
+
+}
+
+.hero-search input {
+
+    width: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    font-size: 19px;
+
+    font-weight: 500;
+
+}
+
+.hero-search input::placeholder {
+
+    color: #888;
+
+}
+
+@media (max-width:768px){
+
+    .hero-search{
+
+        height:65px;
+
+        padding:0 22px;
+
+    }
+
+    .hero-search input{
+
+        font-size:16px;
+
+    }
+
+}
+
+.project-section {
+    width: 100%;
+    max-width: 1200px;
+    margin: 70px auto;
+    padding: 0 15px;
+}
+
+.project-title {
+    color: #002850;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.project-description {
+    color: #666;
+    line-height: 1.9;
+    text-align: justify;
+}
+
+.project-image {
+    width: 100%;
+    border-radius: 12px;
+    margin: 30px 0;
+    cursor: pointer;
+    transition: .3s;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .15);
+}
+
+.project-image:hover {
+    transform: scale(1.02);
+}
+
+.project-details {
+    color: #444;
+}
+
+.project-details p {
+    margin-bottom: 8px;
+}
+
+hr {
+    margin: 80px 0;
+}
+
+.project-gallery {
+    margin: 35px 0;
+}
+
+.project-gallery .col-md-4 {
+    display: flex;
+}
+
+.project-card {
+    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
+    transition: .35s ease;
+}
+
+.project-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: .35s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 35px rgba(0, 0, 0, .20);
+}
+
+.project-card:hover img {
+    transform: scale(1.08);
+}
