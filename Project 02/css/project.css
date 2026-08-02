@@ -8,7 +8,7 @@
     height: 75px;
     margin: auto;
 
-    background: rgba(255,255,255,.95);
+    background: rgba(255, 255, 255, .95);
 
     border-radius: 60px;
 
@@ -17,7 +17,7 @@
 
     padding: 0 30px;
 
-    box-shadow: 0 15px 40px rgba(0,0,0,.25);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .25);
 
     transition: .3s;
 }
@@ -27,7 +27,7 @@
 
     transform: translateY(-3px);
 
-    box-shadow: 0 20px 45px rgba(0,0,0,.30);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, .30);
 
 }
 
@@ -63,19 +63,19 @@
 
 }
 
-@media (max-width:768px){
+@media (max-width:768px) {
 
-    .hero-search{
+    .hero-search {
 
-        height:65px;
+        height: 65px;
 
-        padding:0 22px;
+        padding: 0 22px;
 
     }
 
-    .hero-search input{
+    .hero-search input {
 
-        font-size:16px;
+        font-size: 16px;
 
     }
 
@@ -156,4 +156,124 @@ hr {
 
 .project-card:hover img {
     transform: scale(1.08);
+}
+
+/* ==========================
+   PROJECT MODAL
+========================== */
+
+.custom-modal {
+
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+
+}
+
+.modal-project-img {
+
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    display: block;
+
+}
+
+.modal-body {
+
+    padding: 40px;
+
+}
+
+.modal-title-custom {
+
+    color: #002850;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+
+}
+
+.modal-location {
+
+    color: #666;
+    font-size: 17px;
+    margin-bottom: 20px;
+
+}
+
+.modal-location i {
+
+    color: #002850;
+    margin-right: 8px;
+
+}
+
+.modal-description {
+
+    color: #555;
+    font-size: 17px;
+    line-height: 1.9;
+    text-align: justify;
+
+}
+
+.modal-dialog {
+
+    max-width: 1000px;
+
+}
+
+.modal-content {
+
+    border: none;
+
+}
+
+.modal-header {
+
+    border: none;
+
+}
+
+.btn-close {
+
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 12px;
+    opacity: 1;
+    z-index: 10;
+
+}
+
+.btn-close:hover {
+
+    transform: scale(1.1);
+
+}
+
+@media (max-width:768px) {
+
+    .modal-project-img {
+
+        height: 250px;
+
+    }
+
+    .modal-body {
+
+        padding: 25px;
+
+    }
+
+    .modal-title-custom {
+
+        font-size: 1.5rem;
+
+    }
+
 }
