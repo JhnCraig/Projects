@@ -15,8 +15,8 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    
-    </head>
+
+</head>
 
 <body>
 
@@ -31,14 +31,17 @@
                     <li><a href="index.html" class="nav-link mt-5"><i class="bi bi-sliders"></i> Overview</a></li>
                     <li><a href="accounting.html" class="nav-link"><i class="bi bi-receipt"></i> Accounting</a></li>
                     <li><a href="sales.html" class="nav-link"><i class="bi bi-graph-up"></i> Sales</a></li>
-                    <li><a href="marketing.html" class="nav-link "><i class="bi bi-bar-chart"></i>Sales / Marketing</a></li>
+                    <li><a href="marketing.html" class="nav-link "><i class="bi bi-bar-chart"></i>Sales / Marketing</a>
+                    </li>
                     <li><a href="purchasing.html" class="nav-link"><i class="bi bi-cart"></i> Purchasing</a></li>
-                    <li><a href="engineering.html" class="nav-link active"><i class="bi bi-cpu"></i> Engineering</a></li>
+                    <li><a href="engineering.html" class="nav-link active"><i class="bi bi-cpu"></i> Engineering</a>
+                    </li>
                     <li><a href="users.html" class="nav-link"><i class="bi bi-people"></i> User's Management</a></li>
                 </ul>
 
                 <div class="pt-3 border-top border-secondary border-opacity-20">
-                    <a href="login.html" class="nav-link ms-2 text-white-50 small text-decoration-none d-flex align-items-center">
+                    <a href="login.html"
+                        class="nav-link ms-2 text-white-50 small text-decoration-none d-flex align-items-center">
                         Log Out <i class="bi bi-arrow-right-circle ms-2"></i>
                     </a>
                 </div>
@@ -47,64 +50,146 @@
             <!-- MAIN WORKSPACE DESK AREA -->
             <div class="col-12 col-md-9 col-xl-10 workspace-panel">
 
-                <!-- System Area Greeting Header -->
                 <div class="d-flex justify-content-between align-items-center mb-5">
                     <div>
                         <h1 class="h3 fw-bold mb-1">Engineering</h1>
-                        <p class="text-muted small mb-0">Track and manage your engineering projects  </p>
+                        <p class="text-muted small mb-0">Track and manage your engineering projects </p>
                     </div>
                     <div class="d-flex gap-2 ms-auto">
                         <button id="newBtn" class="btn btn-brand-action" type="button" data-bs-toggle="modal"
                             data-bs-target="#newEntryModal"><i class="bi bi-plus-lg me-1"></i> New Entry</button>
-                        <button id="uploadBtn" class="btn btn-brand-action" type="button"><i class="bi bi-plus-lg me-1"></i> Import File</button>
+                        <button id="uploadBtn" class="btn btn-brand-action" type="button"><i
+                                class="bi bi-plus-lg me-1"></i> Import File</button>
                         <input id="fileInput" type="file" style="display:none;" />
                     </div>
                 </div>
 
                 <!-- New Entry Modal -->
-                <div class="modal fade" id="newEntryModal" tabindex="-1" aria-labelledby="newEntryModalLabel" aria-hidden="true">
+                <div class="modal fade" id="newEntryModal" tabindex="-1" aria-labelledby="newEntryModalLabel"
+                    aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="newEntryModalLabel">New Entry</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
-                            <div class="modal-body" style="height: 25rem;">
-                                <div class="row g-6">
-                                    <div class="col-2 col-md-6">
-                                        <label class="form-label">Date</label>
-                                        <input type="date" class="form-control">
+                            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Project Information</label>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Project Name</label>
+                                        <input id="client_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Project Name">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Project Location</label>
+                                        <input id="project_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Project Location">
+                                    </div>
+                                </div>
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2"> </label>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Client</label>
+                                        <input id="item_code" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Item Code">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Date</label>
+                                        <input id="date_received" type="date" class="form-control mb-3"
+                                            style="font-size: 14px;">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Status</label>
+                                        <select id="edit_status" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Status</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Approved">Approved</option>
+                                            <option value="Rejected">Rejected</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Materials Needed</label>
+                                        <input id="item_name" type="text" class="form-control" style="font-size: 14px;"
+                                            placeholder="Materials Needed">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Accomplishment
+                                            Percentage</label>
+                                        <input id="date_submitted" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Accomplishment Percentage">
                                     </div>
                                     <div class="col-5 col-md-6">
-                                        <label class="form-label">Customer Name</label>
-                                        <input type="text" class="form-control" placeholder="Customer Name">
+                                        <label class="form-label" style="font-size: 14px;">Target Completion
+                                            Date</label>
+                                        <input id="quantity" type="date" class="form-control" style="font-size: 14px;">
                                     </div>
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Product</label>
-                                        <input type="text" class="form-control" placeholder="Product">
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Manpower</label>
+                                        <input id="unit" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                            placeholder="Manpower">
                                     </div>
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Amount</label>
-                                        <input type="number" class="form-control" placeholder="Amount">
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Issues and Concerns</label>
+                                        <input id="days_follow_up" type="text" class="form-control"
+                                            style="font-size: 14px;" placeholder="Issues and Concerns">
                                     </div>
-                                    
+
                                 </div>
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Documents and Status</label>
+
+                                    <div class="col-2 col-md-2">
+                                        <button id="newEntryUploadBtn" class="btn btn-brand-action mb-3"
+                                            type="button"><i class="bi bi-upload me-1"></i> Upload File</button>
+                                        <input id="newEntryFileInput" type="file" name="file" style="display:none;" />
+                                    </div>
+                                    <div class="col-10">
+                                        <input id="file_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="File name">
+                                        <div id="selectedFileName" class="form-text mt-2">No file chosen</div>
+                                    </div>
+
+                                    <label class="form-label" style="font-size: 14px;">Remarks</label>
+                                    <div class="col-12">
+                                        <input id="lost_reason" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Remarks">
+                                    </div>
+                                </div>
+
                             </div>
+
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-brand-action">Save</button>
+                                <button type="button" class="btn btn-outline-subtle"
+                                    data-bs-dismiss="modal">Cancel</button>
+                                <button id="saveMarketingBtn" type="button" class="btn btn-brand-action">Save</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Import File Modal -->  
-                <div class="modal fade" id="importFileModal" tabindex="-1" aria-labelledby="importFileModalLabel" aria-hidden="true">
+                <!-- Import File Modal -->
+                <div class="modal fade" id="importFileModal" tabindex="-1" aria-labelledby="importFileModalLabel"
+                    aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="importFileModalLabel">Import File</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
@@ -113,7 +198,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-outline-subtle"
+                                    data-bs-dismiss="modal">Cancel</button>
                                 <button type="button" class="btn btn-brand-action">Import</button>
                             </div>
                         </div>
@@ -125,51 +211,22 @@
                     <table class="table table-premium align-middle">
                         <thead>
                             <tr>
-                                <th>Date Received</th>
-                                <th>Client's Name/Company</th>
                                 <th>Projects Name</th>
-                                <th>Source</th>
-                                <th>Project Value</th>
-                                <th>Project Type</th>
-                                <th>Deadline of Submission</th>
-                                <th>Days of Deadlines</th>
+                                <th>Project Location</th>
+                                <th>ClientClient</th>
+                                <th>Date</th>
                                 <th>Status</th>
-                                <th>Date Submitted</th>
-                                <th>Response Time(Days)</th>
-                                <th>Follow-up Date</th>
-                                <th>Days to Follow-up</th>
-                                <th>File</th>
-                                <th>Lost Reason</th>
-                                <th>Action:</th>
+                                <th>Materials Needed</th>
+                                <th>Accomplishment Percentage</th>
+                                <th>Target Completion</th>
+                                <th>Manpower</th>
+                                <th>Issues and Concerns</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="engineeringTableBody">
                             <tr>
-                                <td class="fw-semibold text-dark"><i class="bi bi-grid-3x3-gap text-muted me-2"></i>
-                                    Pastry</td>
-                                <td>Chocolate Fudge Brownie · 18 units</td>
-                                <td>18 units</td>
-                                <td><span class="badge badge-admin-status bg-secondary">Viber</span></td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td><span class="badge badge-admin-status status-active">Active</span></td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>18 units</td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-outline-subtle" type="button" data-bs-toggle="modal"
-                                            data-bs-target="#menuModal">Edit</button>
-                                        <button class="btn btn-outline-subtle" type="button">Delete</button>
-                                    </div>
-                                </td>
+                                <td colspan="16" class="text-center text-muted py-4">Loading engineering records...</td>
                             </tr>
-                        
                         </tbody>
                     </table>
                 </div>
@@ -177,79 +234,145 @@
 
         </div>
 
-    </div>
-    </div>
+        <!-- Edit Entry Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
 
-    <div class="modal fade" id="menuModal" tabindex="-1" aria-labelledby="menuModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post">
-                    <input type="hidden" name="action" id="menuAction" value="create">
-                    <input type="hidden" name="id" id="menuId" value="">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="menuModalLabel">Add / Edit Menu Item</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Project Information</label>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Project Name</label>
+                                        <input id="projectName" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Project Name">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Project Location</label>
+                                        <input id="projectLocation" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Project Location">
+                                    </div>
+                                </div>
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2"> </label>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Client</label>
+                                        <input id="client" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Client">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Date</label>
+                                        <input id="date" type="date" class="form-control mb-3"
+                                            style="font-size: 14px;">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Status</label>
+                                        <select id="editStatus" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Status</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Approved">Approved</option>
+                                            <option value="Rejected">Rejected</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Materials Needed</label>
+                                        <input id="materials_needed" type="text" class="form-control" style="font-size: 14px;"
+                                            placeholder="Materials Needed">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Accomplishment
+                                            Percentage</label>
+                                        <input id="accomplishment_percentage" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Accomplishment Percentage">
+                                    </div>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Target Completion
+                                            Date</label>
+                                        <input id="quantity" type="date" class="form-control" style="font-size: 14px;">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Manpower</label>
+                                        <input id="unit" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                            placeholder="Manpower">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Issues and Concerns</label>
+                                        <input id="days_follow_up" type="text" class="form-control"
+                                            style="font-size: 14px;" placeholder="Issues and Concerns">
+                                    </div>
+
+                                </div>
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Documents and Status</label>
+
+                                    <div class="col-2 col-md-2">
+                                        <button id="newEntryUploadBtn" class="btn btn-brand-action mb-3"
+                                            type="button"><i class="bi bi-upload me-1"></i> Upload File</button>
+                                        <input id="newEntryFileInput" type="file" name="file" style="display:none;" />
+                                    </div>
+                                    <div class="col-10">
+                                        <input id="file_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="File name">
+                                        <div id="selectedFileName" class="form-text mt-2">No file chosen</div>
+                                    </div>
+
+                                    <label class="form-label" style="font-size: 14px;">Remarks</label>
+                                    <div class="col-12">
+                                        <input id="lost_reason" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Remarks">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-subtle"
+                                    data-bs-dismiss="modal">Cancel</button>
+                                <button id="saveMarketingBtn" type="button" class="btn btn-brand-action">Save</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Category</label>
-                            <input type="text" class="form-control" name="category" id="menuCategory"
-                                placeholder="Brownies" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Item Name</label>
-                            <input type="text" class="form-control" name="name" id="menuName"
-                                placeholder="Chocolate Fudge Brownie" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Inventory</label>
-                            <input type="number" min="0" class="form-control" name="inventory" id="menuInventory"
-                                value="0" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <select class="form-select" name="status" id="menuStatus">
-                                <option value="Active">Active</option>
-                                <option value="Pending">Pending</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes</label>
-                            <textarea class="form-control" name="notes" id="menuNotes" rows="3"
-                                placeholder="Optional notes for this menu item"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-brand-action">Save Item</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                </div>
 
-    <script>
-        const uploadBtn = document.getElementById("uploadBtn");
-        const fileInput = document.getElementById("fileInput");
-        const selectedFileName = document.getElementById("selectedFileName");
+        <script>
+            const uploadBtn = document.getElementById("uploadBtn");
+            const fileInput = document.getElementById("fileInput");
+            const selectedFileName = document.getElementById("selectedFileName");
 
-        if (uploadBtn && fileInput) {
-            uploadBtn.addEventListener("click", () => fileInput.click());
-        }
+            if (uploadBtn && fileInput) {
+                uploadBtn.addEventListener("click", () => fileInput.click());
+            }
 
-        if (fileInput) {
-            fileInput.addEventListener("change", (event) => {
-                const file = event.target.files && event.target.files[0];
-                if (selectedFileName) {
-                    selectedFileName.textContent = file ? file.name : "No file chosen";
-                }
+            if (fileInput) {
+                fileInput.addEventListener("change", (event) => {
+                    const file = event.target.files && event.target.files[0];
+                    if (selectedFileName) {
+                        selectedFileName.textContent = file ? file.name : "No file chosen";
+                    }
 
-                const importModal = new bootstrap.Modal(document.getElementById("importFileModal"));
-                importModal.show();
-            });
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                    const importModal = new bootstrap.Modal(document.getElementById("importFileModal"));
+                    importModal.show();
+                });
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
