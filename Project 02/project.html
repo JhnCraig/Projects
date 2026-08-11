@@ -2901,8 +2901,13 @@
             noResults.style.display = "none";
         }
 
+        let searchTimer;
+
         searchInput.addEventListener("input", function () {
             const query = this.value.toLowerCase().trim();
+
+            // Cancel the previous timer every time you type
+            clearTimeout(searchTimer);
 
             if (query === "") {
                 showFeaturedProjects();
@@ -2910,18 +2915,27 @@
             }
 
             let found = false;
+            let firstMatch = null;
 
             projectSections.forEach(function (project) {
-                const projectName = project.dataset.project || "";
-                const projectText = project.innerText || "";
+
+                const projectName =
+                    project.dataset.project || "";
+
+                const projectText =
+                    project.innerText || "";
 
                 const searchableText =
                     (projectName + " " + projectText).toLowerCase();
 
-                const match = searchableText.includes(query);
-                const divider = getDivider(project);
+                const match =
+                    searchableText.includes(query);
+
+                const divider =
+                    getDivider(project);
 
                 if (match) {
+
                     project.style.display = "";
 
                     if (divider) {
@@ -2929,7 +2943,14 @@
                     }
 
                     found = true;
+
+                    // Save the first matching project
+                    if (!firstMatch) {
+                        firstMatch = project;
+                    }
+
                 } else {
+
                     project.style.display = "none";
 
                     if (divider) {
@@ -2938,7 +2959,39 @@
                 }
             });
 
-            noResults.style.display = found ? "none" : "block";
+            noResults.style.display =
+                found ? "none" : "block";
+
+
+            /* =========================================
+               WAIT UNTIL USER FINISHES TYPING
+               THEN SCROLL TO FIRST MATCH
+            ========================================= */
+
+            if (firstMatch) {
+
+                searchTimer = setTimeout(function () {
+
+                    const navbar =
+                        document.querySelector(".navbar");
+
+                    const navbarHeight =
+                        navbar ? navbar.offsetHeight : 0;
+
+                    const position =
+                        firstMatch.getBoundingClientRect().top +
+                        window.pageYOffset -
+                        navbarHeight -
+                        25;
+
+                    window.scrollTo({
+                        top: position,
+                        behavior: "smooth"
+                    });
+
+                }, 700); // wait 0.7 second after typing stops
+            }
+
         });
 
         showFeaturedProjects();
