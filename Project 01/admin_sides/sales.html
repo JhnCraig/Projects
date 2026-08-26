@@ -432,305 +432,47 @@
         </div>
     </div>
 
+    <div class="modal fade" id="saveConfirmModal" tabindex="-1" aria-labelledby="saveConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saveConfirmModalLabel">Confirm Save</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="saveConfirmMessage" class="mb-0">Are you sure you want to save this entry?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button id="confirmSaveBtn" type="button" class="btn btn-brand-action">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        const uploadBtn = document.getElementById("uploadBtn");
-        const fileInput = document.getElementById("fileInput");
-        const selectedFileName = document.getElementById("selectedFileName");
+    <div style="position:fixed; right:20px; bottom:20px; z-index:1080; display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
+        <div id="toastContainer" style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;"></div>
+    </div>
 
-        if (uploadBtn && fileInput) {
-            uploadBtn.addEventListener("click", () => fileInput.click());
-        }
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteConfirmMessage" class="mb-0">Delete this sales entry? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button id="confirmDeleteBtn" type="button" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        if (fileInput) {
-            fileInput.addEventListener("change", (event) => {
-                const file = event.target.files && event.target.files[0];
-                if (selectedFileName) {
-                    selectedFileName.textContent = file ? file.name : "No file chosen";
-                }
-
-                const importModal = new bootstrap.Modal(document.getElementById("importFileModal"));
-                importModal.show();
-            });
-        }
-    </script>
-    
-    <script>
-        const saveEditedSalesBtn = document.getElementById('saveEditedSalesBtn');
-
-        const salesFields = [
-            { key: 'month', id: 'month' },
-            { key: 'client_name', id: 'client_name' },
-            { key: 'project_code', id: 'project_code' },
-            { key: 'tin', id: 'tin' },
-            { key: 'address', id: 'address' },
-            { key: 'po_amount', id: 'po_amount' },
-            { key: 'si_no', id: 'si_no' },
-            { key: 'si_date', id: 'si_date' },
-            { key: 'inv_amount', id: 'inv_amount' },
-            { key: 'vat', id: 'vat' },
-            { key: 'net_of_vat', id: 'net_of_vat' },
-            { key: 'wtax_2', id: 'wtax_2' },
-            { key: 'net_amount', id: 'net_amount' },
-            { key: 'cash_in_bank', id: 'cash_in_bank' },
-            { key: 'transaction_date', id: 'transaction_date' },
-            { key: 'bank', id: 'bank' },
-            { key: 'remarks', id: 'remarks' },
-            { key: 'po_no', id: 'po_no' },
-            { key: 'description', id: 'description' }
-        ];
-
-        function getInputValue(id) {
-            const input = document.getElementById(id);
-            return input ? input.value : '';
-        }
-
-        function normalizeDateInputValue(value) {
-            if (value === null || value === undefined || value === '') {
-                return '';
-            }
-
-            const raw = String(value).trim();
-            if (!raw) {
-                return '';
-            }
-
-            const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-            if (match) {
-                return `${match[1]}-${match[2]}-${match[3]}`;
-            }
-
-            const date = new Date(raw);
-            if (!Number.isNaN(date.getTime())) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            return raw;
-        }
-
-        function collectSalesPayload(mode) {
-            const payload = { kind: 'sales', action: mode === 'edit' ? 'edit' : 'create' };
-            salesFields.forEach(({ key, id }) => {
-                const inputId = mode === 'edit' ? `edit_${id}` : id;
-                payload[key] = getInputValue(inputId);
-            });
-            if (mode === 'edit') {
-                payload.id = getInputValue('edit_sales_id');
-                payload.original_month = getInputValue('edit_month');
-            }
-            return payload;
-        }
-
-        async function submitSalesModal(mode) {
-            const payload = collectSalesPayload(mode);
-            const button = mode === 'edit' ? saveEditedSalesBtn : null;
-            if (button) button.disabled = true;
-            try {
-                const res = await fetch('/api/sales', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(result.error || res.statusText || 'Save failed');
-                const modalEl = document.getElementById(mode === 'edit' ? 'editModal' : 'newEntryModal');
-                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                modal.hide();
-                alert(mode === 'edit' ? 'Entry updated' : 'Sales entry saved');
-                window.location.reload();
-            } catch (err) {
-                alert('Save failed: ' + (err.message || err));
-            } finally {
-                if (button) button.disabled = false;
-            }
-        }
-
-        document.addEventListener('click', async (event) => {
-            const editButton = event.target.closest('.edit-entry-btn');
-            if (editButton) {
-                const row = editButton.closest('tr');
-                if (!row) return;
-                const entry = JSON.parse(row.getAttribute('data-entry')?.replace(/&quot;/g, '"') || '{}');
-                document.getElementById('edit_sales_id').value = editButton.dataset.id || entry.id || '';
-                const map = [
-                    ['edit_month', entry.month || ''],
-                    ['edit_client_name', entry.client_name || ''],
-                    ['edit_project_code', entry.project_code || ''],
-                    ['edit_tin', entry.tin || ''],
-                    ['edit_address', entry.address || ''],
-                    ['edit_po_amount', entry.po_amount || ''],
-                    ['edit_si_no', entry.si_no || ''],
-                    ['edit_si_date', normalizeDateInputValue(entry.si_date)],
-                    ['edit_inv_amount', entry.inv_amount || ''],
-                    ['edit_vat', entry.vat || ''],
-                    ['edit_net_of_vat', entry.net_of_vat || ''],
-                    ['edit_wtax_2', entry.wtax_2 || ''],
-                    ['edit_net_amount', entry.net_amount || ''],
-                    ['edit_cash_in_bank', entry.cash_in_bank || ''],
-                    ['edit_transaction_date', normalizeDateInputValue(entry.transaction_date)],
-                    ['edit_bank', entry.bank || ''],
-                    ['edit_remarks', entry.remarks || ''],
-                    ['edit_po_no', entry.po_no || ''],
-                    ['edit_description', entry.description || '']
-                ];
-                map.forEach(([id, value]) => {
-                    const input = document.getElementById(id);
-                    if (input) input.value = value;
-                });
-                return;
-            }
-
-            const deleteButton = event.target.closest('.delete-entry-btn');
-            if (!deleteButton) return;
-            const id = deleteButton.dataset.id;
-            if (!id) return;
-            if (!confirm('Delete this sales entry?')) return;
-            try {
-                const res = await fetch(`/api/sales/${id}`, { method: 'DELETE' });
-                const result = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(result.error || 'Delete failed');
-                window.location.reload();
-            } catch (err) {
-                alert('Delete failed: ' + (err.message || err));
-            }
-        });
-
-        if (saveEditedSalesBtn) saveEditedSalesBtn.addEventListener('click', () => submitSalesModal('edit'));
-    </script>
-    <script>
-        function escapeHtml(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function formatCurrency(value) {
-            const num = Number(value);
-            if (Number.isNaN(num)) return '';
-            return num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function formatDate(value) {
-            if (!value) return '';
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return String(value);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: '2-digit',
-                year: 'numeric'
-            });
-        }
-
-        async function loadSalesRows() {
-            const tbody = document.getElementById('salesTableBody');
-            if (!tbody) return;
-
-            try {
-                const res = await fetch('/api/sales');
-                const result = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(result.error || 'Failed to load sales records');
-
-                const rows = Array.isArray(result.data) ? result.data : [];
-                if (!rows.length) {
-                    tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">No sales records found.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = rows.map((entry) => {
-                    const entryJson = JSON.stringify(entry).replace(/"/g, '&quot;');
-                    return `
-                        <tr data-entry="${entryJson}">
-                            <td>${escapeHtml(entry.month || '')}</td>
-                            <td>${escapeHtml(entry.client_name || '')}</td>
-                            <td>${escapeHtml(entry.project_code || '')}</td>
-                            <td>${escapeHtml(entry.tin || '')}</td>
-                            <td>${escapeHtml(entry.address || '')}</td>
-                            <td>${formatCurrency(entry.po_amount)}</td>
-                            <td>${escapeHtml(entry.si_no || '')}</td>
-                            <td>${escapeHtml(formatDate(entry.si_date))}</td>
-                            <td>${formatCurrency(entry.inv_amount)}</td>
-                            <td>${formatCurrency(entry.vat)}</td>
-                            <td>${formatCurrency(entry.net_of_vat)}</td>
-                            <td>${formatCurrency(entry.wtax_2)}</td>
-                            <td>${formatCurrency(entry.net_amount)}</td>
-                            <td>${formatCurrency(entry.cash_in_bank)}</td>
-                            <td>${escapeHtml(formatDate(entry.transaction_date))}</td>
-                            <td>${escapeHtml(entry.bank || '')}</td>
-                            <td>${escapeHtml(entry.remarks || '')}</td>
-                            <td>${escapeHtml(entry.po_no || '')}</td>
-                            <td>${escapeHtml(entry.description || '')}</td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
-                                    <button class="btn btn-outline-subtle delete-entry-btn" type="button" data-id="${entry.id}">Delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger py-4">${escapeHtml(err.message || 'Unable to load sales records')}</td></tr>`;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadSalesRows);
-    </script>
-    <script>
-        // Sales modal submission
-        const saveSalesBtn = document.getElementById('saveSalesBtn');
-        if (saveSalesBtn) {
-            saveSalesBtn.addEventListener('click', async () => {
-                const payload = {
-                    month: document.getElementById('month').value,
-                    project_code: document.getElementById('project_code').value,
-                    client_name: document.getElementById('client_name').value,
-                    tin: document.getElementById('tin').value,
-                    po_no: document.getElementById('po_no').value,
-                    address: document.getElementById('address') ? document.getElementById('address').value : '',
-                    si_no: document.getElementById('si_no') ? document.getElementById('si_no').value : '',
-                    si_date: document.getElementById('si_date') ? document.getElementById('si_date').value : '',
-                    transaction_details: document.getElementById('transaction_details').value,
-                    po_amount: document.getElementById('po_amount').value,
-                    inv_amount: document.getElementById('inv_amount').value,
-                    vat: document.getElementById('vat').value,
-                    net_of_vat: document.getElementById('net_of_vat').value,
-                    wtax_2: document.getElementById('wtax_2').value,
-                    net_amount: document.getElementById('net_amount').value,
-                    cash_in_bank: document.getElementById('cash_in_bank').value,
-                    transaction_date: document.getElementById('transaction_date').value,
-                    bank: document.getElementById('bank').value,
-                    description: document.getElementById('description').value,
-                    remarks: document.getElementById('remarks') ? document.getElementById('remarks').value : '',
-                };
-
-                try {
-                    const res = await fetch('/api/sales', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    });
-                    if (res.ok) {
-                        const modalEl = document.getElementById('newEntryModal');
-                        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                        modal.hide();
-                        alert('Sales entry saved');
-                        window.location.reload();
-                    } else {
-                        const err = await res.json();
-                        alert('Save failed: ' + (err.error || res.statusText));
-                    }
-                } catch (err) {
-                    alert('Save failed: ' + err.message);
-                }
-            });
-        }
-    </script>
+    <script src="js/sales.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

@@ -143,6 +143,10 @@ h5,
     border-bottom: 1px solid rgba(34, 28, 26, 0.03);
 }
 
+.table-premium .date-column {
+    white-space: nowrap;
+}
+
 /* Status and Management Tags */
 .badge-admin-status {
     font-size: 0.7rem;
@@ -178,9 +182,9 @@ h5,
 }
 
 .btn-brand-action:hover {
-    color: #1a1a22;
+    background-color: #86b6d5;
+    color: #ffffff;
     opacity: 0.9;
-    outline: 1px solid #1a1a22;
 }
 
 .btn-outline-subtle {

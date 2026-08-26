@@ -171,6 +171,26 @@ def init_db():
         )
         cursor.execute(
             '''
+            CREATE TABLE IF NOT EXISTS engineering (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                project_name VARCHAR(255),
+                location VARCHAR(255),
+                client VARCHAR(255),
+                date VARCHAR(100),
+                status TEXT,
+                materials_needed TEXT,
+                accomplishment_percentage DECIMAL(5,2),
+                target_completion VARCHAR(100),
+                manpower TEXT,
+                documents VARCHAR(255),
+                remarks TEXT,
+                issues_and_concerns TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            '''
+        )
+        cursor.execute(
+            '''
             CREATE TABLE IF NOT EXISTS purchasing (
                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
                 po_no VARCHAR(100),
@@ -198,23 +218,44 @@ def init_db():
     finally:
         conn.close()
 
-app = Flask(__name__, template_folder='templates')
+# Use admin_sides as the template folder
+ADMIN_SIDES_DIR = os.path.join(BASE_DIR, 'admin_sides')
 
-# determine which template pages we will expose
-TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
+app = Flask(__name__, template_folder='admin_sides')
+
+# Determine which admin pages are available
 EXCLUDED_TEMPLATES = set()
+
 try:
-    AVAILABLE_PAGES = [f for f in os.listdir(TEMPLATE_DIR) if f.endswith('.html') and f not in EXCLUDED_TEMPLATES]
+    AVAILABLE_PAGES = [
+        f for f in os.listdir(ADMIN_SIDES_DIR)
+        if f.endswith('.html') and f not in EXCLUDED_TEMPLATES
+    ]
 except Exception:
     AVAILABLE_PAGES = []
 
 @app.route('/css/<path:filename>')
 def serve_css(filename):
-    return send_from_directory(os.path.join(TEMPLATE_DIR, 'css'), filename)
+    return send_from_directory(
+        os.path.join(ADMIN_SIDES_DIR, 'css'),
+        filename
+    )
+
 
 @app.route('/img/<path:filename>')
 def serve_img(filename):
-    return send_from_directory(os.path.join(TEMPLATE_DIR, 'img'), filename)
+    return send_from_directory(
+        os.path.join(ADMIN_SIDES_DIR, 'img'),
+        filename
+    )
+
+
+@app.route('/js/<path:filename>')
+def serve_js(filename):
+    return send_from_directory(
+        os.path.join(ADMIN_SIDES_DIR, 'js'),
+        filename
+    )
 
 @app.route('/uploads/<path:filename>')
 def serve_upload(filename):
@@ -240,7 +281,100 @@ def _normalize_date_value(value):
         except ValueError:
             return raw
 
+EMPLOYEE_SIDES_DIR = os.path.join(BASE_DIR, 'employee_sides')
 
+
+EMPLOYEE_SIDES_DIR = os.path.join(BASE_DIR, 'employee_sides')
+
+
+# =========================
+# EMPLOYEE PAGES
+# =========================
+
+@app.route('/employee')
+def employee():
+    return send_from_directory(
+        EMPLOYEE_SIDES_DIR,
+        'index.html'
+    )
+
+
+@app.route('/employee/index')
+def employee_index():
+    return send_from_directory(
+        EMPLOYEE_SIDES_DIR,
+        'index.html'
+    )
+
+
+@app.route('/employee/accounting')
+def employee_accounting():
+    return send_from_directory(
+        EMPLOYEE_SIDES_DIR,
+        'accounting.html'
+    )
+
+
+@app.route('/employee/sales')
+def employee_sales():
+    return send_from_directory(
+        EMPLOYEE_SIDES_DIR,
+        'sales.html'
+    )
+
+
+@app.route('/employee/marketing')
+def employee_marketing():
+    return send_from_directory(
+        EMPLOYEE_SIDES_DIR,
+        'marketing.html'
+    )
+
+
+@app.route('/employee/purchasing')
+def employee_purchasing():
+    return send_from_directory(
+        EMPLOYEE_SIDES_DIR,
+        'purchasing.html'
+    )
+
+
+@app.route('/employee/engineering')
+def employee_engineering():
+    return send_from_directory(
+        EMPLOYEE_SIDES_DIR,
+        'engineering.html'
+    )
+
+
+# Employee CSS
+@app.route('/employee/css/<path:filename>')
+def employee_css(filename):
+    return send_from_directory(
+        os.path.join(EMPLOYEE_SIDES_DIR, 'css'),
+        filename
+    )
+
+
+# Employee JS
+@app.route('/employee/js/<path:filename>')
+def employee_js(filename):
+    return send_from_directory(
+        os.path.join(EMPLOYEE_SIDES_DIR, 'js'),
+        filename
+    )
+
+
+# Employee Images
+@app.route('/employee/img/<path:filename>')
+def employee_img(filename):
+    return send_from_directory(
+        os.path.join(EMPLOYEE_SIDES_DIR, 'img'),
+        filename
+    )
+
+
+# For Accounting
 def insert_accounting_entry(data):
     conn = get_db_connection()
     try:
@@ -453,7 +587,7 @@ def insert_sales_marketing_entry(data):
             data.get('client_company') or data.get('client_name') or '',
             data.get('project_name') or '',
             data.get('source') or '',
-            _normalize_marketing_decimal(data.get('project_value')),
+            data.get('project_value') or '',
             data.get('project_type') or '',
             _normalize_date_value(data.get('deadline_submission')),
             days_deadline_val,
@@ -499,7 +633,6 @@ def get_sales_marketing_entries():
     finally:
         conn.close()
 
-
 def update_sales_marketing_entry(data):
     conn = get_db_connection()
     try:
@@ -539,7 +672,7 @@ def update_sales_marketing_entry(data):
             data.get('client_company') or data.get('client_name') or '',
             data.get('project_name') or '',
             data.get('source') or '',
-            _normalize_marketing_decimal(data.get('project_value')),
+            data.get('project_value') or '',
             data.get('project_type') or '',
             _normalize_date_value(data.get('deadline_submission')),
             days_deadline_val,
@@ -584,6 +717,128 @@ def delete_sales_marketing_entry(entry_id):
         conn.close()
 
 
+
+def insert_engineering_entry(data, files=None):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        uploaded_filename = ''
+        file_storage = None
+        if files is not None:
+            file_storage = files.get('documents_file')
+        if file_storage is not None:
+            uploaded_filename = save_uploaded_file(file_storage)
+        document_value = uploaded_filename or (data.get('documents') or data.get('file_name')) or ''
+        payload = (
+            data.get('project_name') or '',
+            data.get('location') or '',
+            data.get('client') or '',
+            _normalize_date_value(data.get('date')),
+            data.get('status') or '',
+            data.get('materials_needed') or '',
+            _normalize_decimal(data.get('accomplishment_percentage')),
+            _normalize_date_value(data.get('target_completion')),
+            data.get('manpower') or '',
+            document_value,
+            (data.get('remarks') or data.get('lost_reason')) or '',
+            data.get('issues_and_concerns') or '',
+        )
+        cursor.execute(
+            '''
+            INSERT INTO engineering (
+                project_name, location, client, date, status, materials_needed,
+                accomplishment_percentage, target_completion, manpower, documents, remarks, issues_and_concerns
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ''',
+            payload,
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_engineering_entries():
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            '''
+            SELECT id, project_name, location, client, date, status, materials_needed,
+                   accomplishment_percentage, target_completion, manpower,
+                   documents AS file_name, remarks AS lost_reason
+            FROM engineering
+            ORDER BY id DESC
+            '''
+        )
+        return cursor.fetchall()
+    finally:
+        conn.close()
+
+
+def update_engineering_entry(data, files=None):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        entry_id = data.get('id') or data.get('engineering_id') or data.get('entry_id')
+        if entry_id in (None, ''):
+            return False
+
+        uploaded_filename = ''
+        file_storage = None
+        if files is not None:
+            file_storage = files.get('documents_file')
+        if file_storage is not None:
+            uploaded_filename = save_uploaded_file(file_storage)
+            if uploaded_filename:
+                cursor.execute('SELECT documents FROM engineering WHERE id=%s', (entry_id,))
+                result = cursor.fetchone()
+                if result and result[0]:
+                    delete_uploaded_file(result[0])
+
+        document_value = uploaded_filename or (data.get('documents') or data.get('file_name')) or ''
+
+        payload = (
+            data.get('project_name') or '',
+            data.get('location') or '',
+            data.get('client') or '',
+            _normalize_date_value(data.get('date')),
+            data.get('status') or '',
+            data.get('materials_needed') or '',
+            _normalize_decimal(data.get('accomplishment_percentage')),
+            _normalize_date_value(data.get('target_completion')),
+            data.get('manpower') or '',
+            document_value,
+            (data.get('remarks') or data.get('lost_reason')) or '',
+            data.get('issues_and_concerns') or '',
+            entry_id,
+        )
+        cursor.execute(
+            '''
+            UPDATE engineering
+            SET project_name=%s, location=%s, client=%s, date=%s, status=%s,
+                materials_needed=%s, accomplishment_percentage=%s, target_completion=%s,
+                manpower=%s, documents=%s, remarks=%s, issues_and_concerns=%s
+            WHERE id=%s
+            ''',
+            payload,
+        )
+        return True
+    finally:
+        conn.close()
+
+
+def delete_engineering_entry(entry_id):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('SELECT documents FROM engineering WHERE id=%s', (entry_id,))
+        result = cursor.fetchone()
+        if result and result[0]:
+            delete_uploaded_file(result[0])
+        cursor.execute('DELETE FROM engineering WHERE id=%s', (entry_id,))
+    finally:
+        conn.close()
+
 def insert_purchasing_entry(data):
     conn = get_db_connection()
     try:
@@ -627,7 +882,7 @@ def insert_purchasing_entry(data):
         cursor.execute(
             '''
             INSERT INTO purchasing (
-                purchase_order_no, order_date, supplier_name, tin, address, item_code, item_name, description,
+                po_no, purchase_date, supplier_name, tin, address, item_code, item_name, description,
                 quantity, unit, unit_price, discount, vat, total_amount, requested_by, approved_by,
                 date_approved, documents, remarks
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -645,7 +900,7 @@ def get_purchasing_entries():
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
             '''
-            SELECT id, purchase_order_no AS po_no, order_date AS purchase_date, supplier_name, tin, address, item_code, item_name, description,
+            SELECT id, po_no, purchase_date, supplier_name, tin, address, item_code, item_name, description,
                    quantity, unit, unit_price, discount, vat, total_amount, requested_by, approved_by,
                    date_approved, documents, remarks
             FROM purchasing
@@ -712,7 +967,7 @@ def update_purchasing_entry(data):
         cursor.execute(
             '''
             UPDATE purchasing
-            SET purchase_order_no=%s, order_date=%s, supplier_name=%s, tin=%s, address=%s, item_code=%s, item_name=%s, description=%s,
+            SET po_no=%s, purchase_date=%s, supplier_name=%s, tin=%s, address=%s, item_code=%s, item_name=%s, description=%s,
                 quantity=%s, unit=%s, unit_price=%s, discount=%s, vat=%s, total_amount=%s, requested_by=%s, approved_by=%s,
                 date_approved=%s, documents=%s, remarks=%s
             WHERE id=%s
@@ -959,6 +1214,55 @@ def api_sales_marketing(data=None):
     return jsonify({'status': 'success'}), 200
 
 
+@app.route('/api/engineering', methods=['GET', 'POST'])
+def api_engineering(data=None):
+    if request.method == 'GET':
+        try:
+            init_db()
+            rows = get_engineering_entries()
+            return jsonify({'status': 'success', 'data': rows}), 200
+        except Error as exc:
+            app.logger.exception('Unable to fetch engineering entries: %s', exc)
+            return jsonify({'error': 'Failed to fetch engineering entries'}), 500
+
+    if data is None:
+        data = request.form.to_dict() if request.form else request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'No data received'}), 400
+
+    action = (data.get('action') or '').lower()
+    if action == 'edit':
+        try:
+            init_db()
+            updated = update_engineering_entry(data, request.files)
+            if not updated:
+                return jsonify({'error': 'Missing engineering id'}), 400
+            return jsonify({'status': 'success'}), 200
+        except Error as exc:
+            app.logger.exception('Unable to update engineering entry: %s', exc)
+            return jsonify({'error': 'Failed to update engineering entry'}), 500
+
+    try:
+        init_db()
+        insert_engineering_entry(data, request.files)
+    except Error as exc:
+        app.logger.exception('Unable to save engineering entry: %s', exc)
+        return jsonify({'error': 'Failed to save engineering entry'}), 500
+
+    return jsonify({'status': 'success'}), 200
+
+
+@app.route('/api/engineering/<int:entry_id>', methods=['DELETE'])
+def delete_engineering_route(entry_id):
+    try:
+        init_db()
+        delete_engineering_entry(entry_id)
+        return jsonify({'status': 'success'}), 200
+    except Error as exc:
+        app.logger.exception('Unable to delete engineering entry: %s', exc)
+        return jsonify({'error': 'Failed to delete engineering entry'}), 500
+
+
 @app.route('/api/sales_marketing/<int:entry_id>', methods=['DELETE'])
 def delete_sales_marketing_route(entry_id):
     try:
@@ -1109,10 +1413,15 @@ def delete_sales_route(sales_id):
         return jsonify({'error': 'Failed to delete sales entry'}), 500
 
 
-@app.route('/', defaults={'page': 'index.html'})
+@app.route('/', defaults={'page': 'login.html'})
 @app.route('/<path:page>')
 def render_page(page):
     # serve templates except excluded ones
+    if page not in AVAILABLE_PAGES:
+        if not page.endswith('.html'):
+            alt_page = f"{page}.html"
+            if alt_page in AVAILABLE_PAGES:
+                page = alt_page
     if page not in AVAILABLE_PAGES:
         abort(404)
     return render_template(page)
@@ -1139,6 +1448,8 @@ def submit_entry():
         return api_sales_marketing(data=data)
     if kind.lower() == 'purchasing':
         return api_purchasing(data=data)
+    if kind.lower() == 'engineering':
+        return api_engineering(data=data)
 
     return jsonify({'error': 'Unsupported kind'}), 400
 

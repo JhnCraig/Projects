@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBDC Employee Dashboard</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/employee/css/style.css">
+    
+</head>
+
+<body>
+
+    <main class="dashboard-shell">
+        <header class="dashboard-header">
+            <img src="/employee/img/SBDC.svg" class="dashboard-logo" alt="SBDC logo">
+            <div class="profile-menu">
+                <button type="button" class="profile-button" aria-label="Open profile menu" aria-expanded="false" aria-controls="profileDropdown">
+                    <i class="bi bi-person-fill" aria-hidden="true"></i>
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" hidden>
+                    <a href="/" class="logout-link">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                        <span>Log out</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav" aria-label="Employee departments">
+            
+            <a href="/employee/accounting" class="dashboard-card">
+                <i class="bi bi-journal-text" aria-hidden="true"></i>
+                <span>Accounting</span>
+            </a>
+            <a href="/employee/sales" class="dashboard-card">
+                <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+                <span>Sales</span>
+            </a>
+            <a href="/employee/marketing" class="dashboard-card">
+                <i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i>
+                <span>Sales /<br>Marketing</span>
+            </a>
+            <a href="/employee/purchasing" class="dashboard-card">
+                <i class="bi bi-cart3" aria-hidden="true"></i>
+                <span>Purchasing</span>
+            </a>
+            <a href="/employee/engineering" class="dashboard-card">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span>Engineering</span>
+            </a>
+        </nav>
+    </main>
+
+    <script>
+        const profileButton = document.querySelector('.profile-button');
+        const profileDropdown = document.querySelector('.profile-dropdown');
+
+        function closeProfileMenu() {
+            profileDropdown.hidden = true;
+            profileButton.setAttribute('aria-expanded', 'false');
+        }
+
+        profileButton.addEventListener('click', () => {
+            const isOpen = !profileDropdown.hidden;
+            profileDropdown.hidden = isOpen;
+            profileButton.setAttribute('aria-expanded', String(!isOpen));
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.profile-menu')) {
+                closeProfileMenu();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeProfileMenu();
+                profileButton.focus();
+            }
+        });
+    </script>
+
+</body>
+
+</html>
