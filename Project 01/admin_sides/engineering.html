@@ -40,10 +40,20 @@
                 </ul>
 
                 <div class="pt-3 border-top border-secondary border-opacity-20">
-                    <a href="login.html"
-                        class="nav-link ms-2 text-white-50 small text-decoration-none d-flex align-items-center">
-                        Log Out <i class="bi bi-arrow-right-circle ms-2"></i>
-                    </a>
+                    <div class="dropup sidebar-profile-dropdown">
+                        <button type="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span data-user-display>User</span>
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i><span data-user-display>User</span></a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="login.html"><i class="bi bi-box-arrow-left me-2"></i>Log Out</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -201,51 +211,57 @@
                 </div>
 
                 <!-- Delete Confirmation Modal -->
-                <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+                <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
+                    aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm delete</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p id="deleteConfirmMessage" class="mb-0">Are you sure you want to delete this entry?</p>
+                                <p id="deleteConfirmMessage" class="mb-0">Are you sure you want to delete this entry?
+                                </p>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-outline-subtle"
+                                    data-bs-dismiss="modal">Cancel</button>
                                 <button id="deleteConfirmBtn" type="button" class="btn btn-danger">Delete</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div style="position:fixed; right:20px; bottom:20px; z-index:1080; display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
-                    <div id="toastContainer" style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;"></div>
+                <div
+                    style="position:fixed; right:20px; bottom:20px; z-index:1080; display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
+                    <div id="toastContainer"
+                        style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
+                    </div>
                 </div>
 
                 <!-- Table -->
-                <div class="table-responsive shadow rounded-4">
+                <div class="main-table-wrapper shadow rounded-4">
                     <table class="table table-premium align-middle">
                         <thead>
                             <tr>
-                                    <th>Project Name</th>
-                                    <th>Project Location</th>
-                                    <th>Client</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                    <th>Materials Needed</th>
-                                    <th>Accomplishment Percentage</th>
-                                    <th>Target Completion</th>
-                                    <th>Manpower</th>
-                                    <th>Document</th>
-                                    <th>Remarks</th>
-                                    <th>Actions</th>
-                                </tr>
+                                <th>Project Name</th>
+                                <th>Project Location</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Materials Needed</th>
+                                <th>Accomplishment Percentage</th>
+                                <th>Target Completion</th>
+                                <th>Manpower</th>
+                                <th>Document</th>
+                                <th>Remarks</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody id="engineeringTableBody">
                             <tr>
-                                <td colspan="12" class="text-center text-muted py-4">Loading engineering records...</td>
-                            </tr>
+                                <td colspan="12" class="text-center text-muted py-4"></tr>
                         </tbody>
                     </table>
                 </div>
@@ -271,14 +287,14 @@
 
                             <div class="col-5 col-md-6">
                                 <label class="form-label" style="font-size: 14px;">Project Name</label>
-                                <input id="edit_project_name" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                    placeholder="Project Name">
+                                <input id="edit_project_name" type="text" class="form-control mb-3"
+                                    style="font-size: 14px;" placeholder="Project Name">
                             </div>
 
                             <div class="col-5 col-md-6">
                                 <label class="form-label" style="font-size: 14px;">Project Location</label>
-                                <input id="edit_location" type="text" class="form-control mb-3"
-                                    style="font-size: 14px;" placeholder="Project Location">
+                                <input id="edit_location" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                    placeholder="Project Location">
                             </div>
                         </div>
 
@@ -308,8 +324,8 @@
 
                             <div class="col-5 col-md-6">
                                 <label class="form-label" style="font-size: 14px;">Materials Needed</label>
-                                <input id="edit_materials_needed" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                    placeholder="Materials Needed">
+                                <input id="edit_materials_needed" type="text" class="form-control mb-3"
+                                    style="font-size: 14px;" placeholder="Materials Needed">
                             </div>
 
                             <div class="col-5 col-md-6">
@@ -321,7 +337,8 @@
                             <div class="col-5 col-md-6">
                                 <label class="form-label" style="font-size: 14px;">Target Completion
                                     Date</label>
-                                <input id="edit_target_completion" type="date" class="form-control mb-3" style="font-size: 14px;">
+                                <input id="edit_target_completion" type="date" class="form-control mb-3"
+                                    style="font-size: 14px;">
                             </div>
 
                             <div class="col-5 col-md-6">
@@ -340,15 +357,15 @@
                                 <input id="editEntryFileInput" type="file" name="file" style="display:none;" />
                             </div>
                             <div class="col-10">
-                                <input id="edit_file_name" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                    placeholder="File name">
+                                <input id="edit_file_name" type="text" class="form-control mb-3"
+                                    style="font-size: 14px;" placeholder="File name">
                                 <div id="editEntrySelectedFileName" class="form-text mt-2">No file chosen</div>
                             </div>
 
                             <label class="form-label" style="font-size: 14px;">Remarks</label>
                             <div class="col-12">
-                                <input id="edit_lost_reason" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                    placeholder="Remarks">
+                                <input id="edit_lost_reason" type="text" class="form-control mb-3"
+                                    style="font-size: 14px;" placeholder="Remarks">
                             </div>
                         </div>
 
@@ -364,6 +381,23 @@
 
         <script src="js/engineering.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            const userNameTargets = document.querySelectorAll('[data-user-display]');
+            fetch('/api/current-user')
+                .then((response) => response.ok ? response.json() : null)
+                .then((user) => {
+                    const name = user?.name || 'User';
+                    const firstName = name.split(' ')[0] || 'User';
+                    userNameTargets.forEach((element) => {
+                        element.textContent = firstName;
+                    });
+                })
+                .catch(() => {
+                    userNameTargets.forEach((element) => {
+                        element.textContent = 'User';
+                    });
+                });
+        </script>
 
 </body>
 

@@ -1,3 +1,14 @@
+function setupActionPanel(table) {
+    const wrapper = table.closest('.main-table-wrapper'); const header = Array.from(table.querySelectorAll('thead th')).find((cell) => /actions?/i.test(cell.textContent.trim()));
+    if (!wrapper || !header || wrapper.dataset.actionPanelReady) return; wrapper.dataset.actionPanelReady = 'true'; const actionIndex = header.cellIndex;
+    const layout = document.createElement('div'); layout.className = 'table-with-actions'; wrapper.parentNode.insertBefore(layout, wrapper); layout.appendChild(wrapper);
+    const panel = document.createElement('div'); panel.className = 'user-action-panel'; panel.innerHTML = '<table class="table table-premium action-table align-middle"><thead><tr><th>Action</th></tr></thead><tbody></tbody></table>'; layout.appendChild(panel); header.style.display = 'none';
+    const render = () => { const body = panel.querySelector('tbody'); body.innerHTML = ''; Array.from(table.tBodies[0]?.rows || []).forEach((row) => { row.__actionButtons = row.__actionButtons || Array.from(row.querySelectorAll('.edit-entry-btn, .delete-entry-btn')); if (row.cells[actionIndex]) row.cells[actionIndex].style.display = 'none'; const actionRow = document.createElement('tr'); const cell = document.createElement('td'); const buttons = document.createElement('div'); buttons.className = 'action-buttons'; row.__actionButtons.forEach((button) => { const clone = button.cloneNode(true); clone.addEventListener('click', () => button.click()); buttons.appendChild(clone); }); cell.appendChild(buttons); actionRow.appendChild(cell); body.appendChild(actionRow); }); };
+    const observer = new MutationObserver(render); if (table.tBodies[0]) observer.observe(table.tBodies[0], { childList: true }); render();
+}
+document.addEventListener('click', (event) => { const editButton = event.target.closest('.edit-entry-btn'); if (!editButton || editButton.dataset.entry) return; const source = document.querySelector(`tr [data-id="${editButton.dataset.id}"]`); if (source?.closest('tr')?.dataset.entry) editButton.dataset.entry = source.closest('tr').dataset.entry; }, true);
+document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('table.table-premium').forEach(setupActionPanel));
+
 // New entry modal file upload handlers
 const newEntryUploadBtn = document.getElementById("newEntryUploadBtn");
 const newEntryFileInput = document.getElementById("newEntryFileInput");
@@ -98,7 +109,7 @@ async function loadMarketingRows() {
         const result = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(result.error || 'Failed to load marketing records');
         const rows = Array.isArray(result.data) ? result.data : [];
-        if (!rows.length) { tbody.innerHTML = '<tr><td colspan="16" class="text-center text-muted py-4">No marketing records found.</td></tr>'; return; }
+        if (!rows.length) { tbody.innerHTML = '<tr><td colspan="16" class="text-center text-muted py-4"></td></tr>'; return; }
 
         tbody.innerHTML = rows.map((entry) => `
                     <tr data-entry="${JSON.stringify(entry).replace(/"/g, '&quot;')}">
@@ -117,7 +128,7 @@ async function loadMarketingRows() {
                         <td>${escapeHtml(entry.days_follow_up || '')}</td>
                         <td>${renderDocumentCell(entry.file_name || '')}</td>
                         <td>${escapeHtml(entry.lost_reason || '')}</td>
-                        <td><div class="d-flex gap-2"><button class="btn btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button><button class="btn btn-outline-subtle delete-entry-btn" type="button" data-id="${entry.id}">Delete</button></div></td>
+                        <td><div class="d-flex gap-2"><button class="btn btn-sm btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-entry="${JSON.stringify(entry).replace(/"/g, '&quot;')}" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit entry" aria-label="Edit entry"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger delete-entry-btn" type="button" data-id="${entry.id}" title="Delete entry" aria-label="Delete entry"><i class="bi bi-trash3"></i></button></div></td>
                     </tr>
                 `).join('');
     } catch (err) { tbody.innerHTML = `<tr><td colspan="16" class="text-center text-danger py-4">${escapeHtml(err.message || 'Unable to load marketing records')}</td></tr>`; }
@@ -125,7 +136,8 @@ async function loadMarketingRows() {
 document.addEventListener('click', async (event) => {
     const editButton = event.target.closest('.edit-entry-btn');
     if (editButton) {
-        const row = editButton.closest('tr'); const entry = JSON.parse(row?.getAttribute('data-entry')?.replace(/&quot;/g, '"') || '{}');
+        const entry = JSON.parse(editButton.dataset.entry || '{}');
+        if (!Object.keys(entry).length) return;
         document.getElementById('edit_date_received').value = normalizeDateInputValue(entry.date_received);
         document.getElementById('edit_status').value = entry.status || '';
         document.getElementById('edit_client_name').value = entry.client_name || '';
@@ -278,41 +290,6 @@ async function submitMarketingModal(mode) {
         if (button) button.disabled = false;
     }
 }
-
-document.querySelectorAll(".edit-entry-btn").forEach((button) => {
-    button.addEventListener("click", () => {
-        const row = button.closest("tr");
-        if (!row) {
-            return;
-        }
-
-        const values = Array.from(row.cells).map((cell) => cell.textContent.trim());
-        const map = [
-            ["edit_date_received", 0],
-            ["edit_client_name", 1],
-            ["edit_project_name", 2],
-            ["edit_source", 3],
-            ["edit_project_value", 4],
-            ["edit_project_type", 5],
-            ["edit_deadline_submission", 6],
-            ["edit_days_deadline", 7],
-            ["edit_status", 8],
-            ["edit_date_submitted", 9],
-            ["edit_response_time", 10],
-            ["edit_follow_up_date", 11],
-            ["edit_days_follow_up", 12],
-            ["edit_file_name", 13],
-            ["edit_lost_reason", 14]
-        ];
-
-        map.forEach(([inputId, index]) => {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.value = values[index] || "";
-            }
-        });
-    });
-});
 
 if (saveEditedMarketingBtn) {
     saveEditedMarketingBtn.addEventListener("click", () => submitMarketingModal("edit"));

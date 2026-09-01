@@ -10,7 +10,7 @@ import io
 import uuid
 
 try:
-    from flask import Flask, abort, jsonify, render_template, request, send_from_directory
+    from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, session
 except ImportError as exc:
     raise ImportError(
         'Flask is required to run backEnd.py. Install it with: pip install Flask'
@@ -19,9 +19,18 @@ except ImportError as exc:
 try:
     import mysql.connector
     from mysql.connector import Error
+    from werkzeug.security import check_password_hash, generate_password_hash
 except ImportError:  # pragma: no cover - import fallback for environments without the package
     mysql = None
     Error = Exception
+    try:
+        from werkzeug.security import check_password_hash, generate_password_hash
+    except ImportError:
+        def generate_password_hash(password):
+            return password
+
+        def check_password_hash(hashed_password, password):
+            return hashed_password == password
 
 
 BASE_DIR = os.path.dirname(__file__)
@@ -80,10 +89,61 @@ def get_db_connection():
     )
 
 
+def get_user_by_email(email):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM users WHERE email=%s LIMIT 1', ((email or '').strip().lower(),))
+        return cursor.fetchone()
+    finally:
+        conn.close()
+
+
+def get_dashboard_redirect_for_status(status):
+    normalized_status = (status or 'Employee').strip().lower()
+    if normalized_status in {'admin', 'administrator', 'superadmin', 'admin_user'}:
+        return '/index.html'
+    return '/employee'
+
+
 def init_db():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        cursor.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS users (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                fname VARCHAR(100) NOT NULL,
+                mname VARCHAR(100),
+                lname VARCHAR(100) NOT NULL,
+                contact VARCHAR(50) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                password_hash VARCHAR(255),
+                status VARCHAR(50) NOT NULL DEFAULT 'Employee',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            '''
+        )
+        cursor.execute(
+            '''
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = %s AND table_name = 'users' AND column_name = 'status'
+            ''',
+            (MYSQL_DATABASE,),
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("ALTER TABLE users ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'Employee'")
+        cursor.execute(
+            '''
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = %s AND table_name = 'users' AND column_name = 'password_hash'
+            ''',
+            (MYSQL_DATABASE,),
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute('ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)')
         cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS sales (
@@ -222,6 +282,7 @@ def init_db():
 ADMIN_SIDES_DIR = os.path.join(BASE_DIR, 'admin_sides')
 
 app = Flask(__name__, template_folder='admin_sides')
+app.secret_key = os.getenv('SECRET_KEY', 'sbdc-development-key')
 
 # Determine which admin pages are available
 EXCLUDED_TEMPLATES = set()
@@ -839,10 +900,23 @@ def delete_engineering_entry(entry_id):
     finally:
         conn.close()
 
+def get_purchasing_schema_columns():
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('SHOW COLUMNS FROM purchasing')
+        return {row[0] for row in cursor.fetchall()}
+    finally:
+        conn.close()
+
+
 def insert_purchasing_entry(data):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        columns = get_purchasing_schema_columns()
+        po_column = 'po_no' if 'po_no' in columns else 'purchase_order_no'
+        date_column = 'purchase_date' if 'purchase_date' in columns else 'order_date'
         uploaded_filename = ''
         file_storage = None
         if isinstance(data, dict):
@@ -882,11 +956,11 @@ def insert_purchasing_entry(data):
         cursor.execute(
             '''
             INSERT INTO purchasing (
-                po_no, purchase_date, supplier_name, tin, address, item_code, item_name, description,
+                {po_column}, {date_column}, supplier_name, tin, address, item_code, item_name, description,
                 quantity, unit, unit_price, discount, vat, total_amount, requested_by, approved_by,
                 date_approved, documents, remarks
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ''',
+            '''.format(po_column=po_column, date_column=date_column),
             payload,
         )
         conn.commit()
@@ -898,14 +972,17 @@ def get_purchasing_entries():
     conn = get_db_connection()
     try:
         cursor = conn.cursor(dictionary=True)
+        columns = get_purchasing_schema_columns()
+        po_column = 'po_no' if 'po_no' in columns else 'purchase_order_no'
+        date_column = 'purchase_date' if 'purchase_date' in columns else 'order_date'
         cursor.execute(
             '''
-            SELECT id, po_no, purchase_date, supplier_name, tin, address, item_code, item_name, description,
+            SELECT id, {po_column} AS po_no, {date_column} AS purchase_date, supplier_name, tin, address, item_code, item_name, description,
                    quantity, unit, unit_price, discount, vat, total_amount, requested_by, approved_by,
                    date_approved, documents, remarks
             FROM purchasing
             ORDER BY id DESC
-            '''
+            '''.format(po_column=po_column, date_column=date_column)
         )
         return cursor.fetchall()
     finally:
@@ -916,6 +993,9 @@ def update_purchasing_entry(data):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        columns = get_purchasing_schema_columns()
+        po_column = 'po_no' if 'po_no' in columns else 'purchase_order_no'
+        date_column = 'purchase_date' if 'purchase_date' in columns else 'order_date'
         entry_id = data.get('id') or data.get('purchasing_id') or data.get('entry_id')
         if entry_id in (None, ''):
             return False
@@ -967,11 +1047,11 @@ def update_purchasing_entry(data):
         cursor.execute(
             '''
             UPDATE purchasing
-            SET po_no=%s, purchase_date=%s, supplier_name=%s, tin=%s, address=%s, item_code=%s, item_name=%s, description=%s,
+            SET {po_column}=%s, {date_column}=%s, supplier_name=%s, tin=%s, address=%s, item_code=%s, item_name=%s, description=%s,
                 quantity=%s, unit=%s, unit_price=%s, discount=%s, vat=%s, total_amount=%s, requested_by=%s, approved_by=%s,
                 date_approved=%s, documents=%s, remarks=%s
             WHERE id=%s
-            ''',
+            '''.format(po_column=po_column, date_column=date_column),
             payload,
         )
         conn.commit()
@@ -1452,6 +1532,126 @@ def submit_entry():
         return api_engineering(data=data)
 
     return jsonify({'error': 'Unsupported kind'}), 400
+
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.form.to_dict()
+    fname = (data.get('fname') or data.get('Fname') or '').strip()
+    mname = (data.get('mname') or data.get('Mname') or '').strip()
+    lname = (data.get('lname') or data.get('Lname') or '').strip()
+    contact = (data.get('contact') or '').strip()
+    email = (data.get('email') or '').strip().lower()
+    password = data.get('password') or ''
+    confirm_password = data.get('confirm_password') or ''
+
+    if not all([fname, lname, contact, email, password]):
+        return render_template('signup.html', error='Please complete all required fields.'), 400
+    if password != confirm_password:
+        return render_template('signup.html', error='Passwords do not match.'), 400
+
+    init_db()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ''',
+            (fname, mname, lname, contact, email, password, generate_password_hash(password), 'Employee'),
+        )
+    except Error:
+        return render_template('signup.html', error='Unable to create account.'), 409
+    finally:
+        conn.close()
+    return redirect('/login.html')
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    email = (request.form.get('email') or '').strip().lower()
+    password = request.form.get('password') or ''
+    user = get_user_by_email(email) if email else None
+    if not user or not (user.get('password') == password or (user.get('password_hash') and check_password_hash(user['password_hash'], password))):
+        return render_template('login.html', error='Invalid email or password.'), 401
+
+    status = (user.get('status') or 'Employee').strip()
+    session['user_id'] = user['id']
+    session['user_name'] = user.get('fname') or 'User'
+    session['user_status'] = status
+
+    return redirect(get_dashboard_redirect_for_status(status))
+
+
+@app.route('/api/current-user', methods=['GET'])
+def api_current_user():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not logged in.'}), 401
+
+    user_status = session.get('user_status', 'Employee')
+    return jsonify({'status': 'success', 'name': session.get('user_name', ''), 'user_status': user_status}), 200
+
+
+@app.route('/api/users', methods=['GET'])
+def api_users():
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT id, fname, mname, lname, contact, email, password, status, created_at FROM users ORDER BY id DESC')
+        return jsonify({'status': 'success', 'data': cursor.fetchall()}), 200
+    finally:
+        conn.close()
+
+
+@app.route('/api/users/<int:user_id>', methods=['PUT'])
+def api_update_user(user_id):
+    data = request.get_json(silent=True) or request.form.to_dict()
+    fname = (data.get('fname') or '').strip()
+    mname = (data.get('mname') or '').strip()
+    lname = (data.get('lname') or '').strip()
+    contact = (data.get('contact') or '').strip()
+    status = (data.get('status') or 'Employee').strip()
+    if not fname or not lname or not contact:
+        return jsonify({'error': 'First name, last name, and contact are required.'}), 400
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET fname=%s, mname=%s, lname=%s, contact=%s, status=%s WHERE id=%s', (fname, mname, lname, contact, status, user_id))
+        conn.commit()
+        return jsonify({'status': 'success'}), 200
+    finally:
+        conn.close()
+
+
+@app.route('/api/users/<int:user_id>/password', methods=['PUT'])
+def api_update_user_password(user_id):
+    data = request.get_json(silent=True) or request.form.to_dict()
+    password = (data.get('password') or '').strip()
+    if not password:
+        return jsonify({'error': 'Password is required.'}), 400
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET password=%s, password_hash=%s WHERE id=%s', (password, generate_password_hash(password), user_id))
+        conn.commit()
+        return jsonify({'status': 'success'}), 200
+    finally:
+        conn.close()
+
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+def api_delete_user(user_id):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM users WHERE id=%s', (user_id,))
+        conn.commit()
+        return jsonify({'status': 'success'}), 200
+    finally:
+        conn.close()
 
 
 @app.route('/import', methods=['POST'])

@@ -210,56 +210,38 @@
                     </div>
                 </div>
 
-                <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Are you sure you want to delete this marketing entry?</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-subtle"
-                                    data-bs-dismiss="modal">Cancel</button>
-                                <button id="confirmDeleteBtn" type="button" class="btn btn-danger">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Table -->
-                <div class="main-table-wrapper table-responsive shadow rounded-4">
-                    <table class="table table-premium align-middle">
-                        <thead>
-                            <tr>
-                                <th>Date Received</th>
-                                <th>Client's Name/Company</th>
-                                <th>Projects Name</th>
-                                <th>Source</th>
-                                <th>Project Value</th>
-                                <th>Project Type</th>
-                                <th>Deadline of Submission</th>
-                                <th>Days of Deadlines</th>
-                                <th>Status</th>
-                                <th>Date Submitted</th>
-                                <th>Response Time(Days)</th>
-                                <th>Follow-up Date</th>
-                                <th>Days to Follow-up</th>
-                                <th>File</th>
-                                <th>Lost Reason</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="marketingTableBody">
-                            <tr>
-                                <td colspan="16" class="text-center text-muted py-4">Loading marketing records...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="table-with-actions">
+
+                    <div class="main-table-wrapper table-responsive shadow rounded-4">
+                        <table class="table table-premium align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date Received</th>
+                                    <th>Client's Name/Company</th>
+                                    <th>Projects Name</th>
+                                    <th>Source</th>
+                                    <th>Project Value</th>
+                                    <th>Project Type</th>
+                                    <th>Deadline of Submission</th>
+                                    <th>Days of Deadlines</th>
+                                    <th>Status</th>
+                                    <th>Date Submitted</th>
+                                    <th>Response Time(Days)</th>
+                                    <th>Follow-up Date</th>
+                                    <th>Days to Follow-up</th>
+                                    <th>File</th>
+                                    <th>Lost Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="marketingTableBody">
+                                <tr>
+                                    <td colspan="16" class="text-center text-muted py-4"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

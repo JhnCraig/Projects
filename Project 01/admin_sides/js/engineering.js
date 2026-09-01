@@ -1,3 +1,14 @@
+function setupActionPanel(table) {
+    const wrapper = table.closest('.main-table-wrapper'); const header = Array.from(table.querySelectorAll('thead th')).find((cell) => /actions?/i.test(cell.textContent.trim()));
+    if (!wrapper || !header || wrapper.dataset.actionPanelReady) return; wrapper.dataset.actionPanelReady = 'true'; const actionIndex = header.cellIndex;
+    const layout = document.createElement('div'); layout.className = 'table-with-actions'; wrapper.parentNode.insertBefore(layout, wrapper); layout.appendChild(wrapper);
+    const panel = document.createElement('div'); panel.className = 'user-action-panel'; panel.innerHTML = '<table class="table table-premium action-table align-middle"><thead><tr><th>Action</th></tr></thead><tbody></tbody></table>'; layout.appendChild(panel); header.style.display = 'none';
+    const render = () => { const body = panel.querySelector('tbody'); body.innerHTML = ''; Array.from(table.tBodies[0]?.rows || []).forEach((row) => { row.__actionButtons = row.__actionButtons || Array.from(row.querySelectorAll('.edit-entry-btn, .delete-entry-btn')); if (row.cells[actionIndex]) row.cells[actionIndex].style.display = 'none'; const actionRow = document.createElement('tr'); const cell = document.createElement('td'); const buttons = document.createElement('div'); buttons.className = 'action-buttons'; row.__actionButtons.forEach((button) => { const clone = button.cloneNode(true); clone.addEventListener('click', () => button.click()); buttons.appendChild(clone); }); cell.appendChild(buttons); actionRow.appendChild(cell); body.appendChild(actionRow); }); };
+    const observer = new MutationObserver(render); if (table.tBodies[0]) observer.observe(table.tBodies[0], { childList: true }); render();
+}
+document.addEventListener('click', (event) => { const editButton = event.target.closest('.edit-entry-btn'); if (!editButton || editButton.dataset.entry) return; const source = document.querySelector(`tr [data-id="${editButton.dataset.id}"]`); if (source?.closest('tr')?.dataset.entry) editButton.dataset.entry = source.closest('tr').dataset.entry; }, true);
+document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('table.table-premium').forEach(setupActionPanel));
+
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const selectedFileName = document.getElementById("selectedFileName");
@@ -71,6 +82,19 @@ function renderDocumentCell(value) {
     return `<div style="display:inline-block; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><a href="/uploads/${encodeURIComponent(value)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(cleanName)}">${escapeHtml(cleanName)}</a></div>`;
 }
 
+function resetEngineeringNewEntry() {
+    ['project_name', 'location', 'client', 'date', 'status', 'materials_needed',
+        'accomplishment_percentage', 'target_completion', 'manpower', 'file_name',
+        'lost_reason'].forEach((id) => {
+        const field = document.getElementById(id);
+        if (field) field.value = '';
+    });
+    const fileInput = document.getElementById('newEntryFileInput');
+    if (fileInput) fileInput.value = '';
+    const selectedFile = document.getElementById('newEntrySelectedFileName');
+    if (selectedFile) selectedFile.textContent = 'No file chosen';
+}
+
 function showToast(message, type = 'success') {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) return;
@@ -130,12 +154,12 @@ async function loadEngineeringRows() {
 
         const rows = Array.isArray(result.data) ? result.data : [];
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">No engineering records found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4"></td></tr>';
             return;
         }
 
         tbody.innerHTML = rows.map((entry) => `
-                        <tr data-document="${escapeHtml(entry.file_name || '')}">
+                        <tr data-entry="${JSON.stringify(entry).replace(/"/g, '&quot;')}" data-document="${escapeHtml(entry.file_name || '')}">
                             <td>${escapeHtml(entry.project_name || '')}</td>
                             <td>${escapeHtml(entry.location || '')}</td>
                             <td>${escapeHtml(entry.client || '')}</td>
@@ -147,7 +171,7 @@ async function loadEngineeringRows() {
                             <td>${escapeHtml(entry.manpower || '')}</td>
                             <td>${renderDocumentCell(entry.file_name || '')}</td>
                             <td>${escapeHtml(entry.lost_reason || '')}</td>
-                            <td><div class="d-flex gap-2"><button class="btn btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button><button class="btn btn-outline-subtle delete-entry-btn" type="button" data-id="${entry.id}">Delete</button></div></td>
+                            <td><div class="d-flex gap-2"><button class="btn btn-sm btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-entry="${JSON.stringify(entry).replace(/"/g, '&quot;')}" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit entry" aria-label="Edit entry"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-outline-danger delete-entry-btn" type="button" data-id="${entry.id}" title="Delete entry" aria-label="Delete entry"><i class="bi bi-trash3"></i></button></div></td>
 
                         </tr>
                     `).join('');
@@ -188,6 +212,7 @@ async function submitEngineeringEntry() {
         const modalEl = document.getElementById('newEntryModal');
         const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
         modal.hide();
+        resetEngineeringNewEntry();
         showToast('New engineering entry saved.', 'success');
         await loadEngineeringRows();
     } catch (err) {
@@ -310,25 +335,10 @@ document.addEventListener('click', (event) => {
     if (!(target instanceof HTMLElement)) return;
     const editButton = target.closest('.edit-entry-btn');
     if (editButton instanceof HTMLElement) {
-        const entryId = editButton.getAttribute('data-id');
-        const row = editButton.closest('tr');
-        if (!row) return;
-        const cells = row.querySelectorAll('td');
-        const entry = {
-            id: entryId,
-            project_name: cells[1]?.textContent?.trim(),
-            location: cells[2]?.textContent?.trim(),
-            client: cells[3]?.textContent?.trim(),
-            date: cells[4]?.textContent?.trim(),
-            status: cells[5]?.textContent?.trim(),
-            materials_needed: cells[6]?.textContent?.trim(),
-            accomplishment_percentage: cells[7]?.textContent?.trim(),
-            target_completion: cells[8]?.textContent?.trim(),
-            manpower: cells[9]?.textContent?.trim(),
-            file_name: cells[10]?.textContent?.trim(),
-            document_path: row?.dataset?.document || '',
-            lost_reason: cells[11]?.textContent?.trim(),
-        };
+        const entry = JSON.parse(editButton.dataset.entry || '{}');
+        entry.id = editButton.getAttribute('data-id') || entry.id;
+        entry.document_path = entry.file_name || '';
+        if (!Object.keys(entry).length) return;
         populateEditModal(entry);
         return;
     }

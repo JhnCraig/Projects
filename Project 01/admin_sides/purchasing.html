@@ -39,10 +39,19 @@
                 </ul>
 
                 <div class="pt-3 border-top border-secondary border-opacity-20">
-                    <a href="login.html"
-                        class="nav-link ms-2 text-white-50 small text-decoration-none d-flex align-items-center">
-                        Log Out <i class="bi bi-arrow-right-circle ms-2"></i>
-                    </a>
+                    <div class="dropup sidebar-profile-dropdown">
+                        <button type="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span data-user-display>User</span>
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i><span data-user-display>User</span></a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="login.html"><i class="bi bi-box-arrow-left me-2"></i>Log Out</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -255,7 +264,7 @@
                 </div>
 
                 <!-- Table -->
-                <div class="table-responsive shadow rounded-4">
+                <div class="main-table-wrapper shadow rounded-4">
                     <table class="table table-premium align-middle">
                         <thead>
                             <tr>
@@ -479,7 +488,7 @@
 
     <script src="js/purchasing.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    
 </body>
 
 </html>

@@ -1,4 +1,3 @@
-
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const selectedFileName = document.getElementById("selectedFileName");
@@ -80,6 +79,37 @@ function showDeleteConfirmation(entryId) {
     const modalEl = document.getElementById('deleteConfirmModal');
     const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
     modal.show();
+}
+
+function renderActionPanel(rows) {
+    const panel = document.getElementById('actionPanel');
+    if (!panel) return;
+
+    panel.innerHTML = `
+        <table class="table table-premium action-table align-middle">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.map((entry) => `
+                    <tr>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-entry="${JSON.stringify(entry).replace(/"/g, '&quot;')}" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit entry" aria-label="Edit entry">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-entry-btn" type="button" data-id="${entry.id}" title="Delete entry" aria-label="Delete entry">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
 }
 
 document.getElementById('confirmDeleteBtn')?.addEventListener('click', async () => {
@@ -177,7 +207,7 @@ async function loadAccountingRows() {
 
         const rows = Array.isArray(result.data) ? result.data : [];
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4"> </td></tr>';
+            tbody.innerHTML = '<tr><td colspan="19" class="text-center text-muted py-4"> </td></tr>';
             return;
         }
 
@@ -202,14 +232,10 @@ async function loadAccountingRows() {
                         <td>${escapeHtml(entry.account_name || entry.acct_name || "")}</td>
                         <td>${escapeHtml(entry.project || "")}</td>
                         <td>${escapeHtml(entry.remark || entry.remarks || "")}</td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
-                                <button class="btn btn-outline-subtle delete-entry-btn" type="button" data-id="${entry.id}">Delete</button>
-                            </div>
-                        </td>
                     </tr>
                 `).join("");
+
+        renderActionPanel(rows);
     } catch (error) {
         tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger py-4">${escapeHtml(error.message || "Unable to load accounting records")}</td></tr>`;
     }
@@ -219,7 +245,7 @@ document.addEventListener("click", async (event) => {
     const editButton = event.target.closest(".edit-entry-btn");
     if (editButton) {
         const row = editButton.closest("tr");
-        const entry = JSON.parse(row?.getAttribute("data-entry")?.replace(/&quot;/g, '"') || "{}");
+        const entry = JSON.parse(editButton.dataset.entry || row?.getAttribute("data-entry")?.replace(/&quot;/g, '"') || "{}");
         document.getElementById("edit_cv_no").value = entry.cv_no || "";
         document.getElementById("edit_date").value = entry.transaction_date || entry.date ? new Date(entry.transaction_date || entry.date).toISOString().split("T")[0] : "";
         document.getElementById("edit_payee").value = entry.payee || "";
@@ -274,5 +300,21 @@ if (saveAccountingBtn) {
 if (saveEditedAccountingBtn) {
     saveEditedAccountingBtn.addEventListener("click", () => submitAccountingModal("edit"));
 }
+
+const userNameTargets = document.querySelectorAll('[data-user-display]');
+fetch('/api/current-user')
+    .then((response) => response.ok ? response.json() : null)
+    .then((user) => {
+        const name = user?.name || 'User';
+        const firstName = name.split(' ')[0] || 'User';
+        userNameTargets.forEach((element) => {
+            element.textContent = firstName;
+        });
+    })
+    .catch(() => {
+        userNameTargets.forEach((element) => {
+            element.textContent = 'User';
+        });
+    });
 
 document.addEventListener("DOMContentLoaded", loadAccountingRows);

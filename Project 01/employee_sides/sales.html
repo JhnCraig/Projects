@@ -110,14 +110,6 @@
                                 </div>
 
                                 <div class="row g-6 mb-4">
-                                    <label class="form-label fw-bold mb-2">Transaction Information</label>
-                                    <div class="col-12">
-                                        <input id="transaction_details" type="text" class="form-control mb-3"
-                                            style="font-size: 14px;" placeholder="Transaction Details (textarea)">
-                                    </div>
-                                </div>
-
-                                <div class="row g-6 mb-4">
                                     <label class="form-label fw-bold mb-2">Financial Information</label>
                                     <div class="col-3 col-md-3">
                                         <label class="form-label" style="font-size: 14px;">PO Amount</label>
@@ -162,7 +154,8 @@
                                     <label class="form-label fw-bold mb-2">Bank Information</label>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Transaction Date</label>
-                                        <input id="transaction_date" type="date" class="form-control" style="font-size: 14px;">
+                                        <input id="transaction_date" type="date" class="form-control"
+                                            style="font-size: 14px;">
                                     </div>
                                     <div class="col-5 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Bank</label>
@@ -224,38 +217,40 @@
                 </div>
 
                 <!-- Table -->
-                <div class="main-table-wrapper table-responsive shadow rounded-4">
-                    <table class="table table-premium align-middle">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th>Client Name</th>
-                                <th>Proj Code</th>
-                                <th>TIN</th>
-                                <th>Address</th>
-                                <th>Po Amount</th>
-                                <th>SI No.</th>
-                                <th>SI Date</th>
-                                <th>Inv Amount</th>
-                                <th>VAT</th>
-                                <th>Net of VAT</th>
-                                <th>2% WTax</th>
-                                <th>Net Amount</th>
-                                <th>Cash in Bank</th>
-                                <th>Date</th>
-                                <th>Bank</th>
-                                <th>Remarks</th>
-                                <th>PO No.</th>
-                                <th>Description</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="salesTableBody">
-                            <tr>
-                                <td colspan="20" class="text-center text-muted py-4">Loading sales records...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="table-with-actions">
+
+                    <div class="main-table-wrapper table-responsive shadow rounded-4">
+                        <table class="table table-premium align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Client Name</th>
+                                    <th>Proj Code</th>
+                                    <th>TIN</th>
+                                    <th>Address</th>
+                                    <th>Po Amount</th>
+                                    <th>SI No.</th>
+                                    <th>SI Date</th>
+                                    <th>Inv Amount</th>
+                                    <th>VAT</th>
+                                    <th>Net of VAT</th>
+                                    <th>2% WTax</th>
+                                    <th>Net Amount</th>
+                                    <th>Cash in Bank</th>
+                                    <th>Date</th>
+                                    <th>Bank</th>
+                                    <th>Remarks</th>
+                                    <th>PO No.</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <tr>
+                                    <td colspan="20" class="text-center text-muted py-4"></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -327,14 +322,6 @@
                     </div>
 
                     <div class="row g-6 mb-4">
-                        <label class="form-label fw-bold mb-2">Transaction Information</label>
-                        <div class="col-12">
-                            <input id="edit_transaction_details" type="text" class="form-control mb-3"
-                                style="font-size: 14px;" placeholder="Transaction Details (textarea)">
-                        </div>
-                    </div>
-
-                    <div class="row g-6 mb-4">
                         <label class="form-label fw-bold mb-2">Financial Information</label>
                         <div class="col-3 col-md-3">
                             <label class="form-label" style="font-size: 14px;">PO Amount</label>
@@ -344,7 +331,7 @@
                         <div class="col-2 col-md-3">
                             <label class="form-label" style="font-size: 14px;">Inv Amount</label>
                             <input id="edit_inv_amount" type="text" class="form-control mb-3" style="font-size: 14px;"
-                            placeholder="Inv Amount">
+                                placeholder="Inv Amount">
                         </div>
                         <div class="col-3 col-md-3">
                             <label class="form-label" style="font-size: 14px;">VAT</label>
@@ -414,7 +401,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="saveConfirmModal" tabindex="-1" aria-labelledby="saveConfirmModalLabel" aria-hidden="true">
+    <div class="modal fade" id="saveConfirmModal" tabindex="-1" aria-labelledby="saveConfirmModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -432,11 +420,14 @@
         </div>
     </div>
 
-    <div style="position:fixed; right:20px; bottom:20px; z-index:1080; display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
-        <div id="toastContainer" style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;"></div>
+    <div
+        style="position:fixed; right:20px; bottom:20px; z-index:1080; display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
+        <div id="toastContainer"
+            style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;"></div>
     </div>
 
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -456,7 +447,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/sales.js"></script>
-    
+
 </body>
 
 </html>

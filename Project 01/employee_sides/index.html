@@ -22,6 +22,7 @@
         <header class="dashboard-header">
             <img src="/employee/img/SBDC.svg" class="dashboard-logo" alt="SBDC logo">
             <div class="profile-menu">
+                <span class="profile-user-name" id="profileUserName" aria-live="polite">User</span>
                 <button type="button" class="profile-button" aria-label="Open profile menu" aria-expanded="false" aria-controls="profileDropdown">
                     <i class="bi bi-person-fill" aria-hidden="true"></i>
                 </button>
@@ -62,6 +63,14 @@
     <script>
         const profileButton = document.querySelector('.profile-button');
         const profileDropdown = document.querySelector('.profile-dropdown');
+        const profileUserName = document.getElementById('profileUserName');
+
+        fetch('/api/current-user')
+            .then((response) => response.ok ? response.json() : null)
+            .then((user) => {
+                if (user?.name && profileUserName) profileUserName.textContent = user.name;
+            })
+            .catch(() => {});
 
         function closeProfileMenu() {
             profileDropdown.hidden = true;

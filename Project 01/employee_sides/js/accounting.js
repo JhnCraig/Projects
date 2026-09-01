@@ -1,9 +1,13 @@
-
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const selectedFileName = document.getElementById("selectedFileName");
 const saveAccountingBtn = document.getElementById("saveAccountingBtn");
 const saveEditedAccountingBtn = document.getElementById("saveEditedAccountingBtn");
+const chartToggleBtn = document.getElementById("chartToggleBtn");
+const accountingChartModal = document.getElementById("accountingChartModal");
+const accountingTableWrapper = document.getElementById("accountingTableWrapper");
+let accountingRows = [];
+let accountingChart = null;
 
 const accountingFields = [
     { key: "cv_no", id: "cv_no" },
@@ -82,6 +86,121 @@ function showDeleteConfirmation(entryId) {
     modal.show();
 }
 
+function resetNewEntryForm() {
+    const modal = document.getElementById('newEntryModal');
+    if (!modal) return;
+
+    modal.querySelectorAll('input, textarea, select').forEach((field) => {
+        if (field instanceof HTMLInputElement) {
+            if (field.type === 'file' || field.type === 'hidden' || field.type === 'button' || field.type === 'submit' || field.type === 'reset') {
+                if (field.type === 'file') field.value = '';
+                return;
+            }
+            field.value = '';
+        } else if (field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+            field.value = '';
+        }
+    });
+
+    ['selectedFileName', 'selectedPurchaseFileName', 'newEntrySelectedFileName', 'file_name', 'documents', 'newEntryFileInput'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el instanceof HTMLInputElement) {
+            el.value = '';
+        } else if (el) {
+            el.textContent = 'No file chosen';
+        }
+    });
+}
+
+const newEntryModal = document.getElementById('newEntryModal');
+if (newEntryModal) {
+    newEntryModal.addEventListener('hidden.bs.modal', resetNewEntryForm);
+}
+
+function renderActionPanel(rows) {
+    const panel = document.getElementById('actionPanel');
+    if (!panel) return;
+
+    panel.innerHTML = `
+        <table class="table table-premium action-table align-middle">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.map((entry) => `
+                    <tr>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-entry="${JSON.stringify(entry).replace(/"/g, '&quot;')}" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit entry" aria-label="Edit entry">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-entry-btn" type="button" data-id="${entry.id}" title="Delete entry" aria-label="Delete entry">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderAccountingChart(rows) {
+    const canvas = document.getElementById('accountingChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const totalsByProject = {};
+    rows.forEach((entry) => {
+        const projectName = (entry.project || entry.account_name || 'Unassigned').trim() || 'Unassigned';
+        const numericValue = Number(entry.amount ?? entry.net_of_vat ?? entry.vat_exempt ?? 0);
+        if (!Number.isFinite(numericValue)) return;
+        totalsByProject[projectName] = (totalsByProject[projectName] || 0) + numericValue;
+    });
+
+    const labels = Object.keys(totalsByProject);
+    const data = Object.values(totalsByProject);
+
+    if (accountingChart) {
+        accountingChart.destroy();
+    }
+
+    accountingChart = new Chart(canvas, {
+        type: 'pie',
+        data: {
+            labels: labels.length ? labels : ['No data'],
+            datasets: [{
+                data: data.length ? data : [1],
+                backgroundColor: labels.length
+                    ? labels.map((_, index) => [
+                        '#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc', '#858796', '#fd7e14', '#6f42c1'
+                    ][index % 8])
+                    : ['#dfe3e8'],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            return `${context.label}: ${Number(context.parsed || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 document.getElementById('confirmDeleteBtn')?.addEventListener('click', async () => {
     const btn = document.getElementById('confirmDeleteBtn');
     const entryId = btn?.dataset.entryId;
@@ -150,6 +269,9 @@ async function submitAccountingModal(mode) {
 
         const modalElement = document.getElementById(mode === "edit" ? "editModal" : "newEntryModal");
         const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        if (mode !== "edit") {
+            resetNewEntryForm();
+        }
         modal.hide();
         showToast(mode === "edit" ? "Entry updated successfully." : "Entry saved successfully.", 'success');
         loadAccountingRows();
@@ -176,8 +298,11 @@ async function loadAccountingRows() {
         }
 
         const rows = Array.isArray(result.data) ? result.data : [];
+        accountingRows = rows;
+
         if (!rows.length) {
             tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4"> </td></tr>';
+            renderAccountingChart([]);
             return;
         }
 
@@ -202,24 +327,21 @@ async function loadAccountingRows() {
                         <td>${escapeHtml(entry.account_name || entry.acct_name || "")}</td>
                         <td>${escapeHtml(entry.project || "")}</td>
                         <td>${escapeHtml(entry.remark || entry.remarks || "")}</td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
-                                <button class="btn btn-outline-subtle delete-entry-btn" type="button" data-id="${entry.id}">Delete</button>
-                            </div>
-                        </td>
                     </tr>
                 `).join("");
+
+        renderActionPanel(rows);
+        renderAccountingChart(rows);
     } catch (error) {
         tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger py-4">${escapeHtml(error.message || "Unable to load accounting records")}</td></tr>`;
+        renderAccountingChart([]);
     }
 }
 
 document.addEventListener("click", async (event) => {
     const editButton = event.target.closest(".edit-entry-btn");
     if (editButton) {
-        const row = editButton.closest("tr");
-        const entry = JSON.parse(row?.getAttribute("data-entry")?.replace(/&quot;/g, '"') || "{}");
+        const entry = JSON.parse(editButton.dataset.entry || "{}");
         document.getElementById("edit_cv_no").value = entry.cv_no || "";
         document.getElementById("edit_date").value = entry.transaction_date || entry.date ? new Date(entry.transaction_date || entry.date).toISOString().split("T")[0] : "";
         document.getElementById("edit_payee").value = entry.payee || "";
@@ -273,6 +395,16 @@ if (saveAccountingBtn) {
 
 if (saveEditedAccountingBtn) {
     saveEditedAccountingBtn.addEventListener("click", () => submitAccountingModal("edit"));
+}
+
+if (chartToggleBtn) {
+    chartToggleBtn.addEventListener("click", () => {
+        renderAccountingChart(accountingRows);
+        if (accountingChartModal) {
+            const modal = bootstrap.Modal.getInstance(accountingChartModal) || new bootstrap.Modal(accountingChartModal);
+            modal.show();
+        }
+    });
 }
 
 document.addEventListener("DOMContentLoaded", loadAccountingRows);

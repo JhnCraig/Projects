@@ -99,6 +99,83 @@ h5,
     flex-shrink: 0;
 }
 
+.table-with-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+}
+
+.table-with-actions .main-table-wrapper {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+}
+
+.user-action-panel {
+    width: 110px;
+    min-width: 110px;
+    flex: 0 0 110px;
+    align-self: stretch;
+    background: #ffffff;
+    border: 1px solid rgba(34, 28, 26, 0.06);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(34, 28, 26, 0.02), 0 8px 24px rgba(34, 28, 26, 0.08);
+}
+
+.action-table {
+    margin-bottom: 0;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.action-table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    background-color: #fbf9f6;
+    color: var(--brand-dark);
+    white-space: nowrap;
+    padding: 10px 10px;
+    border-bottom: 1px solid rgba(34, 28, 26, 0.05);
+    text-align: center;
+}
+
+.action-table tbody td {
+    padding: 8px 10px;
+    vertical-align: middle;
+    text-align: center;
+    border-bottom: 1px solid rgba(34, 28, 26, 0.03);
+    min-height: 62px;
+}
+
+.action-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.action-table .btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    line-height: 1;
+    border-radius: 8px;
+}
+
 /* Minimal Executive Dashboard Cards */
 .stat-card {
     background: var(--brand-surface);
@@ -153,14 +230,14 @@ h5,
     font-weight: 600;
     background-color: #fbf9f6;
     color: var(--brand-dark);
-
+    text-align: center;
     white-space: nowrap;
-    padding: 5px 50px;
+    padding: 10px 55px;
     border-bottom: 1px solid rgba(34, 28, 26, 0.05);
 }
 
 .table-premium td {
-    padding: 5px 25px;
+    padding: 10px 55px;
     vertical-align: middle;
     text-align: center;
     font-size: 0.9rem;
@@ -285,7 +362,18 @@ h5,
 
 .profile-menu {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     flex: 0 0 auto;
+}
+
+.profile-user-name {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #202430;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
 }
 
 .profile-button {
