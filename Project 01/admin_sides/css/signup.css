@@ -1,0 +1,153 @@
+:root {
+    --brand-blue: #040482;
+    --brand-blue-hover: #1a1a22;
+    --brand-dark: #1a1a22;
+    --brand-light: #fdfbf7;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+
+    background:
+        linear-gradient(
+            rgba(2, 2, 73, 0.793),
+            rgba(2, 2, 73, 0.793)
+        ),
+        url('../img/Hb.jpg') center center / cover no-repeat fixed;
+
+    color: #4a4a4a;
+    min-height: 100vh;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1,
+h2,
+h3,
+.brand-title {
+    font-family: 'Playfair Display', serif;
+}
+
+
+/* =========================================
+   SIGNUP CARD
+========================================= */
+
+.auth-card {
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 24px;
+    overflow: hidden;
+
+    width: 100%;
+    max-width: 550px;
+
+    background: rgba(255, 255, 255, 0.171);
+
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+
+    box-shadow:
+        0 15px 35px rgba(44, 37, 35, 0.12);
+
+    margin: 0 auto;
+}
+
+
+/* =========================================
+   FORM INPUTS
+========================================= */
+
+/* Form Input Customization */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--brand-blue);
+}
+
+.form-control:focus {
+    border-color: var(--brand-blue);
+    box-shadow: 0 0 0 0.25rem rgba(248, 182, 210, 0.25);
+}
+
+
+/* =========================================
+   CHECKBOX
+========================================= */
+
+.form-check-input:checked {
+    background-color: var(--brand-blue-hover);
+    border-color: var(--brand-blue-hover);
+}
+
+
+/* =========================================
+   REGISTER BUTTON
+========================================= */
+
+.btn-submit {
+    background-color: var(--brand-dark);
+    color: #ffffff;
+
+    font-weight: 600;
+    letter-spacing: 0.5px;
+
+    border-radius: 50px;
+    padding: 12px 24px;
+
+    transition: all 0.25s ease-in-out;
+    border: none;
+}
+
+.btn-submit:hover {
+    background-color: #86b6d5;
+    color: var(--brand-light);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 5px 15px #86b6d5;
+}
+
+
+/* =========================================
+   BACK BUTTON
+========================================= */
+
+.btn-back {
+    color: var(--brand-dark);
+
+    font-size: 0.9rem;
+    text-decoration: none;
+    font-weight: 500;
+
+    transition: color 0.2s ease;
+}
+
+.btn-back:hover {
+    color: var(--brand-pink-hover);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 576px) {
+
+    .auth-card {
+        max-width: 100%;
+        border-radius: 20px;
+    }
+
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+}

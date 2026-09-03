@@ -1,0 +1,357 @@
+:root {
+    --brand-pink: #beb6f8;
+    --brand-dark: #1a1a22;
+    --brand-muted: #5c5250;
+    --brand-light: #fdfbf9;
+    --brand-surface: #ffffff;
+    --card-shadow: 0 8px 24px rgba(34, 28, 26, 0.03);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--brand-light);
+    color: var(--brand-muted);
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+.sidebar-brand {
+    font-family: 'Playfair Display', serif;
+    color: var(--brand-dark);
+}
+
+/* Unique Modular Sidebar Wrapper */
+.admin-sidebar {
+    background-color: var(--brand-dark);
+    min-height: 100vh;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2rem 1.5rem;
+}
+
+.sidebar-profile-dropdown {
+    position: relative;
+}
+
+.sidebar-profile-dropdown .dropdown-toggle {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.sidebar-profile-dropdown .dropdown-toggle i {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.sidebar-profile-dropdown .dropdown-toggle::after {
+    display: none;
+}
+
+.sidebar-profile-dropdown .dropdown-toggle:hover,
+.sidebar-profile-dropdown .dropdown-toggle:focus {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-profile-dropdown .dropdown-menu {
+    background-color: #2a2a33;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+    min-width: 180px;
+    margin-bottom: 0.75rem;
+}
+
+.sidebar-profile-dropdown .dropdown-item {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.7rem 1rem;
+}
+
+.sidebar-profile-dropdown .dropdown-item:hover,
+.sidebar-profile-dropdown .dropdown-item:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.sidebar-profile-dropdown .dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-brand {
+    font-size: 1.25rem;
+    letter-spacing: 1px;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-admin .nav-link {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.nav-admin .nav-link i {
+    font-size: 1.1rem;
+    margin-right: 12px;
+}
+
+.nav-admin .nav-link:hover,
+.nav-admin .nav-link.active {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-admin .nav-link.active i {
+    color: var(--brand-pink);
+}
+
+/* Main Workspace Control Desk */
+.workspace-panel {
+    padding: 2.5rem;
+}
+
+/* Minimal Executive Dashboard Cards */
+.stat-card {
+    background: var(--brand-surface);
+    border: 1px solid rgba(34, 28, 26, 0.04);
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: var(--card-shadow);
+}
+
+.stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--brand-dark);
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: #a09592;
+}
+
+/* Elevated Custom Table Design */
+.custom-panel-card {
+    background: var(--brand-surface);
+    border: 1px solid rgba(34, 28, 26, 0.04);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 1.5rem 2rem;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(34, 28, 26, 0.05);
+}
+
+/* =============== 
+            Table 
+        =============== */
+.table-premium {
+    margin-bottom: 0;
+    width: max-content;
+    min-width: 100%;
+    table-layout: auto;
+}
+
+.table-premium th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    background-color: #fbf9f6;
+    color: var(--brand-dark);
+    text-align: center;
+    white-space: nowrap;
+    padding: 10px 55px;
+    border-bottom: 1px solid rgba(34, 28, 26, 0.05);
+}
+
+.table-premium td {
+    padding: 10px 55px;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    color: var(--brand-muted);
+    border-bottom: 1px solid rgba(34, 28, 26, 0.03);
+}
+
+.table-premium .date-column {
+    white-space: nowrap;
+}
+
+/* Status and Management Tags */
+.badge-admin-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 10px;
+    border-radius: 6px;
+}
+
+.status-active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-pending {
+    background-color: #fff8e1;
+    color: #f57f17;
+}
+
+/* Premium Minimalist Button Styles */
+.btn-brand-action {
+    background-color: var(--brand-dark);
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(34, 28, 26, 0.12);
+    transition: opacity 0.2s ease;
+}
+
+.btn-brand-action:hover {
+    background-color: #86b6d5;
+    color: #ffffff;
+    opacity: 0.9;
+}
+
+.btn-outline-subtle {
+    border: 1px solid rgba(34, 28, 26, 0.12);
+    color: var(--brand-dark);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-subtle:hover {
+    background-color: var(--brand-dark);
+    color: #ffffff;
+}
+
+.main-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    height: calc(100vh - 13rem);
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: calc(100vh - 13rem);
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+.table-with-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+}
+
+.table-with-actions .main-table-wrapper {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+}
+
+.user-action-panel {
+    width: 110px;
+    min-width: 110px;
+    flex: 0 0 110px;
+    align-self: stretch;
+    background: #ffffff;
+    border: 1px solid rgba(34, 28, 26, 0.06);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(34, 28, 26, 0.02), 0 8px 24px rgba(34, 28, 26, 0.08);
+}
+
+.action-table {
+    margin-bottom: 0;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.action-table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    background-color: #fbf9f6;
+    color: var(--brand-dark);
+    white-space: nowrap;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(34, 28, 26, 0.05);
+    text-align: center;
+}
+
+.action-table tbody td {
+    padding: 8px 10px;
+    vertical-align: middle;
+    text-align: center;
+    border-bottom: 1px solid rgba(34, 28, 26, 0.03);
+    min-height: 62px;
+}
+
+.action-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.action-table .btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    line-height: 1;
+    border-radius: 8px;
+}
+
+#accountingTableBody .edit-entry-btn,
+#accountingTableBody .delete-entry-btn {
+    display: none !important;
+}

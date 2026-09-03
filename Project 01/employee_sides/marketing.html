@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBDC Admin - Sales / Marketing</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+    <div class="container-fluid p-0">
+        <div class="row g-0 shadow">
+
+            <!-- MAIN WORKSPACE DESK AREA -->
+            <div class="col-12 workspace-panel">
+
+                <!-- System Area Greeting Header -->
+                <div class="main-page-header d-flex justify-content-between align-items-center mb-5">
+                    <div>
+                        <a href="/employee" class="btn btn-back-action back-button">
+                            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back
+                        </a>
+
+                        <h1 class="h3 fw-bold mb-1">Marketing</h1>
+                        <p class="text-muted small mb-0">Track and manage your marketing campaigns </p>
+                    </div>
+
+                    <div class="main-actions d-flex gap-2 ms-auto">
+                        <button id="newBtn" class="btn btn-brand-action" type="button" data-bs-toggle="modal"
+                            data-bs-target="#newEntryModal"><i class="bi bi-plus-lg me-1"></i> New Entry</button>
+                        <button id="uploadBtn" class="btn btn-brand-action" type="button"><i
+                                class="bi bi-plus-lg me-1"></i> Import File</button>
+                        <input id="fileInput" type="file" style="display:none;" />
+                    </div>
+                </div>
+
+                <!-- New Entry Modal -->
+                <div class="modal fade" id="newEntryModal" tabindex="-1" aria-labelledby="newEntryModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="newEntryModalLabel">New Entry</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Project Information</label>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Date Received</label>
+                                        <input id="date_received" type="date" class="form-control mb-3"
+                                            style="font-size: 14px;">
+                                    </div>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Status</label>
+                                        <select id="status" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Status</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Ongoing">Ongoing</option>
+                                            <option value="Submitted">Submitted</option>
+                                            <option value="Won">Won</option>
+                                            <option value="Lost">Lost</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Client's Name /
+                                            Company</label>
+                                        <input id="client_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Client's Name / Company">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Project Name</label>
+                                        <input id="project_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Project Name">
+                                    </div>
+
+                                    <div class="col-5 col-md-4">
+                                        <label class="form-label" style="font-size: 14px;">Project Type</label>
+                                        <input id="project_type" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Project Type">
+                                    </div>
+
+                                    <div class="col-5 col-md-4">
+                                        <label class="form-label" style="font-size: 14px;">Source</label>
+                                        <select id="source" class="form-control mb-3" style="font-size: 14px;">
+                                            <option value="">Select Source</option>
+                                            <option value="Source 1">Source 1</option>
+                                            <option value="Source 2">Source 2</option>
+                                            <option value="Source 3">Source 3</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-5 col-md-4">
+                                        <label class="form-label" style="font-size: 14px;">Project Value</label>
+                                        <input id="project_value" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Project Value">
+                                    </div>
+
+                                </div>
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Timeline</label>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Deadline of
+                                            Submission</label>
+                                        <input id="deadline_submission" type="date" class="form-control mb-3"
+                                            style="font-size: 14px;">
+                                    </div>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Days of Deadline</label>
+                                        <input id="days_deadline" type="text" class="form-control"
+                                            style="font-size: 14px;" placeholder="Days of Deadline">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Date Submitted</label>
+                                        <input id="date_submitted" type="date" class="form-control mb-3"
+                                            style="font-size: 14px;">
+                                    </div>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Response Time (Days)</label>
+                                        <input id="response_time" type="text" class="form-control"
+                                            style="font-size: 14px;" placeholder="Response Time (Days)">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Follow-up Date</label>
+                                        <input id="follow_up_date" type="date" class="form-control mb-3"
+                                            style="font-size: 14px;">
+                                    </div>
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Days to Follow-up</label>
+                                        <input id="days_follow_up" type="text" class="form-control"
+                                            style="font-size: 14px;" placeholder="Days to Follow-up">
+                                    </div>
+                                </div>
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Documents</label>
+                                    <div class="col-2 col-md-2">
+                                        <button id="newEntryUploadBtn" class="btn btn-brand-action mb-3"
+                                            type="button"><i class="bi bi-upload me-1"></i> Upload File</button>
+                                        <input id="newEntryFileInput" type="file" name="file" style="display:none;" />
+                                    </div>
+                                    <div class="col-10">
+                                        <input id="file_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="File name">
+                                        <div id="selectedFileName" class="form-text mt-2">No file chosen</div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-6 mb-4">
+                                    <label class="form-label fw-bold mb-2">Additional Information</label>
+                                    <div class="col-12">
+                                        <input id="lost_reason" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Lost Reason">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-subtle"
+                                    data-bs-dismiss="modal">Cancel</button>
+                                <button id="saveMarketingBtn" type="button" class="btn btn-brand-action">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import File Modal -->
+                <div class="modal fade" id="importFileModal" tabindex="-1" aria-labelledby="importFileModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="importFileModalLabel">Import File</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Selected file</label>
+                                    <div id="selectedFileName" class="form-control">No file chosen</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-subtle"
+                                    data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-brand-action">Import</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-with-actions">
+
+                    <div class="main-table-wrapper table-responsive shadow rounded-4">
+                        <table class="table table-premium align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date Received</th>
+                                    <th>Client's Name/Company</th>
+                                    <th>Projects Name</th>
+                                    <th>Source</th>
+                                    <th>Project Value</th>
+                                    <th>Project Type</th>
+                                    <th>Deadline of Submission</th>
+                                    <th>Days of Deadlines</th>
+                                    <th>Status</th>
+                                    <th>Date Submitted</th>
+                                    <th>Response Time(Days)</th>
+                                    <th>Follow-up Date</th>
+                                    <th>Days to Follow-up</th>
+                                    <th>File</th>
+                                    <th>Lost Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="marketingTableBody">
+                                <tr>
+                                    <td colspan="16" class="text-center text-muted py-4"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    </div>
+    <div
+        style="position:fixed; right:20px; bottom:20px; z-index:1080; display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
+        <div id="toastContainer"
+            style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;"></div>
+    </div>
+
+    <!-- Edit Entry Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <input type="hidden" id="edit_id" />
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Project Information</label>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Date Received</label>
+                            <input id="edit_date_received" type="date" class="form-control mb-3"
+                                style="font-size: 14px;">
+                        </div>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Status</label>
+                            <select id="edit_status" class="form-control mb-3" style="font-size: 14px;">
+                                <option value="">Select Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Ongoing">Ongoing</option>
+                                <option value="Submitted">Submitted</option>
+                                <option value="Won">Won</option>
+                                <option value="Lost">Lost</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Client's Name / Company</label>
+                            <input id="edit_client_name" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Client's Name / Company">
+                        </div>
+
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Project Name</label>
+                            <input id="edit_project_name" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Project Name">
+                        </div>
+
+                        <div class="col-5 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">Project Type</label>
+                            <input id="edit_project_type" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Project Type">
+                        </div>
+
+                        <div class="col-5 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">Source</label>
+                            <select id="edit_source" class="form-control mb-3" style="font-size: 14px;">
+                                <option value="">Select Source</option>
+                                <option value="Source 1">Source 1</option>
+                                <option value="Source 2">Source 2</option>
+                                <option value="Source 3">Source 3</option>
+                            </select>
+                        </div>
+
+                        <div class="col-5 col-md-4">
+                            <label class="form-label" style="font-size: 14px;">Project Value</label>
+                            <input id="edit_project_value" type="text" class="form-control mb-3"
+                                style="font-size: 14px;" placeholder="Project Value">
+                        </div>
+
+                    </div>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Timeline</label>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Deadline of Submission</label>
+                            <input id="edit_deadline_submission" type="date" class="form-control mb-3"
+                                style="font-size: 14px;">
+                        </div>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Days of Deadline</label>
+                            <input id="edit_days_deadline" type="text" class="form-control" style="font-size: 14px;"
+                                placeholder="Days of Deadline">
+                        </div>
+
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Date Submitted</label>
+                            <input id="edit_date_submitted" type="date" class="form-control mb-3"
+                                style="font-size: 14px;">
+                        </div>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Response Time (Days)</label>
+                            <input id="edit_response_time" type="text" class="form-control" style="font-size: 14px;"
+                                placeholder="Response Time (Days)">
+                        </div>
+
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Follow-up Date</label>
+                            <input id="edit_follow_up_date" type="date" class="form-control mb-3"
+                                style="font-size: 14px;">
+                        </div>
+                        <div class="col-5 col-md-6">
+                            <label class="form-label" style="font-size: 14px;">Days to Follow-up</label>
+                            <input id="edit_days_follow_up" type="text" class="form-control" style="font-size: 14px;"
+                                placeholder="Days to Follow-up">
+                        </div>
+                    </div>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Documents</label>
+                        <div class="col-2 col-md-2">
+                            <button id="editUploadBtn" class="btn btn-brand-action mb-3" type="button"><i
+                                    class="bi bi-upload me-1"></i> Upload File</button>
+                            <input id="editFileInput" type="file" name="file" style="display:none;" />
+                        </div>
+                        <div class="col-10">
+                            <input id="edit_file_name" type="text" class="form-control mb-3" style="font-size: 14px;">
+                            <div id="selectedEditFileName" class="form-text mt-2">No file chosen</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-6 mb-4">
+                        <label class="form-label fw-bold mb-2">Additional Information</label>
+                        <div class="col-12">
+                            <input id="edit_lost_reason" type="text" class="form-control mb-3" style="font-size: 14px;"
+                                placeholder="Lost Reason">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button id="saveEditedMarketingBtn" type="button" class="btn btn-brand-action">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        style="position:fixed; right:20px; bottom:20px; z-index:1080; display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;">
+        <div id="toastContainer"
+            style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-end; pointer-events:none;"></div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this marketing entry?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
+                    <button id="confirmDeleteBtn" type="button" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/marketing.js"></script>
+
+</body>
+
+</html>
