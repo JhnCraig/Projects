@@ -391,8 +391,10 @@
     transform: translateY(-8px) scale(1.03);
     box-shadow: 0 18px 35px rgba(0, 0, 0, .18);
 }
+
 .gallery-category {
-    scroll-margin-top: 120px; /* Adjust if needed */
+    scroll-margin-top: 120px;
+    /* Adjust if needed */
 }
 
 /* Tablet */
@@ -498,4 +500,145 @@
     color: #666;
     font-size: 15px;
     text-align: center;
+}
+
+
+/* ==========================
+   SERVICE CARDS - KEEP 3 IN ONE ROW ON MOBILE
+========================== */
+@media (max-width: 768px) {
+    .service-overview .row {
+        flex-wrap: nowrap;
+    }
+
+    .service-overview .col-4 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .service-card {
+        width: 100%;
+        max-width: none;
+    }
+
+    .service-img {
+        width: 90px !important;
+        height: 90px !important;
+        min-width: 90px;
+        min-height: 90px;
+        max-width: 90px;
+        max-height: 90px;
+        border-width: 3px;
+        margin-bottom: 10px;
+    }
+
+    .service-card h4 {
+        font-size: 14px;
+        line-height: 1.2;
+        margin-bottom: 8px;
+    }
+
+    .service-card p {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+}
+
+@media (max-width: 480px) {
+    .service-overview {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .service-img {
+        width: 78px !important;
+        height: 78px !important;
+        min-width: 78px;
+        min-height: 78px;
+        max-width: 78px;
+        max-height: 78px;
+    }
+
+    .service-card h4 {
+        font-size: 11px;
+    }
+
+    .service-card p {
+        font-size: 8px;
+    }
+}
+
+/* ==========================================
+   WE OFFER - IMPROVED MOBILE LAYOUT
+========================================== */
+.offer-title {
+    color: #002850;
+    font-family: "Times New Roman", serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 45px !important;
+}
+
+.offer-section .row {
+    padding-left: 0;
+    row-gap: 20px;
+}
+
+.offer-section .offer-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    gap: 12px;
+}
+
+.offer-section .offer-list p {
+    margin: 0;
+    padding: 14px 18px;
+    font-size: 17px;
+    line-height: 1.4;
+    background: #f5f7f8;
+    border-left: 4px solid #002850;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .offer-section {
+        padding: 50px 0;
+    }
+
+    .offer-title {
+        font-size: 1.8rem;
+        line-height: 1.25;
+        margin-bottom: 28px !important;
+    }
+
+    .offer-section .row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        padding-left: 0;
+        margin: 0;
+        row-gap: 10px;
+    }
+
+    .offer-section .col-lg-5,
+    .offer-section .col-md-6 {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .offer-section .offer-list {
+        width: 100%;
+        gap: 10px;
+    }
+
+    .offer-section .offer-list p {
+        width: 100%;
+        padding: 13px 14px;
+        font-size: 14px;
+        line-height: 1.45;
+        margin: 0;
+    }
 }
