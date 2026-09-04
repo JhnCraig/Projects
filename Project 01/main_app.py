@@ -104,6 +104,19 @@ def get_dashboard_redirect_for_status(status):
     if normalized_status in {'admin', 'administrator', 'superadmin', 'admin_user'}:
         return '/index.html'
     return '/employee'
+    
+def require_dashboard_role(role):
+    if not session.get('user_id'):
+        return redirect('/login.html')
+
+    is_admin = (session.get('user_status') or 'Employee').strip().lower() in {
+        'admin', 'administrator', 'superadmin', 'admin_user'
+    }
+    if role == 'admin' and not is_admin:
+        return redirect('/employee')
+    if role == 'employee' and is_admin:
+        return redirect('/index.html')
+    return None
 
 
 def init_db():
@@ -359,14 +372,12 @@ def employee():
         'index.html'
     )
 
-
 @app.route('/employee/index')
 def employee_index():
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'index.html'
     )
-
 
 @app.route('/employee/accounting')
 def employee_accounting():
@@ -375,14 +386,12 @@ def employee_accounting():
         'accounting.html'
     )
 
-
 @app.route('/employee/sales')
 def employee_sales():
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'sales.html'
     )
-
 
 @app.route('/employee/marketing')
 def employee_marketing():
@@ -391,14 +400,12 @@ def employee_marketing():
         'marketing.html'
     )
 
-
 @app.route('/employee/purchasing')
 def employee_purchasing():
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'purchasing.html'
     )
-
 
 @app.route('/employee/engineering')
 def employee_engineering():
@@ -407,8 +414,7 @@ def employee_engineering():
         'engineering.html'
     )
 
-
-# Employee CSS
+#====== Employee CSS ======
 @app.route('/employee/css/<path:filename>')
 def employee_css(filename):
     return send_from_directory(
@@ -416,8 +422,7 @@ def employee_css(filename):
         filename
     )
 
-
-# Employee JS
+#====== Employee JS ======
 @app.route('/employee/js/<path:filename>')
 def employee_js(filename):
     return send_from_directory(
@@ -426,7 +431,7 @@ def employee_js(filename):
     )
 
 
-# Employee Images
+#====== Employee Images ======
 @app.route('/employee/img/<path:filename>')
 def employee_img(filename):
     return send_from_directory(
@@ -435,7 +440,12 @@ def employee_img(filename):
     )
 
 
-# For Accounting
+# ============================================================================== 
+# CRUD Operations for Accounting, Sales, Marketing, Engineering, and Purchasing 
+# ==============================================================================
+
+
+# ====== For Accounting ======
 def insert_accounting_entry(data):
     conn = get_db_connection()
     try:
@@ -549,11 +559,12 @@ def delete_accounting_entry(entry_id):
         conn.close()
 
 
+# ====== For Sales and Marketing ====== 
 def _normalize_decimal(value):
     if value in (None, ''):
         return 0.00
     try:
-        return float(value)
+        return float(str(value).strip().replace(',', '').replace('$', ''))
     except (TypeError, ValueError):
         return 0.00
 
@@ -617,7 +628,6 @@ def _normalize_marketing_decimal(value):
         return float(raw)
     except ValueError:
         return 0.00
-
 
 def insert_sales_marketing_entry(data):
     conn = get_db_connection()
@@ -779,6 +789,7 @@ def delete_sales_marketing_entry(entry_id):
 
 
 
+# ====== For Engineering ======
 def insert_engineering_entry(data, files=None):
     conn = get_db_connection()
     try:
@@ -900,6 +911,8 @@ def delete_engineering_entry(entry_id):
     finally:
         conn.close()
 
+
+# ====== For Purchasing ======
 def get_purchasing_schema_columns():
     conn = get_db_connection()
     try:
@@ -1074,6 +1087,7 @@ def delete_purchasing_entry(entry_id):
         conn.close()
 
 
+# ====== For Sales ======
 def insert_sales_entry(data):
     conn = get_db_connection()
     try:
@@ -1086,14 +1100,14 @@ def insert_sales_entry(data):
             data.get('address') or '',
             _normalize_decimal(data.get('po_amount')),
             data.get('si_no') or '',
-            data.get('si_date') or '',
+            _normalize_date_value(data.get('si_date')),
             _normalize_decimal(data.get('inv_amount')),
             _normalize_decimal(data.get('vat')),
             _normalize_decimal(data.get('net_of_vat')),
             _normalize_decimal(data.get('wtax_2')),
             _normalize_decimal(data.get('net_amount')),
             _normalize_decimal(data.get('cash_in_bank')),
-            data.get('transaction_date') or data.get('bank_date') or '',
+            _normalize_date_value(data.get('transaction_date') or data.get('bank_date')),
             data.get('bank') or '',
             data.get('remarks') or '',
             data.get('po_no') or '',
@@ -1161,14 +1175,14 @@ def update_sales_entry(data):
             data.get('address') or '',
             _normalize_decimal(data.get('po_amount')),
             data.get('si_no') or '',
-            data.get('si_date') or '',
+            _normalize_date_value(data.get('si_date')),
             _normalize_decimal(data.get('inv_amount')),
             _normalize_decimal(data.get('vat')),
             _normalize_decimal(data.get('net_of_vat')),
             _normalize_decimal(data.get('wtax_2')),
             _normalize_decimal(data.get('net_amount')),
             _normalize_decimal(data.get('cash_in_bank')),
-            data.get('transaction_date') or data.get('bank_date') or '',
+            _normalize_date_value(data.get('transaction_date') or data.get('bank_date')),
             data.get('bank') or '',
             data.get('remarks') or '',
             data.get('po_no') or '',
@@ -1198,6 +1212,9 @@ def delete_sales_entry(sales_id):
         cursor.execute('DELETE FROM sales WHERE id=%s', (sales_id,))
     finally:
         conn.close()
+
+
+
 
 @app.route('/api/accounting', methods=['GET', 'POST'])
 def api_accounting(data=None):
@@ -1584,6 +1601,12 @@ def login():
     return redirect(get_dashboard_redirect_for_status(status))
 
 
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    session.clear()
+    return redirect('/login.html')
+
+
 @app.route('/api/current-user', methods=['GET'])
 def api_current_user():
     user_id = session.get('user_id')
@@ -1594,8 +1617,38 @@ def api_current_user():
     return jsonify({'status': 'success', 'name': session.get('user_name', ''), 'user_status': user_status}), 200
 
 
-@app.route('/api/users', methods=['GET'])
+@app.route('/api/users', methods=['GET', 'POST'])
 def api_users():
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or request.form.to_dict()
+        fname = (data.get('fname') or '').strip()
+        mname = (data.get('mname') or '').strip()
+        lname = (data.get('lname') or '').strip()
+        contact = (data.get('contact') or '').strip()
+        email = (data.get('email') or '').strip().lower()
+        password = data.get('password') or ''
+        status = (data.get('status') or 'Employee').strip()
+
+        if not fname or not lname or not contact or not email or not password:
+            return jsonify({'error': 'First name, last name, contact, email, and password are required.'}), 400
+
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ''',
+                (fname, mname, lname, contact, email, password, generate_password_hash(password), status),
+            )
+            conn.commit()
+            return jsonify({'status': 'success'}), 201
+        except Error:
+            return jsonify({'error': 'Unable to create user. The email may already exist.'}), 409
+        finally:
+            conn.close()
+
     conn = get_db_connection()
     try:
         cursor = conn.cursor(dictionary=True)

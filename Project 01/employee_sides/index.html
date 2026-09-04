@@ -27,9 +27,14 @@
                     <i class="bi bi-person-fill" aria-hidden="true"></i>
                 </button>
                 <div class="profile-dropdown" id="profileDropdown" hidden>
-                    <a href="/" class="logout-link">
-                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-                        <span>Log out</span>
+                    <a href="#" class="profile-dropdown-item">
+                        <i class="bi bi-person me-2" aria-hidden="true"></i>
+                        <span id="profileDropdownUserName">User</span>
+                    </a>
+                    <div class="profile-dropdown-divider"></div>
+                    <a href="/logout" class="logout-link">
+                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                        <span>Log Out</span>
                     </a>
                 </div>
             </div>
@@ -64,11 +69,13 @@
         const profileButton = document.querySelector('.profile-button');
         const profileDropdown = document.querySelector('.profile-dropdown');
         const profileUserName = document.getElementById('profileUserName');
+        const profileDropdownUserName = document.getElementById('profileDropdownUserName');
 
         fetch('/api/current-user')
             .then((response) => response.ok ? response.json() : null)
             .then((user) => {
                 if (user?.name && profileUserName) profileUserName.textContent = user.name;
+                if (user?.name && profileDropdownUserName) profileDropdownUserName.textContent = user.name;
             })
             .catch(() => {});
 

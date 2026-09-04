@@ -6,6 +6,41 @@ function maskPassword(value) {
     return '•'.repeat(value.length);
 }
 
+function showToast(message, type = 'success') {
+    const toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) return;
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `min-width: 320px; max-width: 360px; padding: 16px 20px; border-radius: 12px; color: #fff; background: ${type === 'danger' ? '#dc3545' : type === 'warning' ? '#f59e0b' : '#28a745'}; box-shadow: 0 18px 40px rgba(0,0,0,0.26); font-size: 15px; font-weight: 600; opacity: 0; transform: translateX(24px); transition: opacity 0.2s ease, transform 0.2s ease; pointer-events:auto;`;
+    toastContainer.appendChild(notification);
+    requestAnimationFrame(() => { notification.style.opacity = '1'; notification.style.transform = 'translateX(0)'; });
+    setTimeout(() => { notification.style.opacity = '0'; notification.style.transform = 'translateX(24px)'; setTimeout(() => notification.remove(), 220); }, 3500);
+}
+
+let pendingDeleteUserId = null;
+
+async function deleteUser(userId) {
+    const confirmButton = document.getElementById('confirmDeleteUserBtn');
+    if (confirmButton) confirmButton.disabled = true;
+    try {
+        const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result?.error || 'Unable to delete user');
+        bootstrap.Modal.getInstance(document.getElementById('deleteUserModal'))?.hide();
+        showToast('User deleted successfully.', 'danger');
+        await loadUsers();
+    } catch (error) {
+        showToast(error.message || 'Failed to delete user.', 'danger');
+    } finally {
+        pendingDeleteUserId = null;
+        if (confirmButton) confirmButton.disabled = false;
+    }
+}
+
+document.getElementById('confirmDeleteUserBtn')?.addEventListener('click', () => {
+    if (pendingDeleteUserId) deleteUser(pendingDeleteUserId);
+});
+
 /* =========================================
    RENDER EDIT / DELETE BUTTONS
    OUTSIDE THE TABLE
@@ -39,6 +74,42 @@ function renderUserActionPanel(users) {
     `;
 }
 
+function syncTableRowHeights(mainTable, actionTable) {
+    const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);
+    const actionRows = Array.from(actionTable.tBodies[0]?.rows || []);
+    mainRows.forEach((row, index) => {
+        const actionRow = actionRows[index];
+        if (!actionRow) return;
+        row.style.height = 'auto';
+        actionRow.style.height = 'auto';
+        const rowHeight = Math.max(row.offsetHeight, actionRow.offsetHeight);
+        row.style.height = `${rowHeight}px`;
+        actionRow.style.height = `${rowHeight}px`;
+    });
+}
+
+function syncUserTableScroll() {
+    const mainWrapper = document.querySelector('.main-table-wrapper');
+    const actionPanel = document.getElementById('userActionPanel');
+
+    if (!mainWrapper || !actionPanel || mainWrapper.dataset.scrollSyncAttached) return;
+
+    let isSyncing = false;
+    const syncScroll = (source, target) => {
+        if (isSyncing) return;
+
+        isSyncing = true;
+        target.scrollTop = source.scrollTop;
+        requestAnimationFrame(() => {
+            isSyncing = false;
+        });
+    };
+
+    mainWrapper.addEventListener('scroll', () => syncScroll(mainWrapper, actionPanel));
+    actionPanel.addEventListener('scroll', () => syncScroll(actionPanel, mainWrapper));
+    mainWrapper.dataset.scrollSyncAttached = 'true';
+}
+
 /* =========================================
    LOAD USERS
    ========================================= */
@@ -55,6 +126,9 @@ async function loadUsers() {
         }
 
         const users = result.data || [];
+        const tableWrapper = tableBody.closest('.main-table-wrapper');
+        tableWrapper?.classList.toggle('is-empty', !users.length);
+        actionPanel?.classList.toggle('is-empty', !users.length);
 
         if (!users.length) {
             tableBody.innerHTML = `
@@ -68,6 +142,11 @@ async function loadUsers() {
 
         /* RENDER ACTIONS OUTSIDE TABLE */
         renderUserActionPanel(users);
+        syncUserTableScroll();
+        syncTableRowHeights(
+            tableBody.closest('table'),
+            actionPanel.querySelector('.action-table')
+        );
 
         /* RENDER TABLE */
         tableBody.innerHTML = users.map(user => {
@@ -150,27 +229,9 @@ async function loadUsers() {
            DELETE USER
            ========================================= */
         document.querySelectorAll('.delete-user-btn').forEach(button => {
-            button.addEventListener('click', async () => {
-                const userId = button.dataset.userId;
-                const confirmed = window.confirm('Delete this user account?');
-
-                if (!confirmed) return;
-
-                try {
-                    const response = await fetch(`/api/users/${userId}`, {
-                        method: 'DELETE'
-                    });
-
-                    const result = await response.json().catch(() => ({}));
-
-                    if (!response.ok) {
-                        throw new Error(result?.error || 'Unable to delete user');
-                    }
-
-                    await loadUsers();
-                } catch (error) {
-                    alert(error.message || 'Failed to delete user.');
-                }
+            button.addEventListener('click', () => {
+                pendingDeleteUserId = button.dataset.userId;
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteUserModal')).show();
             });
         });
 
@@ -189,6 +250,43 @@ async function loadUsers() {
 /* =========================================
    EDIT USER
    ========================================= */
+document.getElementById('saveNewUserBtn')?.addEventListener('click', async () => {
+    const payload = {
+        fname: document.getElementById('newUserFname')?.value.trim() || '',
+        mname: document.getElementById('newUserMname')?.value.trim() || '',
+        lname: document.getElementById('newUserLname')?.value.trim() || '',
+        contact: document.getElementById('newUserContact')?.value.trim() || '',
+        email: document.getElementById('newUserEmail')?.value.trim() || '',
+        password: document.getElementById('newUserPassword')?.value || '',
+        status: document.getElementById('newUserStatus')?.value || 'Employee'
+    };
+
+    if (!payload.fname || !payload.lname || !payload.contact || !payload.email || !payload.password) {
+        alert('First name, last name, contact, email, and password are required.');
+        return;
+    }
+
+    const button = document.getElementById('saveNewUserBtn');
+    button.disabled = true;
+    try {
+        const response = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'Unable to create user.');
+
+        bootstrap.Modal.getInstance(document.getElementById('newEntryModal'))?.hide();
+        showToast('User added successfully.');
+        await loadUsers();
+    } catch (error) {
+        showToast(error.message || 'Unable to create user.', 'danger');
+    } finally {
+        button.disabled = false;
+    }
+});
+
 document.getElementById('saveEditedUserBtn')?.addEventListener('click', async () => {
     const userId = document.getElementById('editUserId').value;
     const fname = document.getElementById('editUserFname').value.trim();
@@ -211,11 +309,12 @@ document.getElementById('saveEditedUserBtn')?.addEventListener('click', async ()
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-        alert(result.error || 'Unable to update user.');
+        showToast(result.error || 'Unable to update user.', 'danger');
         return;
     }
 
     bootstrap.Modal.getInstance(document.getElementById('editModal'))?.hide();
+    showToast('User updated successfully.');
     await loadUsers();
 });
 
@@ -264,15 +363,28 @@ document.getElementById('savePasswordBtn')?.addEventListener('click', async () =
         }
 
         bootstrap.Modal.getInstance(document.getElementById('setPasswordModal'))?.hide();
-        alert('Password saved successfully.');
+        showToast('Password saved successfully.');
         await loadUsers();
 
     } catch (error) {
-        alert(error.message || 'Failed to save password.');
+        showToast(error.message || 'Failed to save password.', 'danger');
     }
 });
 
 const userNameTargets = document.querySelectorAll('[data-user-display]');
+
+const newUserModal = document.getElementById('newEntryModal');
+if (newUserModal) {
+    const clearNewUserFields = () => {
+        newUserModal.querySelectorAll('input, select, textarea').forEach((field) => {
+            if (field.type !== 'hidden' && field.type !== 'button' && field.type !== 'submit') field.value = '';
+        });
+    };
+
+    newUserModal.addEventListener('show.bs.modal', clearNewUserFields);
+    newUserModal.addEventListener('hidden.bs.modal', clearNewUserFields);
+}
+
 fetch('/api/current-user')
     .then((response) => response.ok ? response.json() : null)
     .then((user) => {

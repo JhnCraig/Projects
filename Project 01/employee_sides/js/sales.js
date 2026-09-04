@@ -1,10 +1,38 @@
+function syncEmployeeTableScroll(mainWrapper, actionPanel) {
+    if (mainWrapper.dataset.scrollSyncAttached) return;
+    let isSyncing = false;
+    const syncScroll = (source, target) => {
+        if (isSyncing) return;
+        isSyncing = true;
+        target.scrollTop = source.scrollTop;
+        requestAnimationFrame(() => isSyncing = false);
+    };
+    mainWrapper.addEventListener('scroll', () => syncScroll(mainWrapper, actionPanel));
+    actionPanel.addEventListener('scroll', () => syncScroll(actionPanel, mainWrapper));
+    mainWrapper.dataset.scrollSyncAttached = 'true';
+}
+
+function syncTableRowHeights(mainTable, actionTable) {
+    const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);
+    const actionRows = Array.from(actionTable.tBodies[0]?.rows || []);
+    mainRows.forEach((row, index) => {
+        const actionRow = actionRows[index];
+        if (!actionRow) return;
+        row.style.height = 'auto';
+        actionRow.style.height = 'auto';
+        const rowHeight = Math.max(row.offsetHeight, actionRow.offsetHeight);
+        row.style.height = `${rowHeight}px`;
+        actionRow.style.height = `${rowHeight}px`;
+    });
+}
+
 function setupActionPanel(table) {
     const wrapper = table.closest('.main-table-wrapper'); const header = Array.from(table.querySelectorAll('thead th')).find((cell) => /actions?/i.test(cell.textContent.trim()));
     if (!wrapper || !header || wrapper.dataset.actionPanelReady) return; wrapper.dataset.actionPanelReady = 'true'; const actionIndex = header.cellIndex;
     const layout = document.createElement('div'); layout.className = 'table-with-actions'; wrapper.parentNode.insertBefore(layout, wrapper); layout.appendChild(wrapper);
     const panel = document.createElement('div'); panel.className = 'user-action-panel'; panel.innerHTML = '<table class="table table-premium action-table align-middle"><thead><tr><th>Action</th></tr></thead><tbody></tbody></table>'; layout.appendChild(panel); header.style.display = 'none';
-    const render = () => { const body = panel.querySelector('tbody'); body.innerHTML = ''; Array.from(table.tBodies[0]?.rows || []).forEach((row) => { row.__actionButtons = row.__actionButtons || Array.from(row.querySelectorAll('.edit-entry-btn, .delete-entry-btn')); if (row.cells[actionIndex]) row.cells[actionIndex].style.display = 'none'; const actionRow = document.createElement('tr'); const cell = document.createElement('td'); const buttons = document.createElement('div'); buttons.className = 'action-buttons'; row.__actionButtons.forEach((button) => { const clone = button.cloneNode(true); clone.addEventListener('click', () => button.click()); buttons.appendChild(clone); }); cell.appendChild(buttons); actionRow.appendChild(cell); body.appendChild(actionRow); }); };
-    const observer = new MutationObserver(render); if (table.tBodies[0]) observer.observe(table.tBodies[0], { childList: true }); render();
+    const render = () => { const body = panel.querySelector('tbody'); body.innerHTML = ''; Array.from(table.tBodies[0]?.rows || []).forEach((row) => { row.__actionButtons = row.__actionButtons || Array.from(row.querySelectorAll('.edit-entry-btn, .delete-entry-btn')); if (row.cells[actionIndex]) row.cells[actionIndex].style.display = 'none'; const actionRow = document.createElement('tr'); const cell = document.createElement('td'); const buttons = document.createElement('div'); buttons.className = 'action-buttons'; row.__actionButtons.forEach((button) => { const clone = button.cloneNode(true); clone.addEventListener('click', () => button.click()); buttons.appendChild(clone); }); cell.appendChild(buttons); actionRow.appendChild(cell); body.appendChild(actionRow); }); syncTableRowHeights(table, panel.querySelector('.action-table')); };
+    const observer = new MutationObserver(render); if (table.tBodies[0]) observer.observe(table.tBodies[0], { childList: true }); render(); syncTableRowHeights(table, panel.querySelector('.action-table')); syncEmployeeTableScroll(wrapper, panel);
 }
 document.addEventListener('click', (event) => { const editButton = event.target.closest('.edit-entry-btn'); if (!editButton || editButton.dataset.entry) return; const source = document.querySelector(`tr [data-id="${editButton.dataset.id}"]`); if (source?.closest('tr')?.dataset.entry) editButton.dataset.entry = source.closest('tr').dataset.entry; }, true);
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('table.table-premium').forEach(setupActionPanel));
@@ -209,6 +237,9 @@ async function loadSalesRows() {
         if (!res.ok) throw new Error(result.error || 'Failed to load sales records');
 
         const rows = Array.isArray(result.data) ? result.data : [];
+        const tableWrapper = tbody.closest('.main-table-wrapper');
+        tableWrapper?.classList.toggle('is-empty', !rows.length);
+        tableWrapper?.parentElement.querySelector('.user-action-panel')?.classList.toggle('is-empty', !rows.length);
         if (!rows.length) {
             tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4"></td></tr>';
             return;
@@ -239,7 +270,7 @@ async function loadSalesRows() {
                             <td>${escapeHtml(entry.description || '')}</td>
                             <td>
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit entry" aria-label="Edit entry"><i class="bi bi-pencil-square"></i></button>
+                                    <button class="btn btn-sm btn-outline-subtle edit-entry-btn" type="button" data-id="${entry.id}" data-entry="${entryJson}" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit entry" aria-label="Edit entry"><i class="bi bi-pencil-square"></i></button>
                                     <button class="btn btn-sm btn-outline-danger delete-entry-btn" type="button" data-id="${entry.id}" title="Delete entry" aria-label="Delete entry"><i class="bi bi-trash3"></i></button>
                                 </div>
                             </td>
@@ -255,7 +286,7 @@ function showToast(message, type = 'success') {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) return;
     const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toast.className = `toast show align-items-center text-bg-${type} border-0`;
     toast.role = 'alert';
     toast.ariaLive = 'assertive';
     toast.ariaAtomic = 'true';
@@ -318,4 +349,48 @@ document.getElementById('confirmSaveBtn')?.addEventListener('click', async () =>
     const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
     modal.hide();
     await submitSalesModal(mode);
+});
+
+document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (event) => {
+    event.currentTarget.querySelectorAll('input, select, textarea').forEach((field) => {
+        if (field.type === 'file') field.value = '';
+        else if (field.type !== 'hidden' && field.type !== 'button' && field.type !== 'submit') field.value = '';
+    });
+});
+
+function setupSpreadsheetImport(config) {
+    const invalidFileMessage = 'Invalid File: The file does not match.';
+    const validationMessage = document.getElementById('importValidationMessage');
+    if (validationMessage) new MutationObserver(() => { if (validationMessage.textContent === 'The file headers do not match this table.') { validationMessage.className = 'alert alert-danger'; validationMessage.textContent = invalidFileMessage; showToast(invalidFileMessage, 'danger'); } }).observe(validationMessage, { childList: true, characterData: true, subtree: true });
+    const renderRows = (target, rows, includeReason = false) => { const head = document.getElementById(target + 'Head'); const body = document.getElementById(target + 'Body'); if (!head || !body) return; head.innerHTML = `<tr>${config.fields.map((field) => `<th>${field.replace(/_/g, ' ')}</th>`).join('')}${includeReason ? '<th>Reason</th>' : ''}</tr>`; body.innerHTML = rows.length ? rows.map(({ data, reason }) => `<tr>${config.fields.map((field) => `<td>${escapeHtml(data[field])}</td>`).join('')}${includeReason ? `<td>${escapeHtml(reason)}</td>` : ''}</tr>`).join('') : `<tr><td colspan="${config.fields.length + (includeReason ? 1 : 0)}" class="text-center text-muted py-3">No data</td></tr>`; };
+    const input = document.getElementById(config.fileId); const button = document.getElementById(config.buttonId); const message = document.getElementById('importValidationMessage'); let rows = [];
+    const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, ''); if (!input || !button || typeof XLSX === 'undefined') return;
+    input.addEventListener('change', async () => { const file = input.files?.[0]; if (!file) return; try { const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true, raw: false }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const parsed = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false }); const headers = (parsed.shift() || []).map(normalize); const indexes = Object.fromEntries(config.fields.map((field) => [field, headers.indexOf(normalize(field))])); if (!config.fields.some((field) => indexes[field] >= 0)) throw new Error('The file headers do not match this table.'); rows = parsed.filter((cells) => cells.some((cell) => String(cell).trim())).map((cells) => Object.fromEntries(config.fields.map((field) => [field, indexes[field] >= 0 ? cells[indexes[field]] || '' : '']))); renderRows('importValidTable', rows.map((data) => ({ data }))); renderRows('importInvalidTable', [], true); if (message) { message.className = `alert ${rows.length ? 'alert-success' : 'alert-warning'} mt-3`; message.textContent = `${rows.length} row(s) ready to import.`; } button.disabled = !rows.length; } catch (error) { rows = []; button.disabled = true; if (message) { message.className = 'alert alert-danger mt-3'; message.textContent = error.message || 'Unable to read file.'; } } });
+    button.addEventListener('click', async () => { button.disabled = true; try { for (const row of rows) { const body = config.multipart ? new FormData() : JSON.stringify({ kind: config.kind, action: 'create', ...row }); if (config.multipart) { body.append('kind', config.kind); body.append('action', 'create'); Object.entries(row).forEach(([key, value]) => body.append(key, value)); } const response = await fetch(config.endpoint, { method: 'POST', ...(config.multipart ? { body } : { headers: { 'Content-Type': 'application/json' }, body }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || 'Import failed'); } bootstrap.Modal.getInstance(document.getElementById('importFileModal'))?.hide(); showToast(`${rows.length} row(s) imported successfully.`, 'success'); input.value = ''; rows = []; await config.reload(); } catch (error) { showToast('Import failed: ' + (error.message || error), 'danger'); button.disabled = false; } });
+}
+
+setupSpreadsheetImport({ fileId: 'fileInput', buttonId: 'confirmImportBtn', fields: salesFields.map(({ key }) => key), endpoint: '/api/sales', kind: 'sales', reload: loadSalesRows });
+
+
+const chartSummaryConfigs = {
+    sales: { endpoint: '/api/sales', items: [['Records', (rows) => rows.length], ['Invoice total', (rows) => sumChartValues(rows, 'inv_amount')], ['Cash in bank', (rows) => sumChartValues(rows, 'cash_in_bank')]] },
+};
+
+function sumChartValues(rows, key) { return rows.reduce((total, row) => total + (Number.parseFloat(String(row[key] ?? '').replace(/[^\d.-]/g, '')) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function uniqueChartValues(rows, key) { return new Set(rows.map((row) => String(row[key] || '').trim()).filter(Boolean)).size; }
+
+async function loadChartSummary(type, target) {
+    const config = chartSummaryConfigs[type];
+    if (!config || !target) return;
+    try {
+        const response = await fetch(config.endpoint, { cache: 'no-store' });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error('Unable to load chart summary.');
+        const rows = Array.isArray(result.data) ? result.data : [];
+        target.innerHTML = config.items.map(([label, getValue]) => `<div class="dashboard-summary-item"><span class="dashboard-summary-value">${getValue(rows)}</span><span class="dashboard-summary-label">${label}</span></div>`).join('');
+    } catch { target.innerHTML = ''; }
+}
+
+document.querySelectorAll('[data-chart-summary]').forEach((target) => {
+    target.closest('.modal')?.addEventListener('shown.bs.modal', () => loadChartSummary(target.dataset.chartSummary, target));
 });

@@ -1,3 +1,19 @@
+let salesRows = [];
+
+function syncTableRowHeights(mainTable, actionTable) {
+    const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);
+    const actionRows = Array.from(actionTable.tBodies[0]?.rows || []);
+    mainRows.forEach((row, index) => {
+        const actionRow = actionRows[index];
+        if (!actionRow) return;
+        row.style.height = 'auto';
+        actionRow.style.height = 'auto';
+        const rowHeight = Math.max(row.offsetHeight, actionRow.offsetHeight);
+        row.style.height = `${rowHeight}px`;
+        actionRow.style.height = `${rowHeight}px`;
+    });
+}
+
 function setupActionPanel() {
     const table = document.querySelector('#salesTableBody')?.closest('table');
     const actionBody = document.getElementById('salesActionBody');
@@ -47,6 +63,7 @@ function setupActionPanel() {
             actionRow.appendChild(actionCell);
             actionBody.appendChild(actionRow);
         });
+        syncTableRowHeights(table, actionBody.closest('.action-table'));
     };
 
     const tbody = table.tBodies[0];
@@ -168,6 +185,11 @@ function collectSalesPayload(mode) {
         payload[key] = getInputValue(inputId);
     });
 
+    ['si_date', 'transaction_date'].forEach((field) => {
+        const normalizedDate = normalizeDateInputValue(payload[field]);
+        payload[field] = normalizedDate || null;
+    });
+
     if (mode === 'edit') {
         payload.id = getInputValue('edit_sales_id');
         payload.original_month = getInputValue('edit_month');
@@ -233,7 +255,7 @@ document.addEventListener('click', async (event) => {
         if (!row) return;
 
         const entry = JSON.parse(
-            row.getAttribute('data-entry')?.replace(/&quot;/g, '"') || '{}'
+            editButton.dataset.entry || row.getAttribute('data-entry')?.replace(/&quot;/g, '"') || '{}'
         );
 
         document.getElementById('edit_sales_id').value =
@@ -343,6 +365,10 @@ async function loadSalesRows() {
         }
 
         const rows = Array.isArray(result.data) ? result.data : [];
+        salesRows = rows;
+        const tableWrapper = tbody.closest('.main-table-wrapper');
+        tableWrapper?.classList.toggle('is-empty', !rows.length);
+        tableWrapper?.parentElement.querySelector('.user-action-panel')?.classList.toggle('is-empty', !rows.length);
 
         if (!rows.length) {
             tbody.innerHTML = `
@@ -408,31 +434,44 @@ async function loadSalesRows() {
 
 function showToast(message, type = 'success') {
     const toastContainer = document.getElementById('toastContainer');
-
     if (!toastContainer) return;
-
-    const toast = document.createElement('div');
-
-    toast.className = `toast align-items-center text-bg-${type} border-0`;
-    toast.role = 'alert';
-    toast.ariaLive = 'assertive';
-    toast.ariaAtomic = 'true';
-    toast.style.pointerEvents = 'auto';
-
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close"></button>
-        </div>
+    const notification = document.createElement('div');
+    const background = type === 'danger' ? '#dc3545' : '#28a745';
+    notification.style.cssText = `
+        min-width: 320px;
+        max-width: 360px;
+        margin-top: 0.75rem;
+        padding: 18px 22px;
+        border-radius: 18px;
+        color: white;
+        background: ${background};
+        box-shadow: 0 18px 40px rgba(0,0,0,0.26);
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        opacity: 0;
+        transform: translateX(24px);
+        pointer-events: auto;
+        transition: opacity 180ms ease, transform 180ms ease;
     `;
-
-    const closeButton = toast.querySelector('.btn-close');
-
-    closeButton?.addEventListener('click', () => toast.remove());
-
-    toastContainer.appendChild(toast);
-
-    setTimeout(() => toast.remove(), 4000);
+    notification.innerHTML = `
+        <span style="flex:1; padding-right: 14px;">${escapeHtml(message)}</span>
+        <button type="button" aria-label="Close" style="border:none; background:transparent; color:white; font-size:18px; line-height:1; cursor:pointer;">×</button>
+    `;
+    const closeBtn = notification.querySelector('button');
+    closeBtn?.addEventListener('click', () => notification.remove());
+    toastContainer.appendChild(notification);
+    requestAnimationFrame(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    });
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(24px)';
+        setTimeout(() => notification.remove(), 180);
+    }, 3200);
 }
 
 function showDeleteConfirmation(entryId) {
@@ -500,18 +539,116 @@ document.getElementById('confirmDeleteBtn')?.addEventListener(
 
 document.addEventListener('DOMContentLoaded', loadSalesRows);
 
+function setupTableChart(config) {
+    const { buttonId, modalId, canvasId, getRows, labelKey, valueKey } = config;
+    const button = document.getElementById(buttonId);
+    const modal = document.getElementById(modalId);
+    const canvas = document.getElementById(canvasId);
+
+    if (!button || !modal || !canvas) return;
+
+    let chart = null;
+
+    button.addEventListener('click', () => {
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+
+        setTimeout(() => {
+            if (chart) chart.destroy();
+
+            const rows = getRows();
+            const labels = [];
+            const data = [];
+
+            rows.forEach((row) => {
+                const label = String(row[labelKey] || 'Unknown').trim() || 'Unknown';
+                const cleanedValue = String(row[valueKey] ?? '')
+                    .replace(/[₱PpHh$\s,]/g, '')
+                    .replace(/[^\d.-]/g, '')
+                    .trim();
+                const value = Number.parseFloat(cleanedValue) || 0;
+                if (value <= 0) return;
+                const existingIndex = labels.indexOf(label);
+
+                if (existingIndex > -1) {
+                    data[existingIndex] += value;
+                } else {
+                    labels.push(label);
+                    data.push(value);
+                }
+            });
+
+            const finalLabels = labels.length ? labels : ['No Data'];
+            const finalData = labels.length ? data : [1];
+
+            const ctx = canvas.getContext('2d');
+
+            chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: finalLabels,
+                    datasets: [{
+                        data: finalData,
+                        backgroundColor: labels.length ? ['#0d6efd', '#6f42c1', '#d63384', '#fd7e14', '#198754', '#20c997', '#0dcaf0', '#ffc107', '#dc3545', '#6c757d'] : ['#e9ecef'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 1400, easing: 'easeOutCubic', animateRotate: true, animateScale: true },
+                    plugins: {
+                        legend: {
+                            display: labels.length > 0,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 14, weight: '500' }
+                            }
+                        },
+                        tooltip: {
+                            enabled: labels.length > 0,
+                            callbacks: {
+                                label: function (context) {
+                                    const total = context.dataset.data.reduce((sum, value) => sum + value, 0) || 1;
+                                    const value = Number(context.parsed) || 0;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            chart.reset();
+            chart.update();
+        }, 100);
+    });
+}
+
+setupTableChart({
+    buttonId: 'chartToggleBtn',
+    modalId: 'salesChartModal',
+    canvasId: 'salesChart',
+    getRows: () => salesRows,
+    labelKey: 'project_code',
+    valueKey: 'inv_amount'
+});
+
 const saveSalesBtn = document.getElementById('saveSalesBtn');
 
 if (saveSalesBtn) {
-    saveSalesBtn.addEventListener('click', () => {
-        showSaveConfirmation('create');
-    });
+    saveSalesBtn.addEventListener('click', () => submitSalesModal('create'));
 }
 
 document.getElementById('confirmSaveBtn')?.addEventListener(
     'click',
     async () => {
-        const mode = pendingSaveMode || 'create';
+        if (pendingSaveMode !== 'edit') return;
+
+        const mode = pendingSaveMode;
 
         pendingSaveMode = null;
 
@@ -526,6 +663,83 @@ document.getElementById('confirmSaveBtn')?.addEventListener(
         await submitSalesModal(mode);
     }
 );
+
+document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (event) => {
+    event.currentTarget.querySelectorAll('input, select, textarea').forEach((field) => {
+        if (field.type === 'file') field.value = '';
+        else if (field.type !== 'hidden' && field.type !== 'button' && field.type !== 'submit') field.value = '';
+    });
+});
+
+function setupSpreadsheetImport(config) {
+    const invalidFileMessage = 'Invalid File: The file does not match.';
+    const validationMessage = document.getElementById('importValidationMessage');
+    if (validationMessage) new MutationObserver(() => { if (validationMessage.textContent === 'The file headers do not match this table.') { validationMessage.className = 'alert alert-danger'; validationMessage.textContent = invalidFileMessage; showToast(invalidFileMessage, 'danger'); } }).observe(validationMessage, { childList: true, characterData: true, subtree: true });
+    const renderRows = (target, rows, includeReason = false) => {
+        const head = document.getElementById(target + 'Head');
+        const body = document.getElementById(target + 'Body');
+        if (!head || !body) return;
+        head.innerHTML = `<tr>${config.fields.map((field) => `<th>${field.replace(/_/g, ' ')}</th>`).join('')}${includeReason ? '<th>Reason</th>' : ''}</tr>`;
+        body.innerHTML = rows.length ? rows.map(({ data, reason }) => `<tr>${config.fields.map((field) => `<td>${escapeHtml(data[field])}</td>`).join('')}${includeReason ? `<td>${escapeHtml(reason)}</td>` : ''}</tr>`).join('') : `<tr><td colspan="${config.fields.length + (includeReason ? 1 : 0)}" class="text-center text-muted py-3">No data</td></tr>`;
+    };
+    const input = document.getElementById(config.fileId);
+    const button = document.getElementById(config.buttonId);
+    const message = document.getElementById('importValidationMessage');
+    let rows = [];
+    const resetImport = () => {
+        rows = [];
+        input.value = '';
+        button.disabled = true;
+        ['importValidTableHead', 'importValidTableBody', 'importInvalidTableHead', 'importInvalidTableBody'].forEach((id) => {
+            const element = document.getElementById(id);
+            if (element) element.innerHTML = '';
+        });
+        if (message) {
+            message.className = 'alert d-none';
+            message.textContent = '';
+        }
+        if (selectedFileName) selectedFileName.textContent = 'No file chosen';
+    };
+    const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!input || !button || typeof XLSX === 'undefined') return;
+    input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        try {
+            const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true, raw: false });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const parsed = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+            const headers = (parsed.shift() || []).map(normalize);
+            const indexes = Object.fromEntries(config.fields.map((field) => [field, headers.indexOf(normalize(field))]));
+            if (!config.fields.some((field) => indexes[field] >= 0)) throw new Error(invalidFileMessage);
+            rows = parsed.filter((cells) => cells.some((cell) => String(cell).trim())).map((cells) => Object.fromEntries(config.fields.map((field) => [field, indexes[field] >= 0 ? cells[indexes[field]] || '' : ''])));
+            renderRows('importValidTable', rows.map((data) => ({ data })));
+            renderRows('importInvalidTable', [], true);
+            if (message) { message.className = `alert ${rows.length ? 'alert-success' : 'alert-warning'} mt-3`; message.textContent = `${rows.length} row(s) ready to import.`; }
+            button.disabled = !rows.length;
+        } catch (error) {
+            showToast(invalidFileMessage, 'danger');
+            resetImport();
+        }
+    });
+    button.addEventListener('click', async () => {
+        button.disabled = true;
+        try {
+            for (const row of rows) {
+                const body = config.multipart ? new FormData() : JSON.stringify({ kind: config.kind, action: 'create', ...row });
+                if (config.multipart) { body.append('kind', config.kind); body.append('action', 'create'); Object.entries(row).forEach(([key, value]) => body.append(key, value)); }
+                const response = await fetch(config.endpoint, { method: 'POST', ...(config.multipart ? { body } : { headers: { 'Content-Type': 'application/json' }, body }) });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'Import failed');
+            }
+            bootstrap.Modal.getInstance(document.getElementById('importFileModal'))?.hide();
+            showToast(`${rows.length} row(s) imported successfully.`, 'success');
+            resetImport(); await config.reload();
+        } catch (error) { showToast('Import failed: ' + (error.message || error), 'danger'); resetImport(); }
+    });
+}
+
+setupSpreadsheetImport({ fileId: 'fileInput', buttonId: 'confirmImportBtn', fields: salesFields.map(({ key }) => key), endpoint: '/api/sales', kind: 'sales', reload: loadSalesRows });
 
 const userNameTargets = document.querySelectorAll('[data-user-display]');
 fetch('/api/current-user')
@@ -542,3 +756,27 @@ fetch('/api/current-user')
             element.textContent = 'User';
         });
     });
+
+
+    const chartSummaryConfigs = {
+    sales: { endpoint: '/api/sales', items: [['Records', (rows) => rows.length], ['Invoice total', (rows) => sumChartValues(rows, 'inv_amount')], ['Cash in bank', (rows) => sumChartValues(rows, 'cash_in_bank')]] },
+};
+
+function sumChartValues(rows, key) { return rows.reduce((total, row) => total + (Number.parseFloat(String(row[key] ?? '').replace(/[^\d.-]/g, '')) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function uniqueChartValues(rows, key) { return new Set(rows.map((row) => String(row[key] || '').trim()).filter(Boolean)).size; }
+
+async function loadChartSummary(type, target) {
+    const config = chartSummaryConfigs[type];
+    if (!config || !target) return;
+    try {
+        const response = await fetch(config.endpoint, { cache: 'no-store' });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error('Unable to load chart summary.');
+        const rows = Array.isArray(result.data) ? result.data : [];
+        target.innerHTML = config.items.map(([label, getValue]) => `<div class="dashboard-summary-item"><span class="dashboard-summary-value">${getValue(rows)}</span><span class="dashboard-summary-label">${label}</span></div>`).join('');
+    } catch { target.innerHTML = ''; }
+}
+
+document.querySelectorAll('[data-chart-summary]').forEach((target) => {
+    target.closest('.modal')?.addEventListener('shown.bs.modal', () => loadChartSummary(target.dataset.chartSummary, target));
+});

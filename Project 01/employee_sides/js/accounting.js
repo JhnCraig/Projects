@@ -5,6 +5,7 @@ const saveAccountingBtn = document.getElementById("saveAccountingBtn");
 const saveEditedAccountingBtn = document.getElementById("saveEditedAccountingBtn");
 const chartToggleBtn = document.getElementById("chartToggleBtn");
 const accountingChartModal = document.getElementById("accountingChartModal");
+const confirmImportBtn = document.getElementById("confirmImportBtn");
 const accountingTableWrapper = document.getElementById("accountingTableWrapper");
 let accountingRows = [];
 let accountingChart = null;
@@ -33,6 +34,23 @@ const accountingFields = [
 
 function escapeHtml(value) {
     return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function parseChartNumber(value) {
+    const cleaned = String(value ?? '')
+        .replace(/[₱PpHh$\s,]/g, '')
+        .replace(/[^\d.-]/g, '')
+        .trim();
+    const parsed = Number.parseFloat(cleaned);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getAccountingChartValue(entry) {
+    for (const field of ['amount', 'net_of_vat', 'vat_exempt', 'non_vat', 'vat_12', 'wtax']) {
+        const value = parseChartNumber(entry[field]);
+        if (value > 0) return value;
+    }
+    return 0;
 }
 
 function showToast(message, type = 'success') {
@@ -148,6 +166,39 @@ function renderActionPanel(rows) {
     `;
 }
 
+function syncEmployeeTableScroll(mainWrapper, actionPanel) {
+    if (mainWrapper.dataset.scrollSyncAttached) return;
+    let isSyncing = false;
+    const syncScroll = (source, target) => {
+        if (isSyncing) return;
+        isSyncing = true;
+        target.scrollTop = source.scrollTop;
+        requestAnimationFrame(() => isSyncing = false);
+    };
+    mainWrapper.addEventListener('scroll', () => syncScroll(mainWrapper, actionPanel));
+    actionPanel.addEventListener('scroll', () => syncScroll(actionPanel, mainWrapper));
+    mainWrapper.dataset.scrollSyncAttached = 'true';
+}
+
+function syncAccountingRowHeights() {
+    const mainRows = Array.from(document.querySelectorAll('#accountingTableBody tr'));
+    const actionRows = Array.from(document.querySelectorAll('#actionPanel tbody tr'));
+
+    mainRows.forEach((row) => row.style.height = 'auto');
+    actionRows.forEach((row) => row.style.height = 'auto');
+
+    mainRows.forEach((row, index) => {
+        const actionRow = actionRows[index];
+        if (!actionRow) return;
+
+        const rowHeight = Math.max(row.offsetHeight, actionRow.offsetHeight);
+        row.style.height = `${rowHeight}px`;
+        actionRow.style.height = `${rowHeight}px`;
+    });
+}
+
+window.addEventListener('resize', syncAccountingRowHeights);
+
 function renderAccountingChart(rows) {
     const canvas = document.getElementById('accountingChart');
     if (!canvas || typeof Chart === 'undefined') return;
@@ -155,8 +206,8 @@ function renderAccountingChart(rows) {
     const totalsByProject = {};
     rows.forEach((entry) => {
         const projectName = (entry.project || entry.account_name || 'Unassigned').trim() || 'Unassigned';
-        const numericValue = Number(entry.amount ?? entry.net_of_vat ?? entry.vat_exempt ?? 0);
-        if (!Number.isFinite(numericValue)) return;
+        const numericValue = getAccountingChartValue(entry);
+        if (numericValue <= 0) return;
         totalsByProject[projectName] = (totalsByProject[projectName] || 0) + numericValue;
     });
 
@@ -185,6 +236,7 @@ function renderAccountingChart(rows) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 1400, easing: 'easeOutCubic', animateRotate: true, animateScale: true },
             plugins: {
                 legend: {
                     position: 'bottom'
@@ -299,6 +351,9 @@ async function loadAccountingRows() {
 
         const rows = Array.isArray(result.data) ? result.data : [];
         accountingRows = rows;
+        renderActionPanel(rows);
+        document.getElementById('accountingTableWrapper')?.classList.toggle('is-empty', !rows.length);
+        document.getElementById('actionPanel')?.classList.toggle('is-empty', !rows.length);
 
         if (!rows.length) {
             tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4"> </td></tr>';
@@ -311,7 +366,7 @@ async function loadAccountingRows() {
                         <td>${escapeHtml(entry.cv_no || "")}</td>
                         <td class="date-column">${escapeHtml(formatDate(entry.transaction_date || entry.date))}</td>
                         <td>${escapeHtml(entry.payee || "")}</td>
-                        <td>${escapeHtml(entry.transaction_details || "")}</td>
+                        <td class="accounting-text-column">${escapeHtml(entry.transaction_details || "")}</td>
                         <td>${escapeHtml(entry.supplier_name || "")}</td>
                         <td>${escapeHtml(entry.tin || "")}</td>
                         <td>${escapeHtml(entry.address || "")}</td>
@@ -326,11 +381,12 @@ async function loadAccountingRows() {
                         <td>${escapeHtml(entry.account_code || entry.acct_code || "")}</td>
                         <td>${escapeHtml(entry.account_name || entry.acct_name || "")}</td>
                         <td>${escapeHtml(entry.project || "")}</td>
-                        <td>${escapeHtml(entry.remark || entry.remarks || "")}</td>
+                        <td class="accounting-text-column">${escapeHtml(entry.remark || entry.remarks || "")}</td>
                     </tr>
                 `).join("");
 
-        renderActionPanel(rows);
+        syncAccountingRowHeights();
+        syncEmployeeTableScroll(accountingTableWrapper, document.getElementById('actionPanel'));
         renderAccountingChart(rows);
     } catch (error) {
         tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger py-4">${escapeHtml(error.message || "Unable to load accounting records")}</td></tr>`;
@@ -378,7 +434,7 @@ if (uploadBtn && fileInput) {
 }
 
 if (fileInput) {
-    fileInput.addEventListener("change", (event) => {
+    fileInput.addEventListener("change", async (event) => {
         const file = event.target.files && event.target.files[0];
         if (selectedFileName) {
             selectedFileName.textContent = file ? file.name : "No file chosen";
@@ -386,6 +442,74 @@ if (fileInput) {
 
         const importModal = new bootstrap.Modal(document.getElementById("importFileModal"));
         importModal.show();
+        if (!file || typeof XLSX === 'undefined') return;
+
+        try {
+            const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true, raw: false });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const parsedRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+            const headerRow = parsedRows.shift() || [];
+            const headers = headerRow.map((value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
+            const indexes = Object.fromEntries(accountingFields.map(({ key }) => [key, headers.indexOf(key.replace(/_/g, ''))]));
+            const importedRows = parsedRows.filter((cells) => cells.some((cell) => String(cell).trim())).map((cells) => Object.fromEntries(accountingFields.map(({ key }) => [key, indexes[key] >= 0 ? cells[indexes[key]] || '' : ''])));
+            const validationMessage = document.getElementById('importValidationMessage');
+            const renderImportTable = (headId, bodyId, rows, includeReason = false) => {
+                const head = document.getElementById(headId);
+                const body = document.getElementById(bodyId);
+                if (!head || !body) return;
+                head.innerHTML = `<tr>${accountingFields.map(({ key }) => `<th>${key.replace(/_/g, ' ')}</th>`).join('')}${includeReason ? '<th>Reason</th>' : ''}</tr>`;
+                body.innerHTML = rows.length ? rows.map(({ data, reason }) => `<tr>${accountingFields.map(({ key }) => `<td>${escapeHtml(data[key])}</td>`).join('')}${includeReason ? `<td>${escapeHtml(reason)}</td>` : ''}</tr>`).join('') : `<tr><td colspan="${accountingFields.length + (includeReason ? 1 : 0)}" class="text-center text-muted py-3">No data</td></tr>`;
+            };
+
+            if (accountingFields.some(({ key }) => indexes[key] < 0)) {
+                if (validationMessage) {
+                    validationMessage.className = 'alert alert-danger';
+                    validationMessage.textContent = 'Invalid File: The file does not match.';
+                }
+                if (confirmImportBtn) confirmImportBtn.disabled = true;
+                showToast('Invalid File: The file does not match.', 'danger');
+                return;
+            }
+            renderImportTable('importValidTableHead', 'importValidTableBody', importedRows.map((data) => ({ data })));
+            renderImportTable('importInvalidTableHead', 'importInvalidTableBody', [], true);
+            if (validationMessage) {
+                validationMessage.className = `alert ${importedRows.length ? 'alert-success' : 'alert-warning'}`;
+                validationMessage.textContent = `${importedRows.length} row(s) ready to save.`;
+            }
+            confirmImportBtn.disabled = importedRows.length === 0;
+            confirmImportBtn.onclick = async () => {
+                confirmImportBtn.disabled = true;
+                try {
+                    for (const row of importedRows) {
+                        const response = await fetch('/submit-entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'accounting', action: 'create', ...row }) });
+                        const result = await response.json().catch(() => ({}));
+                        if (!response.ok) throw new Error(result.error || 'Unable to save imported data');
+                    }
+                    bootstrap.Modal.getInstance(document.getElementById('importFileModal'))?.hide();
+                    showToast(`${importedRows.length} imported row(s) saved successfully.`, 'success');
+                    fileInput.value = '';
+                    selectedFileName.textContent = 'No file chosen';
+                    document.getElementById('importValidTableHead').innerHTML = '';
+                    document.getElementById('importValidTableBody').innerHTML = '';
+                    document.getElementById('importInvalidTableHead').innerHTML = '';
+                    document.getElementById('importInvalidTableBody').innerHTML = '';
+                    validationMessage.className = 'alert d-none';
+                    validationMessage.textContent = '';
+                    loadAccountingRows();
+                } catch (error) {
+                    showToast(error.message || 'Unable to save imported data.', 'danger');
+                    confirmImportBtn.disabled = false;
+                }
+            };
+        } catch (error) {
+            const validationMessage = document.getElementById('importValidationMessage');
+            if (validationMessage) {
+                validationMessage.className = 'alert alert-danger';
+                validationMessage.textContent = 'Invalid File: The file does not match.';
+            }
+            if (confirmImportBtn) confirmImportBtn.disabled = true;
+            showToast('Invalid File: The file does not match.', 'danger');
+        }
     });
 }
 
@@ -399,12 +523,38 @@ if (saveEditedAccountingBtn) {
 
 if (chartToggleBtn) {
     chartToggleBtn.addEventListener("click", () => {
-        renderAccountingChart(accountingRows);
         if (accountingChartModal) {
             const modal = bootstrap.Modal.getInstance(accountingChartModal) || new bootstrap.Modal(accountingChartModal);
             modal.show();
+            setTimeout(() => renderAccountingChart(accountingRows), 120);
         }
     });
 }
 
 document.addEventListener("DOMContentLoaded", loadAccountingRows);
+
+document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', resetNewEntryForm);
+
+
+const chartSummaryConfigs = {
+    accounting: { endpoint: '/api/accounting', items: [['Entries', (rows) => rows.length], ['Total amount', (rows) => sumChartValues(rows, 'amount')], ['Projects', (rows) => uniqueChartValues(rows, 'project')]] },
+};
+
+function sumChartValues(rows, key) { return rows.reduce((total, row) => total + (Number.parseFloat(String(row[key] ?? '').replace(/[^\d.-]/g, '')) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function uniqueChartValues(rows, key) { return new Set(rows.map((row) => String(row[key] || '').trim()).filter(Boolean)).size; }
+
+async function loadChartSummary(type, target) {
+    const config = chartSummaryConfigs[type];
+    if (!config || !target) return;
+    try {
+        const response = await fetch(config.endpoint, { cache: 'no-store' });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error('Unable to load chart summary.');
+        const rows = Array.isArray(result.data) ? result.data : [];
+        target.innerHTML = config.items.map(([label, getValue]) => `<div class="dashboard-summary-item"><span class="dashboard-summary-value">${getValue(rows)}</span><span class="dashboard-summary-label">${label}</span></div>`).join('');
+    } catch { target.innerHTML = ''; }
+}
+
+document.querySelectorAll('[data-chart-summary]').forEach((target) => {
+    target.closest('.modal')?.addEventListener('shown.bs.modal', () => loadChartSummary(target.dataset.chartSummary, target));
+});
