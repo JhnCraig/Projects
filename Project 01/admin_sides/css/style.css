@@ -441,6 +441,13 @@ h5,
     color: #ffffff;
 }
 
+.chart-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
 .main-table-wrapper {
     width: 100%;
     max-width: 100%;

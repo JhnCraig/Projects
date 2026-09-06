@@ -29,7 +29,7 @@ function syncTableRowHeights(mainTable, actionTable) {
 function setupActionPanel(table) {
     const wrapper = table.closest('.main-table-wrapper'); const header = Array.from(table.querySelectorAll('thead th')).find((cell) => /actions?/i.test(cell.textContent.trim()));
     if (!wrapper || !header || wrapper.dataset.actionPanelReady) return; wrapper.dataset.actionPanelReady = 'true'; const actionIndex = header.cellIndex;
-    const layout = document.createElement('div'); layout.className = 'table-with-actions'; wrapper.parentNode.insertBefore(layout, wrapper); layout.appendChild(wrapper);
+    const layout = wrapper.parentNode.classList.contains('table-with-actions') ? wrapper.parentNode : document.createElement('div'); if (layout !== wrapper.parentNode) { layout.className = 'table-with-actions'; wrapper.parentNode.insertBefore(layout, wrapper); layout.appendChild(wrapper); }
     const panel = document.createElement('div'); panel.className = 'user-action-panel'; panel.innerHTML = '<table class="table table-premium action-table align-middle"><thead><tr><th>Action</th></tr></thead><tbody></tbody></table>'; layout.appendChild(panel); header.style.display = 'none';
     const render = () => { const body = panel.querySelector('tbody'); body.innerHTML = ''; Array.from(table.tBodies[0]?.rows || []).forEach((row) => { row.__actionButtons = row.__actionButtons || Array.from(row.querySelectorAll('.edit-entry-btn, .delete-entry-btn')); if (row.cells[actionIndex]) row.cells[actionIndex].style.display = 'none'; const actionRow = document.createElement('tr'); const cell = document.createElement('td'); const buttons = document.createElement('div'); buttons.className = 'action-buttons'; row.__actionButtons.forEach((button) => { const clone = button.cloneNode(true); clone.addEventListener('click', () => button.click()); buttons.appendChild(clone); }); cell.appendChild(buttons); actionRow.appendChild(cell); body.appendChild(actionRow); }); syncTableRowHeights(table, panel.querySelector('.action-table')); };
     const observer = new MutationObserver(render); if (table.tBodies[0]) observer.observe(table.tBodies[0], { childList: true }); render(); syncTableRowHeights(table, panel.querySelector('.action-table')); syncEmployeeTableScroll(wrapper, panel);
@@ -371,26 +371,3 @@ function setupSpreadsheetImport(config) {
 
 setupSpreadsheetImport({ fileId: 'fileInput', buttonId: 'confirmImportBtn', fields: salesFields.map(({ key }) => key), endpoint: '/api/sales', kind: 'sales', reload: loadSalesRows });
 
-
-const chartSummaryConfigs = {
-    sales: { endpoint: '/api/sales', items: [['Records', (rows) => rows.length], ['Invoice total', (rows) => sumChartValues(rows, 'inv_amount')], ['Cash in bank', (rows) => sumChartValues(rows, 'cash_in_bank')]] },
-};
-
-function sumChartValues(rows, key) { return rows.reduce((total, row) => total + (Number.parseFloat(String(row[key] ?? '').replace(/[^\d.-]/g, '')) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function uniqueChartValues(rows, key) { return new Set(rows.map((row) => String(row[key] || '').trim()).filter(Boolean)).size; }
-
-async function loadChartSummary(type, target) {
-    const config = chartSummaryConfigs[type];
-    if (!config || !target) return;
-    try {
-        const response = await fetch(config.endpoint, { cache: 'no-store' });
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error('Unable to load chart summary.');
-        const rows = Array.isArray(result.data) ? result.data : [];
-        target.innerHTML = config.items.map(([label, getValue]) => `<div class="dashboard-summary-item"><span class="dashboard-summary-value">${getValue(rows)}</span><span class="dashboard-summary-label">${label}</span></div>`).join('');
-    } catch { target.innerHTML = ''; }
-}
-
-document.querySelectorAll('[data-chart-summary]').forEach((target) => {
-    target.closest('.modal')?.addEventListener('shown.bs.modal', () => loadChartSummary(target.dataset.chartSummary, target));
-});

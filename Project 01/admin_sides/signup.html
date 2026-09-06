@@ -36,6 +36,7 @@
 
                 <!-- Signup Form -->
                 <form action="/signup" method="POST" autocomplete="off">
+                    <input type="hidden" name="admin_setup" id="adminSetup" value="false">
 
                     <div class="row g-2 mb-3">
                         <div class="col-md-4">
@@ -86,16 +87,18 @@
                                for="termsCheck">
                             I agree to the
 
-                            <a href="#"
+                                     <a href="#termsModal"
                                class="text-decoration-none"
+                                         data-bs-toggle="modal"
                                style="color: #86b6d5;">
-                                Terms of Service
+                                Terms of Service 
                             </a>
 
                             &
 
-                            <a href="#"
+                                     <a href="#privacyModal"
                                class="text-decoration-none"
+                                         data-bs-toggle="modal"
                                style="color: #86b6d5;">
                                 Privacy Policy
                             </a>
@@ -129,8 +132,50 @@
         </div>
     </div>
 
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">Terms of Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <p>By creating an account, you agree to use this system only for authorized business activities and to provide accurate information.</p>
+                    <p>Keep your login credentials private. You are responsible for activity performed through your account and must report suspected unauthorized access.</p>
+                    <p>Access may be suspended or removed when an account is misused, compromised, or no longer authorized.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-submit" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <p>We collect the account details you provide, such as your name, contact number, and email address, to create and manage your account.</p>
+                    <p>Your information is used for authentication, account administration, and authorized system operations. We do not use it for unrelated purposes.</p>
+                    <p>Contact the system administrator to request an update or correction to your account information.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-submit" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const adminSetup = new URLSearchParams(window.location.search).get('admin_setup') === '1';
+        document.getElementById('adminSetup').value = adminSetup ? 'true' : 'false';
+    </script>
 
 </body>
 

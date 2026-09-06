@@ -1,6 +1,9 @@
+#=======================================================================================================================
 # Note: Flask and mysql-connector-python are need to be installed in the environment for this script to work.
 # Note: pip install Flask or py -m install Flask if the  first command does not work.
 # Note: pip install mysql-connector-python or py -m install mysql-connector-python if the first command does not work.
+#=======================================================================================================================
+
 
 import json
 import os
@@ -13,7 +16,7 @@ try:
     from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, session
 except ImportError as exc:
     raise ImportError(
-        'Flask is required to run backEnd.py. Install it with: pip install Flask'
+        'Flask is required to run main_app.py. Install it with: pip install Flask'
     ) from exc
 
 try:
@@ -42,6 +45,9 @@ MYSQL_USER = os.getenv('MYSQL_USER', 'root')
 MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', 'craig013006')
 MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'sbdc')
 
+# =========================================================
+# Shared utilities and upload helpers
+# =========================================================
 
 def ensure_upload_dir():
     os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -100,24 +106,30 @@ def get_user_by_email(email):
 
 
 def get_dashboard_redirect_for_status(status):
-    normalized_status = (status or 'Employee').strip().lower()
-    if normalized_status in {'admin', 'administrator', 'superadmin', 'admin_user'}:
+    if is_admin_status(status):
         return '/index.html'
     return '/employee'
-    
+
+
+def is_admin_status(status):
+    normalized_status = (status or 'Employee').strip().lower()
+    return normalized_status in {'admin', 'administrator', 'superadmin', 'admin_user'}
+
+
 def require_dashboard_role(role):
     if not session.get('user_id'):
         return redirect('/login.html')
 
-    is_admin = (session.get('user_status') or 'Employee').strip().lower() in {
-        'admin', 'administrator', 'superadmin', 'admin_user'
-    }
+    is_admin = is_admin_status(session.get('user_status'))
     if role == 'admin' and not is_admin:
         return redirect('/employee')
     if role == 'employee' and is_admin:
         return redirect('/index.html')
     return None
 
+# =========================================================
+# Database initialization and schema setup
+# =========================================================
 
 def init_db():
     conn = get_db_connection()
@@ -139,6 +151,8 @@ def init_db():
             )
             '''
         )
+
+
         cursor.execute(
             '''
             SELECT COUNT(*) FROM information_schema.columns
@@ -146,8 +160,12 @@ def init_db():
             ''',
             (MYSQL_DATABASE,),
         )
+
+
         if cursor.fetchone()[0] == 0:
             cursor.execute("ALTER TABLE users ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'Employee'")
+
+
         cursor.execute(
             '''
             SELECT COUNT(*) FROM information_schema.columns
@@ -155,8 +173,12 @@ def init_db():
             ''',
             (MYSQL_DATABASE,),
         )
+
+
         if cursor.fetchone()[0] == 0:
             cursor.execute('ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)')
+
+
         cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS sales (
@@ -183,6 +205,8 @@ def init_db():
             )
             '''
         )
+
+
         cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS accounting (
@@ -209,6 +233,8 @@ def init_db():
             )
             '''
         )
+
+
         cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS sales_marketing (
@@ -242,6 +268,8 @@ def init_db():
             )
             '''
         )
+
+
         cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS engineering (
@@ -262,6 +290,8 @@ def init_db():
             )
             '''
         )
+
+
         cursor.execute(
             '''
             CREATE TABLE IF NOT EXISTS purchasing (
@@ -291,6 +321,10 @@ def init_db():
     finally:
         conn.close()
 
+# =========================================================
+# Flask app setup and static file routing
+# =========================================================
+# ====== Admin Side ======
 # Use admin_sides as the template folder
 ADMIN_SIDES_DIR = os.path.join(BASE_DIR, 'admin_sides')
 
@@ -358,15 +392,16 @@ def _normalize_date_value(value):
 EMPLOYEE_SIDES_DIR = os.path.join(BASE_DIR, 'employee_sides')
 
 
-EMPLOYEE_SIDES_DIR = os.path.join(BASE_DIR, 'employee_sides')
-
-
-# =========================
-# EMPLOYEE PAGES
-# =========================
+# ====== Employee Side ======
+# =========================================================
+# Employee dashboard pages and static assets
+# =========================================================
 
 @app.route('/employee')
 def employee():
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'index.html'
@@ -374,6 +409,9 @@ def employee():
 
 @app.route('/employee/index')
 def employee_index():
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'index.html'
@@ -381,6 +419,9 @@ def employee_index():
 
 @app.route('/employee/accounting')
 def employee_accounting():
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'accounting.html'
@@ -388,6 +429,9 @@ def employee_accounting():
 
 @app.route('/employee/sales')
 def employee_sales():
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'sales.html'
@@ -395,6 +439,9 @@ def employee_sales():
 
 @app.route('/employee/marketing')
 def employee_marketing():
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'marketing.html'
@@ -402,6 +449,9 @@ def employee_marketing():
 
 @app.route('/employee/purchasing')
 def employee_purchasing():
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'purchasing.html'
@@ -409,12 +459,15 @@ def employee_purchasing():
 
 @app.route('/employee/engineering')
 def employee_engineering():
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
     return send_from_directory(
         EMPLOYEE_SIDES_DIR,
         'engineering.html'
     )
 
-#====== Employee CSS ======
+# ====== Employee CSS ======
 @app.route('/employee/css/<path:filename>')
 def employee_css(filename):
     return send_from_directory(
@@ -422,7 +475,7 @@ def employee_css(filename):
         filename
     )
 
-#====== Employee JS ======
+# ====== Employee JS ======
 @app.route('/employee/js/<path:filename>')
 def employee_js(filename):
     return send_from_directory(
@@ -431,7 +484,7 @@ def employee_js(filename):
     )
 
 
-#====== Employee Images ======
+# ====== Employee Images ======
 @app.route('/employee/img/<path:filename>')
 def employee_img(filename):
     return send_from_directory(
@@ -446,6 +499,7 @@ def employee_img(filename):
 
 
 # ====== For Accounting ======
+
 def insert_accounting_entry(data):
     conn = get_db_connection()
     try:
@@ -558,8 +612,8 @@ def delete_accounting_entry(entry_id):
     finally:
         conn.close()
 
+# ====== For Sales and Marketing ======
 
-# ====== For Sales and Marketing ====== 
 def _normalize_decimal(value):
     if value in (None, ''):
         return 0.00
@@ -787,9 +841,8 @@ def delete_sales_marketing_entry(entry_id):
     finally:
         conn.close()
 
-
-
 # ====== For Engineering ======
+
 def insert_engineering_entry(data, files=None):
     conn = get_db_connection()
     try:
@@ -911,8 +964,8 @@ def delete_engineering_entry(entry_id):
     finally:
         conn.close()
 
-
 # ====== For Purchasing ======
+
 def get_purchasing_schema_columns():
     conn = get_db_connection()
     try:
@@ -1086,8 +1139,8 @@ def delete_purchasing_entry(entry_id):
     finally:
         conn.close()
 
-
 # ====== For Sales ======
+
 def insert_sales_entry(data):
     conn = get_db_connection()
     try:
@@ -1214,8 +1267,11 @@ def delete_sales_entry(sales_id):
         conn.close()
 
 
+# =========================================================
+# API routes for data entry actions and CRUD operations
+# =========================================================
 
-
+# ====== API For Accounting ======
 @app.route('/api/accounting', methods=['GET', 'POST'])
 def api_accounting(data=None):
     if request.method == 'GET':
@@ -1265,6 +1321,7 @@ def delete_accounting_route(entry_id):
         return jsonify({'error': 'Failed to delete accounting entry'}), 500
 
 
+# ====== API For Sales and Marketing ======
 @app.route('/api/sales_marketing', methods=['GET', 'POST'])
 def api_sales_marketing(data=None):
     if request.method == 'GET':
@@ -1311,6 +1368,7 @@ def api_sales_marketing(data=None):
     return jsonify({'status': 'success'}), 200
 
 
+# ====== API For Engineering ======
 @app.route('/api/engineering', methods=['GET', 'POST'])
 def api_engineering(data=None):
     if request.method == 'GET':
@@ -1371,6 +1429,7 @@ def delete_sales_marketing_route(entry_id):
         return jsonify({'error': 'Failed to delete sales_marketing entry'}), 500
 
 
+# ====== API For Purchasing ======
 @app.route('/api/purchasing', methods=['GET', 'POST'])
 def api_purchasing(data=None):
     if request.method == 'GET':
@@ -1428,6 +1487,7 @@ def delete_purchasing_route(entry_id):
         return jsonify({'error': 'Failed to delete purchasing entry'}), 500
 
 
+# ====== API For Sales ======
 @app.route('/api/sales', methods=['GET', 'POST'])
 def api_sales(data=None):
     if request.method == 'GET':
@@ -1510,6 +1570,10 @@ def delete_sales_route(sales_id):
         return jsonify({'error': 'Failed to delete sales entry'}), 500
 
 
+# =========================================================
+# Page rendering and user authentication flow
+# =========================================================
+
 @app.route('/', defaults={'page': 'login.html'})
 @app.route('/<path:page>')
 def render_page(page):
@@ -1521,6 +1585,10 @@ def render_page(page):
                 page = alt_page
     if page not in AVAILABLE_PAGES:
         abort(404)
+    if page not in {'login.html', 'signup.html'}:
+        access_redirect = require_dashboard_role('admin')
+        if access_redirect:
+            return access_redirect
     return render_template(page)
 
 
@@ -1561,6 +1629,7 @@ def signup():
     email = (data.get('email') or '').strip().lower()
     password = data.get('password') or ''
     confirm_password = data.get('confirm_password') or ''
+    admin_setup_requested = (data.get('admin_setup') or '').lower() == 'true'
 
     if not all([fname, lname, contact, email, password]):
         return render_template('signup.html', error='Please complete all required fields.'), 400
@@ -1571,18 +1640,39 @@ def signup():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        account_status = 'Employee'
+        if admin_setup_requested:
+            cursor.execute(
+                "SELECT COUNT(*) FROM users WHERE LOWER(TRIM(status)) IN ('admin', 'administrator', 'superadmin', 'admin_user')"
+            )
+            if cursor.fetchone()[0] == 0:
+                account_status = 'Admin'
         cursor.execute(
             '''
             INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ''',
-            (fname, mname, lname, contact, email, password, generate_password_hash(password), 'Employee'),
+            (fname, mname, lname, contact, email, password, generate_password_hash(password), account_status),
         )
     except Error:
         return render_template('signup.html', error='Unable to create account.'), 409
     finally:
         conn.close()
     return redirect('/login.html')
+
+
+@app.route('/api/admin-status', methods=['GET'])
+def api_admin_status():
+    init_db()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT COUNT(*) FROM users WHERE LOWER(TRIM(status)) IN ('admin', 'administrator', 'superadmin', 'admin_user')"
+        )
+        return jsonify({'has_admin': cursor.fetchone()[0] > 0}), 200
+    finally:
+        conn.close()
 
 
 @app.route('/login', methods=['POST'])
@@ -1599,6 +1689,40 @@ def login():
     session['user_status'] = status
 
     return redirect(get_dashboard_redirect_for_status(status))
+
+
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json(silent=True) or request.form.to_dict()
+    email = (data.get('email') or '').strip().lower()
+    contact = (data.get('contact') or '').strip()
+    password = data.get('password') or ''
+    confirm_password = data.get('confirm_password') or ''
+
+    if not email or not contact or not password:
+        return jsonify({'error': 'Email, contact number, and new password are required.'}), 400
+    if password != confirm_password:
+        return jsonify({'error': 'Passwords do not match.'}), 400
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT id FROM users WHERE LOWER(TRIM(email))=%s AND TRIM(contact)=%s LIMIT 1',
+            (email, contact),
+        )
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({'error': 'The email and contact number do not match an account.'}), 400
+
+        cursor.execute(
+            'UPDATE users SET password=%s, password_hash=%s WHERE id=%s',
+            (password, generate_password_hash(password), user[0]),
+        )
+        conn.commit()
+        return jsonify({'status': 'success'}), 200
+    finally:
+        conn.close()
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -1706,6 +1830,9 @@ def api_delete_user(user_id):
     finally:
         conn.close()
 
+# =========================================================
+# Import and application startup
+# =========================================================
 
 @app.route('/import', methods=['POST'])
 def import_file():
@@ -1761,6 +1888,7 @@ def import_file():
         return jsonify({'error': 'Failed to parse/import file'}), 500
 
     return jsonify({'status': 'imported'}), 200
+
 
 try:
     init_db()

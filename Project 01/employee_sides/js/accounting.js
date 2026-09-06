@@ -278,6 +278,44 @@ function formatDate(value) {
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
 }
 
+function updateAccountingSummary(rows) {
+    const amount = rows.reduce((total, entry) => total + parseChartNumber(entry.amount), 0);
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const monthAmount = rows.reduce((total, entry) => {
+        const date = new Date(entry.transaction_date || entry.date);
+        return date.getMonth() === currentMonth && date.getFullYear() === currentYear
+            ? total + parseChartNumber(entry.amount)
+            : total;
+    }, 0);
+    const formatCurrency = (value) => `₱ ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const entries = document.getElementById('summaryEntries');
+    const totalAmount = document.getElementById('summaryAmount');
+    const monthAmountElement = document.getElementById('summaryMonth');
+    const monthLabel = document.getElementById('summaryMonthLabel');
+    const projects = document.getElementById('summaryProjects');
+    if (entries) entries.textContent = rows.length;
+    if (totalAmount) totalAmount.textContent = formatCurrency(amount);
+    if (monthAmountElement) monthAmountElement.textContent = formatCurrency(monthAmount);
+    if (monthLabel) monthLabel.textContent = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    if (projects) {
+        projects.textContent = new Set(
+            rows.map((entry) => String(entry.project || '').trim()).filter(Boolean)
+        ).size;
+    }
+}
+
+function filterAccountingRows(searchValue) {
+    const needle = String(searchValue || '').trim().toLowerCase();
+    const rows = Array.from(document.querySelectorAll('#accountingTableBody tr'));
+    const actionRows = Array.from(document.querySelectorAll('#actionPanel tbody tr'));
+    rows.forEach((row, index) => {
+        const visible = !needle || row.textContent.toLowerCase().includes(needle);
+        row.hidden = !visible;
+        if (actionRows[index]) actionRows[index].hidden = !visible;
+    });
+}
+
 function getInputValue(id) {
     const input = document.getElementById(id);
     return input ? input.value : "";
@@ -351,6 +389,7 @@ async function loadAccountingRows() {
 
         const rows = Array.isArray(result.data) ? result.data : [];
         accountingRows = rows;
+        updateAccountingSummary(rows);
         renderActionPanel(rows);
         document.getElementById('accountingTableWrapper')?.classList.toggle('is-empty', !rows.length);
         document.getElementById('actionPanel')?.classList.toggle('is-empty', !rows.length);
@@ -533,28 +572,18 @@ if (chartToggleBtn) {
 
 document.addEventListener("DOMContentLoaded", loadAccountingRows);
 
+document.getElementById('accountingSearch')?.addEventListener('input', (event) => {
+    filterAccountingRows(event.target.value);
+});
+
+fetch('/api/current-user')
+    .then((response) => response.ok ? response.json() : null)
+    .then((user) => {
+        const name = document.getElementById('accountingUserName');
+        if (name && user?.name) name.textContent = user.name;
+    })
+    .catch(() => {});
+
 document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', resetNewEntryForm);
 
 
-const chartSummaryConfigs = {
-    accounting: { endpoint: '/api/accounting', items: [['Entries', (rows) => rows.length], ['Total amount', (rows) => sumChartValues(rows, 'amount')], ['Projects', (rows) => uniqueChartValues(rows, 'project')]] },
-};
-
-function sumChartValues(rows, key) { return rows.reduce((total, row) => total + (Number.parseFloat(String(row[key] ?? '').replace(/[^\d.-]/g, '')) || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function uniqueChartValues(rows, key) { return new Set(rows.map((row) => String(row[key] || '').trim()).filter(Boolean)).size; }
-
-async function loadChartSummary(type, target) {
-    const config = chartSummaryConfigs[type];
-    if (!config || !target) return;
-    try {
-        const response = await fetch(config.endpoint, { cache: 'no-store' });
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error('Unable to load chart summary.');
-        const rows = Array.isArray(result.data) ? result.data : [];
-        target.innerHTML = config.items.map(([label, getValue]) => `<div class="dashboard-summary-item"><span class="dashboard-summary-value">${getValue(rows)}</span><span class="dashboard-summary-label">${label}</span></div>`).join('');
-    } catch { target.innerHTML = ''; }
-}
-
-document.querySelectorAll('[data-chart-summary]').forEach((target) => {
-    target.closest('.modal')?.addEventListener('shown.bs.modal', () => loadChartSummary(target.dataset.chartSummary, target));
-});

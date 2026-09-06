@@ -29,7 +29,7 @@ function syncTableRowHeights(mainTable, actionTable) {
 function setupActionPanel(table) {
     const wrapper = table.closest('.main-table-wrapper'); const header = Array.from(table.querySelectorAll('thead th')).find((cell) => /actions?/i.test(cell.textContent.trim()));
     if (!wrapper || !header || wrapper.dataset.actionPanelReady) return; wrapper.dataset.actionPanelReady = 'true'; const actionIndex = header.cellIndex;
-    const layout = document.createElement('div'); layout.className = 'table-with-actions'; wrapper.parentNode.insertBefore(layout, wrapper); layout.appendChild(wrapper);
+    const layout = wrapper.parentNode.classList.contains('table-with-actions') ? wrapper.parentNode : document.createElement('div'); if (layout !== wrapper.parentNode) { layout.className = 'table-with-actions'; wrapper.parentNode.insertBefore(layout, wrapper); layout.appendChild(wrapper); }
     const panel = document.createElement('div'); panel.className = 'user-action-panel'; panel.innerHTML = '<table class="table table-premium action-table align-middle"><thead><tr><th>Action</th></tr></thead><tbody></tbody></table>'; layout.appendChild(panel); header.style.display = 'none';
     const render = () => { const body = panel.querySelector('tbody'); body.innerHTML = ''; Array.from(table.tBodies[0]?.rows || []).forEach((row) => { row.__actionButtons = row.__actionButtons || Array.from(row.querySelectorAll('.edit-entry-btn, .delete-entry-btn')); if (row.cells[actionIndex]) row.cells[actionIndex].style.display = 'none'; const actionRow = document.createElement('tr'); const cell = document.createElement('td'); const buttons = document.createElement('div'); buttons.className = 'action-buttons'; row.__actionButtons.forEach((button) => { const clone = button.cloneNode(true); clone.addEventListener('click', () => button.click()); buttons.appendChild(clone); }); cell.appendChild(buttons); actionRow.appendChild(cell); body.appendChild(actionRow); }); syncTableRowHeights(table, panel.querySelector('.action-table')); };
     const observer = new MutationObserver(render); if (table.tBodies[0]) observer.observe(table.tBodies[0], { childList: true }); render(); syncTableRowHeights(table, panel.querySelector('.action-table')); syncEmployeeTableScroll(wrapper, panel);
@@ -38,9 +38,24 @@ document.addEventListener('click', (event) => { const editButton = event.target.
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('table.table-premium').forEach(setupActionPanel));
 
 // New entry modal file upload handlers
+const uploadBtn = document.getElementById("uploadBtn");
+const fileInput = document.getElementById("fileInput");
+const importSelectedFileName = document.getElementById("importSelectedFileName");
 const newEntryUploadBtn = document.getElementById("newEntryUploadBtn");
 const newEntryFileInput = document.getElementById("newEntryFileInput");
-const selectedFileName = document.getElementById("selectedFileName");
+const newEntrySelectedFileName = document.getElementById("newEntrySelectedFileName");
+
+if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener("click", () => fileInput.click());
+}
+
+if (fileInput) {
+    fileInput.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (importSelectedFileName) importSelectedFileName.textContent = file ? file.name : "No file chosen";
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("importFileModal")).show();
+    });
+}
 
 if (newEntryUploadBtn && newEntryFileInput) {
     newEntryUploadBtn.addEventListener("click", () => newEntryFileInput.click());
@@ -50,8 +65,8 @@ if (newEntryFileInput) {
     newEntryFileInput.addEventListener("change", (event) => {
         const file = event.target.files && event.target.files[0];
         if (file) {
-            if (selectedFileName) {
-                selectedFileName.textContent = `Selected: ${file.name}`;
+            if (newEntrySelectedFileName) {
+                newEntrySelectedFileName.textContent = `Selected: ${file.name}`;
             }
             document.getElementById('file_name').value = file.name;
         }
