@@ -40,7 +40,7 @@
                 if (!gallery) return;
 
                 const image = document.createElement('img');
-                image.src = `${new URL(apiUrl()).origin}/img/${encodeURIComponent(entry.image_path)}`;
+                image.src = `${new URL(apiUrl()).origin}/uploads/${encodeURIComponent(entry.image_path)}`;
                 image.alt = entry.project_name || entry.direction || 'Service image';
                 image.loading = 'lazy';
                 image.className = 'gallery-image database-service-image';

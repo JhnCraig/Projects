@@ -50,7 +50,7 @@
 
                         <div>
                             <h1 class="h3 fw-bold mb-1">Service Images</h1>
-                        <p class="text-muted small mb-0">Add and manage images for your services</p>
+                            <p class="text-muted small mb-0">Add and manage images for your services</p>
                         </div>
                     </div>
 
@@ -66,19 +66,22 @@
                     aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-xl">
                         <div class="modal-content">
+
                             <div class="modal-header">
                                 <h5 class="modal-title" id="newEntryModalLabel">New Entry</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                             </div>
+
                             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
 
                                 <div class="row g-6 mb-4">
                                     <label class="form-label fw-bold mb-2">Image</label>
                                     <div class="col-2 col-md-2">
-                                        <button id="newEntryUploadBtn" class="btn btn-brand-action mb-3"
-                                            type="button"><i class="bi bi-upload me-1"></i> Upload Image</button>
-                                        <input id="newEntryFileInput" type="file" name="file" style="display:none;" />
+                                        <button id="newEntryUploadBtn" class="btn btn-brand-action upload-image-button mb-3"
+                                            type="button"><i class="bi bi-upload me-1"></i> Upload Images</button>
+                                        <input id="newEntryFileInput" type="file" name="images" accept="image/*"
+                                            multiple style="display:none;" />
                                     </div>
 
                                     <div class="col-10">
@@ -91,24 +94,53 @@
                                 <div class="row g-6 mb-4">
 
                                     <div class="col-6 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">Service</label>
-                                        <select id="source" class="form-control mb-3" style="font-size: 14px;">
-                                            <option value="">Select Source</option>
-                                            <option value="Architectural & Engineering Design">Architectural & Engineering Design</option>
+                                        <label class="form-label" style="font-size: 14px;">Category</label>
+                                        <select id="source" class="form-select mb-3" style="font-size: 14px;">
+                                            <option value="">Select Category</option>
+                                            <option value="Architectural & Engineering Design">Architectural &
+                                                Engineering Design</option>
                                             <option value="General Constructions">General Constructions</option>
-                                            <option value="Electro - Mechanical Works">Electro - Mechanical Works</option>
+                                            <option value="Electro - Mechanical Works">Electro - Mechanical Works
+                                            </option>
                                         </select>
                                     </div>
 
-                                    <!-- div class="col-5 col-md-6">
-                                        <label class="form-label" style="font-size: 14px;">Date</label>
-                                        <input id="date" type="date" class="form-control" style="font-size: 14px;">
-                                    </div -->
-
                                     <div class="col-6 col-md-6">
                                         <label class="form-label" style="font-size: 14px;">Projects Name</label>
-                                        <input id="project_name" type="text" class="form-control mb-3" style="font-size: 14px;"
-                                            placeholder="Projects Name">
+                                        <input id="project_name" type="text" class="form-control mb-3"
+                                            style="font-size: 14px;" placeholder="Projects Name">
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Location</label>
+                                        <input id="location" type="text" class="form-control" style="font-size: 14px;"
+                                            placeholder="Location">
+                                    </div>
+
+                                    <div class="col-6 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Status</label>
+                                        <select id="status" class="form-select mb-3" style="font-size: 14px;">
+                                            <option value="">Select Status</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="In Progress">In Progress</option>
+                                            <option value="Completed">Completed</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Scope of Work</label>
+                                        <input id="scope_of_work" type="text" class="form-control" style="font-size: 14px;"
+                                            placeholder="Scope of Work">
+                                    </div>
+
+                                </div>
+
+                                <div class="row g-6 mb-4">
+
+                                    <div class="col-5 col-md-6">
+                                        <label class="form-label" style="font-size: 14px;">Description</label>
+                                        <input id="description" type="text" class="form-control" style="font-size: 14px;"
+                                            placeholder="Description">
                                     </div>
 
                                 </div>
@@ -117,7 +149,7 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-subtle"
                                     data-bs-dismiss="modal">Cancel</button>
-                                <button id="saveAccountingBtn" type="button" class="btn btn-brand-action">Save</button>
+                                <button id="saveEntryBtn" type="button" class="btn btn-brand-action">Save</button>
                             </div>
                         </div>
                     </div>
@@ -130,8 +162,8 @@
 
                     <div class="toolbar-actions">
                         <div class="dropdown">
-                            <button id="accountingFilterBtn" class="btn btn-outline-subtle dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <button id="accountingFilterBtn" class="btn btn-outline-subtle dropdown-toggle"
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-funnel me-1"></i>
                                 Filter
                             </button>
@@ -151,11 +183,15 @@
                                 <li><button class="dropdown-item accounting-filter-option" type="button"
                                         data-filter="image">Image</button></li>
                                 <li><button class="dropdown-item accounting-filter-option" type="button"
-                                        data-filter="service">Service</button></li>
+                                        data-filter="category">Category</button></li>
                                 <li><button class="dropdown-item accounting-filter-option" type="button"
-                                    data-filter="date_added">Date Added</button></li>
+                                        data-filter="date_added">Date Added</button></li>
                                 <li><button class="dropdown-item accounting-filter-option" type="button"
-                                        data-filter="projects_name">Projects Name</button></li>
+                                        data-filter="project_name">Projects Name</button></li>
+                                <li><button class="dropdown-item accounting-filter-option" type="button"
+                                        data-filter="location">Location</button></li>
+                                <li><button class="dropdown-item accounting-filter-option" type="button"
+                                        data-filter="status">Status</button></li>
                             </ul>
                         </div>
                     </div>
@@ -165,17 +201,31 @@
                 <div class="table-with-actions">
                     <div id="accountingTableWrapper" class="main-table-wrapper table-responsive shadow rounded-4">
                         <table class="table table-premium accounting-table align-middle">
+                            <colgroup>
+                                <col class="column-image">
+                                <col class="column-category">
+                                <col class="column-date">
+                                <col class="column-project">
+                                <col class="column-location">
+                                <col class="column-status">
+                                <col class="column-scope-of-work">
+                                <col class="column-description">
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>Image</th>
-                                    <th>Service</th>
+                                    <th>Category</th>
                                     <th>Date Added</th>
                                     <th>Projects Name</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Scope of Work</th>
+                                    <th>Description</th>
                                 </tr>
                             </thead>
                             <tbody id="accountingTableBody">
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4"></td>
+                                    <td colspan="8" class="text-center text-muted py-4"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -233,7 +283,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete this accounting entry?</p>
+                    <p>Are you sure you want to delete this project image entry?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-subtle" data-bs-dismiss="modal">Cancel</button>
@@ -244,8 +294,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/filter.js"></script>
-    <script src="/js/index.js"></script>
+    <script src="/js/filter.js?v=2"></script>
+    <script src="/js/index.js?v=5"></script>
+
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" aria-live="polite"
+        aria-atomic="true"></div>
 
 </body>
 
