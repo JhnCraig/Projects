@@ -150,6 +150,7 @@ button {
 }
 
 .profile-chevron {
+    display: none;
     position: absolute;
     right: -0.15rem;
     bottom: 0.1rem;
@@ -599,6 +600,24 @@ button {
     border-color: #0f427a;
 }
 
+.department-page .table-actions-menu .export-menu-action {
+    color: #ffffff;
+    background: #15579d;
+    font-weight: 600;
+}
+
+.department-page .table-actions-menu {
+    padding: 0.35rem;
+    background: #15579d;
+    border-color: #15579d;
+}
+
+.department-page .table-actions-menu .export-menu-action:hover,
+.department-page .table-actions-menu .export-menu-action:focus {
+    color: #ffffff;
+    background: #0f427a;
+}
+
 .department-page .btn-back-action {
     display: none;
 }
@@ -665,7 +684,7 @@ button {
     border: 1px solid #deebf8;
     border-top: 0;
     border-radius: 0 0 0.75rem 0.75rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(46, 99, 149, 0.08);
+    box-shadow: 0 0.65rem 1.6rem rgba(46, 99, 149, 0.16);
 }
 
 .department-page .main-table-wrapper,
@@ -1076,6 +1095,11 @@ button {
 .accounting-toolbar-actions .btn {
     height: 2.2rem;
     font-size: 0.72rem;
+}
+
+.department-page .accounting-toolbar-actions .dropdown-menu {
+    max-height: 34rem;
+    overflow-y: auto;
 }
 
 .accounting-page .table-with-actions {

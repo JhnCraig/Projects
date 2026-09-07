@@ -1,3 +1,7 @@
+//Employee purchasing table and entry actions
+//Loads, renders, filters, saves, edits, and deletes purchasing records.
+
+//Keep the data table and action panel aligned.
 function syncEmployeeTableScroll(mainWrapper, actionPanel) {
     if (mainWrapper.dataset.scrollSyncAttached) return;
     let isSyncing = false;
@@ -109,6 +113,7 @@ function renderDocumentCell(value) {
     const encoded = encodeURIComponent(safeValue);
     return `<a href="/uploads/${encoded}" target="_blank" rel="noopener noreferrer" class="d-inline-block text-truncate" style="max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(label)}</a>`;
 }
+//Load purchasing records and render table rows.
 async function loadPurchasingRows() {
     const tbody = document.getElementById('purchasingTableBody'); if (!tbody) return; try {
         const res = await fetch('/api/purchasing'); const result = await res.json().catch(() => ({})); if (!res.ok) throw new Error(result.error || 'Failed to load purchasing records'); const rows = Array.isArray(result.data) ? result.data : [];
@@ -254,6 +259,7 @@ function collectPurchasingPayload(mode) {
     return payload;
 }
 
+//Save new and edited purchasing records.
 async function submitPurchasingModal(mode) {
     const button = mode === 'edit' ? saveEditedPurchasingBtn : savePurchasingBtn;
     if (button) button.disabled = true;
@@ -292,6 +298,7 @@ document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (e
     });
 });
 
+//Validate and import spreadsheet rows.
 function setupSpreadsheetImport(config) {
     const invalidFileMessage = 'Invalid File: The file does not match.';
     const validationMessage = document.getElementById('importValidationMessage');

@@ -1,3 +1,7 @@
+//Employee charts
+//Opens department chart modals and groups API data for visual summaries.
+
+//Fetch records, group chart values, and render the chart modal.
 function setupEmployeeChart({ buttonId, modalId, canvasId, endpoint, labelKey, valueKey, countOnly = false }) {
     const button = document.getElementById(buttonId);
     const modal = document.getElementById(modalId);
@@ -33,6 +37,6 @@ function setupEmployeeChart({ buttonId, modalId, canvasId, endpoint, labelKey, v
 }
 
 setupEmployeeChart({ buttonId: 'employeeSalesChartBtn', modalId: 'employeeSalesChartModal', canvasId: 'employeeSalesChart', endpoint: '/api/sales', labelKey: 'proj_code', valueKey: 'inv_amount' });
-setupEmployeeChart({ buttonId: 'employeeMarketingChartBtn', modalId: 'employeeMarketingChartModal', canvasId: 'employeeMarketingChart', endpoint: '/api/sales_marketing', labelKey: 'project_name', valueKey: 'project_value' });
+setupEmployeeChart({ buttonId: 'employeeMarketingChartBtn', modalId: 'employeeMarketingChartModal', canvasId: 'employeeMarketingChart', endpoint: '/api/sales_marketing', labelKey: 'source', valueKey: 'project_value' });
 setupEmployeeChart({ buttonId: 'employeePurchasingChartBtn', modalId: 'employeePurchasingChartModal', canvasId: 'employeePurchasingChart', endpoint: '/api/purchasing', labelKey: 'item_name', valueKey: 'total_amount' });
 setupEmployeeChart({ buttonId: 'employeeEngineeringChartBtn', modalId: 'employeeEngineeringChartModal', canvasId: 'employeeEngineeringChart', endpoint: '/api/engineering', labelKey: 'status', valueKey: 'status', countOnly: true });

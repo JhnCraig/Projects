@@ -1,6 +1,7 @@
-/* =========================================
-   PASSWORD MASKING
-   ========================================= */
+//Admin user management
+//Manages user listing, account creation, editing, password changes, and deletion.
+
+//Mask credentials and show operation feedback.
 function maskPassword(value) {
     if (!value) return '';
     return '•'.repeat(value.length);
@@ -113,6 +114,7 @@ function syncUserTableScroll() {
 /* =========================================
    LOAD USERS
    ========================================= */
+//Load users and render the management table.
 async function loadUsers() {
     const tableBody = document.getElementById('userTableBody');
     const actionPanel = document.getElementById('userActionPanel');
@@ -403,4 +405,5 @@ fetch('/api/current-user')
 /* =========================================
    LOAD USERS WHEN PAGE LOADS
    ========================================= */
+//Start the user-management view after the page loads.
 document.addEventListener('DOMContentLoaded', loadUsers);

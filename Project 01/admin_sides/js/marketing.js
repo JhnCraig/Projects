@@ -1,5 +1,8 @@
+//Admin marketing table and entry actions
+//Loads, renders, filters, saves, edits, and deletes marketing campaigns.
 let marketingRows = [];
 
+//Keep the data table and action panel aligned.
 function syncTableRowHeights(mainTable, actionTable) {
     const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);
     const actionRows = Array.from(actionTable.tBodies[0]?.rows || []);
@@ -25,6 +28,7 @@ function setupActionPanel(table) {
 document.addEventListener('click', (event) => { const editButton = event.target.closest('.edit-entry-btn'); if (!editButton || editButton.dataset.entry) return; const source = document.querySelector(`tr [data-id="${editButton.dataset.id}"]`); if (source?.closest('tr')?.dataset.entry) editButton.dataset.entry = source.closest('tr').dataset.entry; }, true);
 document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('table.table-premium').forEach(setupActionPanel));
 
+//Configure the marketing chart and summary modal.
 function setupTableChart(config) {
     const { buttonId, modalId, canvasId, getRows, labelKey, valueKey, summaryId } = config;
     const button = document.getElementById(buttonId);
@@ -179,6 +183,7 @@ function renderDocumentCell(value) {
     const cleanName = value.replace(/-[a-f0-9]{32}(?=\.)/i, '');
     return `<div style="display:inline-block; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><a href="/uploads/${encodeURIComponent(value)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(cleanName)}">${escapeHtml(cleanName)}</a></div>`;
 }
+//Load marketing records and render the table.
 async function loadMarketingRows() {
     const tbody = document.getElementById('marketingTableBody');
 
@@ -403,6 +408,7 @@ document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (e
     });
 });
 
+//Validate and import spreadsheet rows.
 function setupSpreadsheetImport(config) {
     const invalidFileMessage = 'Invalid File: The file does not match.';
     const validationMessage = document.getElementById('importValidationMessage');

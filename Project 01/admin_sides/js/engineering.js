@@ -1,3 +1,7 @@
+//Admin engineering table and entry actions
+//Loads, renders, filters, saves, edits, and deletes engineering projects.
+
+//Keep the data table and action panel aligned.
 function syncTableRowHeights(mainTable, actionTable) {
     const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);
     const actionRows = Array.from(actionTable.tBodies[0]?.rows || []);
@@ -156,6 +160,7 @@ function showToast(message, type = 'success') {
     }, 3200);
 }
 
+//Load engineering records and render project rows.
 async function loadEngineeringRows() {
     const tbody = document.getElementById('engineeringTableBody');
     if (!tbody) return;
@@ -201,6 +206,7 @@ async function loadEngineeringRows() {
     }
 }
 
+//Save new and edited engineering projects.
 async function submitEngineeringEntry() {
     if (window.location.protocol === 'file:') {
         showToast('This page must be opened through the Flask server. Start backEnd.py and open it using http://127.0.0.1:5000/engineering.html', 'danger');
@@ -424,6 +430,7 @@ saveEditBtn?.addEventListener('click', submitEngineeringEdit);
 
 document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', () => resetEngineeringNewEntry());
 
+//Validate and import spreadsheet rows.
 function setupSpreadsheetImport(config) {
     const invalidFileMessage = 'Invalid File: The file does not match.';
     const validationMessage = document.getElementById('importValidationMessage');

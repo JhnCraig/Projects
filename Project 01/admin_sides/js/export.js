@@ -1,3 +1,7 @@
+//Admin data export
+//Converts department API records into downloadable spreadsheet files.
+
+//Configure export buttons and build spreadsheet downloads.
 function initDataExport({ buttonId, endpoint, dateKey, title, filenamePrefix, columns }) {
     const button = document.getElementById(buttonId);
     if (!button || typeof XLSX === 'undefined') return;

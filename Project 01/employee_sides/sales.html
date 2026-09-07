@@ -15,10 +15,15 @@
 
 </head>
 
-<body class="department-page accounting-page">
+<body class="department-page accounting-page" data-department="sales">
 
     <header class="accounting-topbar">
         <a href="/employee" class="accounting-brand" aria-label="SBDC home"><img src="/employee/img/SBDC.svg" alt="SBDC logo"></a>
+        <div class="profile-menu">
+            <span class="profile-caption" data-profile-name>User</span>
+            <button type="button" class="profile-button" aria-label="Open profile menu" aria-expanded="false" aria-controls="profileDropdown"><i class="bi bi-person-fill" aria-hidden="true"></i><i class="bi bi-chevron-down profile-chevron" aria-hidden="true"></i></button>
+            <div class="profile-dropdown" id="profileDropdown" hidden><a href="#" class="profile-dropdown-item"><i class="bi bi-person" aria-hidden="true"></i><span data-profile-name>User</span></a><div class="profile-dropdown-divider"></div><a href="/logout" class="logout-link"><i class="bi bi-box-arrow-left" aria-hidden="true"></i><span>Log Out</span></a></div>
+        </div>
     </header>
 
     <div class="container-fluid p-0">
@@ -45,7 +50,7 @@
                                 title="More sales actions"><i class="bi bi-three-dots-vertical"></i></button>
                             <ul class="dropdown-menu dropdown-menu-end table-actions-menu"
                                 aria-labelledby="employeeSalesActionsBtn">
-                                <li><button id="exportEmployeeSalesBtn" class="dropdown-item" type="button"><i
+                                <li><button id="exportEmployeeSalesBtn" class="dropdown-item export-menu-action" type="button"><i
                                             class="bi bi-download me-2"></i>Export</button></li>
                             </ul>
                         </div>
@@ -54,10 +59,10 @@
                 </div>
 
                 <section class="accounting-summary-grid department-summary-grid" aria-label="Sales summary">
-                    <article class="accounting-summary-card"><span class="summary-icon blue"><i class="bi bi-journal-text"></i></span><div><span class="summary-label">Total Entries</span><strong data-summary="entries">0</strong><small>Sales records</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
-                    <article class="accounting-summary-card"><span class="summary-icon green"><i class="bi bi-currency-exchange"></i></span><div><span class="summary-label">Total Amount</span><strong data-summary="amount">₱ 0.00</strong><small>From all entries</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
-                    <article class="accounting-summary-card"><span class="summary-icon pale-blue"><i class="bi bi-calendar3"></i></span><div><span class="summary-label">This Month</span><strong data-summary="month">₱ 0.00</strong><small>Current month</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
-                    <article class="accounting-summary-card"><span class="summary-icon orange"><i class="bi bi-kanban"></i></span><div><span class="summary-label">Total Projects</span><strong data-summary="projects">0</strong><small>Across all entries</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                    <article class="accounting-summary-card"><span class="summary-icon blue"><i class="bi bi-journal"></i></span><div><span class="summary-label">Total Entries</span><strong data-summary="entries">0</strong><small>Sales entries</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                    <article class="accounting-summary-card"><span class="summary-icon green"><i class="bi bi-cash"></i></span><div><span class="summary-label">Total Amount</span><strong data-summary="amount">₱ 0.00</strong><small>Invoice total</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                    <article class="accounting-summary-card"><span class="summary-icon pale-blue"><i class="bi bi-wallet2"></i></span><div><span class="summary-label">Cash in Bank</span><strong data-summary="month">₱ 0.00</strong><small>Available cash</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                    <article class="accounting-summary-card"><span class="summary-icon orange"><i class="bi bi-kanban"></i></span><div><span class="summary-label">Total Projects</span><strong data-summary="projects">0</strong><small>Unique projects</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
                 </section>
 
                 <div class="accounting-table-toolbar d-flex justify-content-between align-items-center gap-2 mb-3">
@@ -564,8 +569,9 @@
         </div>
     </div>
     <script src="js/filter.js"></script>
-    <script src="js/workspace-summary.js"></script>
+    <script src="js/summaryCard.js"></script>
     <script src="js/sales.js"></script>
+    <script src="js/profile.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/export.js"></script>

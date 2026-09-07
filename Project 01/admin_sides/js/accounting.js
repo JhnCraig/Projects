@@ -1,3 +1,7 @@
+// Admin accounting table and entry actions
+//Loads, renders, filters, saves, edits, and deletes accounting records.
+
+//Initialize accounting controls and shared record state.
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const selectedFileName = document.getElementById("selectedFileName");
@@ -132,6 +136,7 @@ function showDeleteConfirmation(entryId) {
     modal.show();
 }
 
+//Render the accounting action panel and synchronize table rows.
 function renderActionPanel(rows) {
     const panel = document.getElementById('actionPanel');
     if (!panel) return;
@@ -182,6 +187,7 @@ function syncAccountingRowHeights() {
 
 window.addEventListener('resize', syncAccountingRowHeights);
 
+//Configure the accounting chart and summary modal.
 function setupTableChart(config) {
     const { buttonId, modalId, canvasId, getRows, labelKey, valueKey } = config;
     const button = document.getElementById(buttonId);
@@ -312,6 +318,7 @@ function collectAccountingPayload(mode) {
     return payload;
 }
 
+//Save new and edited accounting records.
 async function submitAccountingModal(mode) {
     const payload = collectAccountingPayload(mode);
     const button = mode === "edit" ? saveEditedAccountingBtn : saveAccountingBtn;
@@ -345,6 +352,7 @@ async function submitAccountingModal(mode) {
     }
 }
 
+//Load accounting records and render the table.
 async function loadAccountingRows() {
     const tbody = document.getElementById("accountingTableBody");
     if (!tbody) return;
@@ -524,6 +532,7 @@ function showPersistentImportError(message) {
 
 const invalidFileMessage = 'Invalid File: The file does not match.';
 
+//Parse, review, and validate accounting imports.
 async function reviewImportFile(file) {
     let parsedRows;
     try {

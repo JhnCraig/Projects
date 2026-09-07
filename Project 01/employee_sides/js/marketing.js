@@ -1,3 +1,7 @@
+//Employee marketing table and entry actions
+//Loads, renders, filters, saves, edits, and deletes marketing campaigns.
+
+//Keep the data table and action panel aligned.
 function syncEmployeeTableScroll(mainWrapper, actionPanel) {
     if (mainWrapper.dataset.scrollSyncAttached) return;
     let isSyncing = false;
@@ -145,6 +149,7 @@ function renderDocumentCell(value) {
     const cleanName = value.replace(/-[a-f0-9]{32}(?=\.)/i, '');
     return `<div style="display:inline-block; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><a href="/uploads/${encodeURIComponent(value)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(cleanName)}">${escapeHtml(cleanName)}</a></div>`;
 }
+//Load marketing records and render table rows.
 async function loadMarketingRows() {
     const tbody = document.getElementById('marketingTableBody');
 
@@ -287,6 +292,7 @@ function collectMarketingPayload(mode) {
     return payload;
 }
 
+//Save new and edited marketing records.
 async function submitMarketingModal(mode) {
     const button = mode === 'edit' ? saveEditedMarketingBtn : null;
     if (button) button.disabled = true;
@@ -351,6 +357,7 @@ document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (e
     });
 });
 
+//Validate and import spreadsheet rows.
 function setupSpreadsheetImport(config) {
     const invalidFileMessage = 'Invalid File: The file does not match.';
     const validationMessage = document.getElementById('importValidationMessage');

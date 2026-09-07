@@ -1,5 +1,8 @@
+//Admin sales table and entry actions
+//Loads, renders, filters, saves, edits, and deletes sales records.
 let salesRows = [];
 
+//Keep the data table and action panel aligned.
 function syncTableRowHeights(mainTable, actionTable) {
     const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);
     const actionRows = Array.from(actionTable.tBodies[0]?.rows || []);
@@ -198,6 +201,7 @@ function collectSalesPayload(mode) {
     return payload;
 }
 
+//Save new and edited sales records.
 async function submitSalesModal(mode) {
     const payload = collectSalesPayload(mode);
     const button = mode === 'edit' ? saveEditedSalesBtn : null;
@@ -351,6 +355,7 @@ function formatDate(value) {
     });
 }
 
+//Load sales records and render the table.
 async function loadSalesRows() {
     const tbody = document.getElementById('salesTableBody');
 
@@ -539,6 +544,7 @@ document.getElementById('confirmDeleteBtn')?.addEventListener(
 
 document.addEventListener('DOMContentLoaded', loadSalesRows);
 
+//Configure the sales chart and summary modal.
 function setupTableChart(config) {
     const { buttonId, modalId, canvasId, getRows, labelKey, valueKey } = config;
     const button = document.getElementById(buttonId);
@@ -671,6 +677,7 @@ document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (e
     });
 });
 
+//Validate and import spreadsheet rows.
 function setupSpreadsheetImport(config) {
     const invalidFileMessage = 'Invalid File: The file does not match.';
     const validationMessage = document.getElementById('importValidationMessage');

@@ -1,3 +1,7 @@
+//Employee accounting table and entry actions
+//Loads, renders, filters, saves, edits, and deletes accounting records.
+
+//Initialize accounting controls and shared record state.
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const selectedFileName = document.getElementById("selectedFileName");
@@ -135,6 +139,7 @@ if (newEntryModal) {
     newEntryModal.addEventListener('hidden.bs.modal', resetNewEntryForm);
 }
 
+//Render the accounting action panel and synchronize table rows.
 function renderActionPanel(rows) {
     const panel = document.getElementById('actionPanel');
     if (!panel) return;
@@ -199,6 +204,7 @@ function syncAccountingRowHeights() {
 
 window.addEventListener('resize', syncAccountingRowHeights);
 
+//Build the accounting chart and summary metrics.
 function renderAccountingChart(rows) {
     const canvas = document.getElementById('accountingChart');
     if (!canvas || typeof Chart === 'undefined') return;
@@ -338,6 +344,7 @@ function collectAccountingPayload(mode) {
     return payload;
 }
 
+//Save new and edited accounting records.
 async function submitAccountingModal(mode) {
     const payload = collectAccountingPayload(mode);
     const button = mode === "edit" ? saveEditedAccountingBtn : saveAccountingBtn;
@@ -374,6 +381,7 @@ async function submitAccountingModal(mode) {
     }
 }
 
+//Load accounting records and render the table.
 async function loadAccountingRows() {
     const tbody = document.getElementById("accountingTableBody");
     if (!tbody) return;

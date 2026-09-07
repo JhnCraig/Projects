@@ -15,10 +15,16 @@
 
 </head>
 
-<body class="department-page accounting-page">
+<body class="department-page accounting-page" data-department="marketing">
 
     <header class="accounting-topbar">
-        <a href="/employee" class="accounting-brand" aria-label="SBDC home"><img src="/employee/img/SBDC.svg" alt="SBDC logo"></a>
+        <a href="/employee" class="accounting-brand" aria-label="SBDC home"><img src="/employee/img/SBDC.svg"
+            alt="SBDC logo"></a>
+        <div class="profile-menu">
+            <span class="profile-caption" data-profile-name>User</span>
+            <button type="button" class="profile-button" aria-label="Open profile menu" aria-expanded="false" aria-controls="profileDropdown"><i class="bi bi-person-fill" aria-hidden="true"></i><i class="bi bi-chevron-down profile-chevron" aria-hidden="true"></i></button>
+            <div class="profile-dropdown" id="profileDropdown" hidden><a href="#" class="profile-dropdown-item"><i class="bi bi-person" aria-hidden="true"></i><span data-profile-name>User</span></a><div class="profile-dropdown-divider"></div><a href="/logout" class="logout-link"><i class="bi bi-box-arrow-left" aria-hidden="true"></i><span>Log Out</span></a></div>
+        </div>
     </header>
 
     <div class="container-fluid p-0">
@@ -30,8 +36,16 @@
                 <!-- System Area Greeting Header -->
                 <div class="main-page-header d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="accounting-breadcrumb"><a href="/employee"><i class="bi bi-house-fill" aria-hidden="true"></i> Home</a><i class="bi bi-chevron-right" aria-hidden="true"></i><span>Sales / Marketing</span></div>
-                        <div class="accounting-title-row"><span class="accounting-title-icon"><i class="bi bi-megaphone" aria-hidden="true"></i></span><div><h1 class="h3 fw-bold mb-1">Sales / Marketing</h1><p class="text-muted small mb-0">Track and manage your sales / marketing campaigns</p></div></div>
+                        <div class="accounting-breadcrumb"><a href="/employee"><i class="bi bi-house-fill"
+                                    aria-hidden="true"></i> Home</a><i class="bi bi-chevron-right"
+                                aria-hidden="true"></i><span>Sales / Marketing</span></div>
+                        <div class="accounting-title-row"><span class="accounting-title-icon"><i class="bi bi-megaphone"
+                                    aria-hidden="true"></i></span>
+                            <div>
+                                <h1 class="h3 fw-bold mb-1">Sales / Marketing</h1>
+                                <p class="text-muted small mb-0">Track and manage your sales / marketing campaigns</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="main-actions d-flex gap-2 ms-auto">
@@ -45,7 +59,7 @@
                                 title="More marketing actions"><i class="bi bi-three-dots-vertical"></i></button>
                             <ul class="dropdown-menu dropdown-menu-end table-actions-menu"
                                 aria-labelledby="employeeMarketingActionsBtn">
-                                <li><button id="exportEmployeeMarketingBtn" class="dropdown-item" type="button"><i
+                                <li><button id="exportEmployeeMarketingBtn" class="dropdown-item export-menu-action" type="button"><i
                                             class="bi bi-download me-2"></i>Export</button></li>
                             </ul>
                         </div>
@@ -53,70 +67,92 @@
                     </div>
                 </div>
 
-                <section class="accounting-summary-grid department-summary-grid" aria-label="Sales and marketing summary">
-                    <article class="accounting-summary-card"><span class="summary-icon blue"><i class="bi bi-journal-text"></i></span><div><span class="summary-label">Total Entries</span><strong data-summary="entries">0</strong><small>Campaign records</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
-                    <article class="accounting-summary-card"><span class="summary-icon green"><i class="bi bi-currency-exchange"></i></span><div><span class="summary-label">Total Amount</span><strong data-summary="amount">₱ 0.00</strong><small>From all entries</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
-                    <article class="accounting-summary-card"><span class="summary-icon pale-blue"><i class="bi bi-calendar3"></i></span><div><span class="summary-label">This Month</span><strong data-summary="month">₱ 0.00</strong><small>Current month</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
-                    <article class="accounting-summary-card"><span class="summary-icon orange"><i class="bi bi-kanban"></i></span><div><span class="summary-label">Total Projects</span><strong data-summary="projects">0</strong><small>Across all entries</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                <section class="accounting-summary-grid department-summary-grid"
+                    aria-label="Sales and marketing summary">
+                    <article class="accounting-summary-card"><span class="summary-icon blue"><i
+                                class="bi bi-journal"></i></span>
+                        <div><span class="summary-label">Total Opportunities</span><strong
+                                data-summary="entries">0</strong><small>Marketing entries</small></div><i
+                            class="bi bi-chevron-right summary-chevron"></i>
+                    </article>
+                    <article class="accounting-summary-card"><span class="summary-icon green"><i
+                                class="bi bi-currency-exchange"></i></span>
+                        <div><span class="summary-label">Pipeline value</span><strong data-summary="amount">₱
+                                0.00</strong><small>Total opportunity value</small></div><i
+                            class="bi bi-chevron-right summary-chevron"></i>
+                    </article>
+                    <article class="accounting-summary-card"><span class="summary-icon pale-blue"><i
+                                class="bi bi-trophy"></i></span>
+                        <div><span class="summary-label">Won</span><strong data-summary="month">0</strong><small>Won opportunities</small></div><i
+                            class="bi bi-chevron-right summary-chevron"></i>
+                    </article>
+                    <article class="accounting-summary-card"><span class="summary-icon orange"><i
+                                class="bi bi-kanban"></i></span>
+                        <div><span class="summary-label">Total Projects</span><strong
+                                data-summary="projects">0</strong><small>Unique projects</small></div><i
+                            class="bi bi-chevron-right summary-chevron"></i>
+                    </article>
                 </section>
                 <div class="accounting-table-toolbar d-flex justify-content-between align-items-center gap-2 mb-3">
-                    <label class="accounting-search"><i class="bi bi-search"></i><input id="workspaceSearch" type="search" placeholder="Search table" aria-label="Search sales and marketing records"></label>
+                    <label class="accounting-search"><i class="bi bi-search"></i><input id="workspaceSearch"
+                            type="search" placeholder="Search table"
+                            aria-label="Search sales and marketing records"></label>
                     <div class="accounting-toolbar-actions d-flex justify-content-end align-items-center gap-2">
-                    <div class="dropdown">
-                        
-                        <!-- Filter -->
-                        <button id="salesMarketingFilterBtn" class="btn btn-outline-subtle dropdown-toggle"
-                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-funnel me-1"></i> Filter
+                        <div class="dropdown">
+
+                            <!-- Filter -->
+                            <button id="salesMarketingFilterBtn" class="btn btn-outline-subtle dropdown-toggle"
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-funnel me-1"></i> Filter
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end" id="salesMarketingFilterMenu">
+                                <li><button class="dropdown-item sales-marketing-filter-option active" type="button"
+                                        data-filter="all">All</button></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="date_received">Date Received</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="client_name_company">Client's Name/Company</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="project_name">Projects Name</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="source">Source</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="project_value">Project Value</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="project_type">Project Type</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="deadline_of_submission">Deadline of Submission</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="days_of_deadlines">Days of Deadlines</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="status">Status</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="date_submitted">Date Submitted</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="response_time_days">Response Time(Days)</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="follow_up_date">Follow-up Date</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="days_to_follow_up">Days to Follow-up</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="file">File</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="lost_reason">Lost Reason</button></li>
+                                <li><button class="dropdown-item sales-marketing-filter-option" type="button"
+                                        data-filter="actions">Actions</button></li>
+                            </ul>
+                        </div>
+
+                        <!-- Chart -->
+                        <button id="employeeMarketingChartBtn" class="btn btn-outline-subtle chart-toggle-btn"
+                            type="button" title="Show sales marketing chart" aria-label="Show sales marketing chart">
+                            <i class="bi bi-pie-chart-fill me-1"></i> Chart
                         </button>
-
-                        <ul class="dropdown-menu dropdown-menu-end" id="salesMarketingFilterMenu">
-                            <li><button class="dropdown-item sales-marketing-filter-option active" type="button"
-                                    data-filter="all">All</button></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="date_received">Date Received</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="client_name_company">Client's Name/Company</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="project_name">Projects Name</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="source">Source</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="project_value">Project Value</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="project_type">Project Type</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="deadline_of_submission">Deadline of Submission</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="days_of_deadlines">Days of Deadlines</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="status">Status</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="date_submitted">Date Submitted</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="response_time_days">Response Time(Days)</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="follow_up_date">Follow-up Date</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="days_to_follow_up">Days to Follow-up</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="file">File</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="lost_reason">Lost Reason</button></li>
-                            <li><button class="dropdown-item sales-marketing-filter-option" type="button"
-                                    data-filter="actions">Actions</button></li>
-                        </ul>
                     </div>
-
-                    <!-- Chart -->
-                    <button id="employeeMarketingChartBtn" class="btn btn-outline-subtle chart-toggle-btn" type="button"
-                        title="Show sales marketing chart" aria-label="Show sales marketing chart">
-                        <i class="bi bi-pie-chart-fill me-1"></i> Chart
-                    </button>
-                </div>
                 </div>
 
                 <!-- New Entry Modal -->
@@ -504,16 +540,25 @@
     </div>
 
     <div class="modal fade" id="employeeMarketingChartModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">Sales / Marketing</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-            <div class="modal-body"><div style="position: relative; height: 360px; width: 100%;"><canvas id="employeeMarketingChart"></canvas></div></div>
-        </div></div>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sales / Marketing</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div style="position: relative; height: 360px; width: 100%;"><canvas
+                            id="employeeMarketingChart"></canvas></div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="js/filter.js"></script>
-    <script src="js/workspace-summary.js"></script>
+    <script src="js/summaryCard.js"></script>
     <script src="js/marketing.js"></script>
+    <script src="js/profile.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/export.js"></script>

@@ -1,3 +1,7 @@
+//Employee sales table and entry actions
+//Loads, renders, filters, saves, edits, and deletes sales records.
+
+//Keep the data table and action panel aligned.
 function syncEmployeeTableScroll(mainWrapper, actionPanel) {
     if (mainWrapper.dataset.scrollSyncAttached) return;
     let isSyncing = false;
@@ -60,6 +64,7 @@ if (fileInput) {
 const saveEditedSalesBtn = document.getElementById('saveEditedSalesBtn');
 let pendingSaveMode = null;
 
+//Prepare sales form values and confirm save operations.
 function showSaveConfirmation(mode) {
     pendingSaveMode = mode;
     const modalEl = document.getElementById('saveConfirmModal');
@@ -227,6 +232,7 @@ function formatDate(value) {
     });
 }
 
+//Load sales records and render table rows.
 async function loadSalesRows() {
     const tbody = document.getElementById('salesTableBody');
     if (!tbody) return;
@@ -358,6 +364,7 @@ document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (e
     });
 });
 
+//Validate and import spreadsheet rows.
 function setupSpreadsheetImport(config) {
     const invalidFileMessage = 'Invalid File: The file does not match.';
     const validationMessage = document.getElementById('importValidationMessage');

@@ -1,3 +1,7 @@
+//Admin dashboard charts and summaries
+//Loads each department API and renders overview summary cards and charts.
+
+//Define dashboard data sources and chart display settings.
 const userNameTargets = document.querySelectorAll('[data-user-display]');
 
 fetch('/api/current-user')
@@ -73,6 +77,7 @@ function getTotal(rows, keys) {
     return rows.reduce((total, entry) => total + getEntryValue(entry, keys), 0);
 }
 
+//Calculate and render department summary metrics.
 function renderDashboardSummary(config, rows) {
     const summary = document.getElementById(`${config.id}DashboardSummary`);
     if (!summary) return;
@@ -153,6 +158,7 @@ function getChartGroups(rows, config) {
     return groups;
 }
 
+//Group department data and render overview charts.
 function renderDashboardChart(config, rows) {
     const canvas = document.getElementById(config.canvasId);
     if (!canvas || typeof Chart === 'undefined') return;
@@ -201,6 +207,7 @@ function renderDashboardChart(config, rows) {
     dashboardCharts[config.id].update();
 }
 
+//Fetch department records and refresh each dashboard card.
 async function loadDashboardChart(config) {
     try {
         const response = await fetch(config.endpoint);

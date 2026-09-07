@@ -1,3 +1,7 @@
+//Employee table filtering and sorting
+//Applies selected field filters and preserves the active filter state.
+
+//Normalize filter values and connect filter-menu actions.
 (() => {
     const defaultOrders = new WeakMap();
     const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');

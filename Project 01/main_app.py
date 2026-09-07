@@ -2,6 +2,8 @@
 # Note: Flask and mysql-connector-python are need to be installed in the environment for this script to work.
 # Note: pip install Flask or py -m install Flask if the  first command does not work.
 # Note: pip install mysql-connector-python or py -m install mysql-connector-python if the first command does not work.
+
+# Note: Change the Password in 47 so it can connect to the Database (DB)
 #=======================================================================================================================
 
 
@@ -392,7 +394,6 @@ def _normalize_date_value(value):
 EMPLOYEE_SIDES_DIR = os.path.join(BASE_DIR, 'employee_sides')
 
 
-# ====== Employee Side ======
 # =========================================================
 # Employee dashboard pages and static assets
 # =========================================================

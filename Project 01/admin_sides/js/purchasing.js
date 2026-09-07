@@ -1,5 +1,8 @@
+//Admin purchasing table and entry actions
+//Loads, renders, filters, saves, edits, and deletes purchasing records.
 let purchasingRows = [];
 
+// SUBSECTION: Keep the data table and action panel aligned.
 function syncTableRowHeights(mainTable, actionTable) {
     const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);
     const actionRows = Array.from(actionTable.tBodies[0]?.rows || []);
@@ -198,6 +201,7 @@ document.addEventListener('click', async (event) => {
         showDeleteConfirmation(id, 'purchasing');
     }
 });
+// SUBSECTION: Configure the purchasing chart and summary modal.
 function setupTableChart(config) {
     const { buttonId, modalId, canvasId, getRows, labelKey, valueKey } = config;
     const button = document.getElementById(buttonId);
@@ -277,6 +281,7 @@ function collectPurchasingPayload(mode) {
     return payload;
 }
 
+// SUBSECTION: Save new and edited purchasing records.
 async function submitPurchasingModal(mode) {
     const button = mode === 'edit' ? saveEditedPurchasingBtn : savePurchasingBtn;
     if (button) button.disabled = true;
@@ -331,6 +336,7 @@ document.getElementById('newEntryModal')?.addEventListener('hidden.bs.modal', (e
     });
 });
 
+// SUBSECTION: Validate and import spreadsheet rows.
 function setupSpreadsheetImport(config) {
     const invalidFileMessage = 'Invalid File: The file does not match.';
     const validationMessage = document.getElementById('importValidationMessage');
