@@ -1,8 +1,6 @@
 ﻿import os
 import re
 import uuid
-from datetime import datetime
-
 from flask import Flask, jsonify, render_template, request, send_from_directory
 
 try:
@@ -18,8 +16,10 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)
 CSS_DIR = os.path.join(BASE_DIR, 'css')
 JS_DIR = os.path.join(BASE_DIR, 'js')
 ADMIN_IMG_DIR = os.path.join(BASE_DIR, 'img')
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 IMG_DIR = os.path.join(PROJECT_DIR, 'img')
 UPLOAD_DIR = IMG_DIR
+ALLOWED_IMAGE_EXTENSIONS = {'.gif', '.jpeg', '.jpg', '.png', '.webp'}
 
 # =========================================================
 # Connection to the Database
@@ -33,7 +33,7 @@ MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'sbdc_web')
 
 # ===========================================================
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder=TEMPLATES_DIR)
 
 
 @app.after_request
@@ -68,6 +68,8 @@ def save_uploaded_file(file_storage, desired_name=''):
     ensure_upload_dir()
     filename = os.path.basename(file_storage.filename)
     original_stem, ext = os.path.splitext(filename)
+    if ext.lower() not in ALLOWED_IMAGE_EXTENSIONS:
+        raise ValueError('Only GIF, JPEG, PNG, and WEBP images are allowed.')
     name_source = desired_name.strip() or original_stem
     safe_stem = re.sub(r'[^A-Za-z0-9._-]+', '_', name_source).strip('._-') or f'image-{uuid.uuid4().hex}'
     safe_name = f'{safe_stem}{ext.lower()}'
@@ -99,10 +101,53 @@ def init_db():
                 image_path VARCHAR(255),
                 source VARCHAR(255),
                 project_name VARCHAR(255),
+                location VARCHAR(255),
+                status VARCHAR(50) DEFAULT 'Pending',
+                description TEXT,
+                scope_of_work TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             '''
         )
+        cursor.execute(
+            """
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = %s AND table_name = 'project_entries' AND column_name = 'location'
+            """,
+            (MYSQL_DATABASE,),
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("ALTER TABLE project_entries ADD COLUMN location VARCHAR(255)")
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = %s AND table_name = 'project_entries' AND column_name = 'status'
+            """,
+            (MYSQL_DATABASE,),
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("ALTER TABLE project_entries ADD COLUMN status VARCHAR(50) DEFAULT 'Pending'")
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = %s AND table_name = 'project_entries' AND column_name = 'description'
+            """,
+            (MYSQL_DATABASE,),
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("ALTER TABLE project_entries ADD COLUMN description TEXT")
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = %s AND table_name = 'project_entries' AND column_name = 'scope_of_work'
+            """,
+            (MYSQL_DATABASE,),
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("ALTER TABLE project_entries ADD COLUMN scope_of_work TEXT")
         conn.commit()
     finally:
         conn.close()
@@ -136,8 +181,11 @@ def serve_upload(filename):
     return send_from_directory(UPLOAD_DIR, filename)
 
 
-@app.route('/api/entries', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/api/entries', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def api_entries():
+    if request.method == 'OPTIONS':
+        return '', 204
+
     if request.method == 'GET':
         try:
             init_db()
@@ -146,7 +194,8 @@ def api_entries():
                 cursor = conn.cursor(dictionary=True)
                 cursor.execute(
                     '''
-                    SELECT id, file_name, image_path, source, project_name, created_at
+                          SELECT id, file_name, image_path, source, project_name, location, status,
+                              description, scope_of_work, created_at
                     FROM project_entries
                     ORDER BY id DESC
                     '''
@@ -211,16 +260,22 @@ def api_entries():
                 file_name = file_name or (image_file.filename if image_file else current_entry['file_name'] or '')
                 source = (payload.get('source') or '').strip()
                 project_name = (payload.get('project_name') or payload.get('project') or '').strip()
+                location = (payload.get('location') or '').strip()
+                status = (payload.get('status') or 'Pending').strip()
+                description = (payload.get('description') or '').strip()
+                scope_of_work = (payload.get('scope_of_work') or '').strip()
                 image_name = save_uploaded_file(image_file, project_name)
                 image_path = image_name or current_entry['image_path'] or ''
 
                 cursor.execute(
                     '''
                     UPDATE project_entries
-                    SET file_name = %s, image_path = %s, source = %s, project_name = %s
+                    SET file_name = %s, image_path = %s, source = %s, project_name = %s,
+                        location = %s, status = %s, description = %s, scope_of_work = %s
                     WHERE id = %s
                     ''',
-                    (file_name, image_path, source, project_name, entry_id),
+                    (file_name, image_path, source, project_name, location, status, description,
+                     scope_of_work, entry_id),
                 )
                 conn.commit()
 
@@ -230,19 +285,27 @@ def api_entries():
                 return jsonify({'status': 'success', 'message': 'Entry updated successfully.'}), 200
             finally:
                 conn.close()
+        except ValueError as exc:
+            return jsonify({'error': str(exc)}), 400
         except Error as exc:
             app.logger.exception('Unable to update entry: %s', exc)
             return jsonify({'error': 'Failed to update entry'}), 500
 
     payload = request.form.to_dict() if not request.is_json else (request.get_json(silent=True) or {})
-    image_file = request.files.get('image') if request.files else None
+    image_files = request.files.getlist('image') if request.files else []
+    image_files = [file for file in image_files if getattr(file, 'filename', '')]
 
-    file_name = (payload.get('file_name') or '').strip() or (image_file.filename if image_file else '')
+    file_name = (payload.get('file_name') or '').strip()
     source = (payload.get('source') or '').strip()
     project_name = (payload.get('project_name') or payload.get('project') or '').strip()
-    image_name = save_uploaded_file(image_file, project_name)
+    location = (payload.get('location') or '').strip()
+    status = (payload.get('status') or 'Pending').strip()
+    description = (payload.get('description') or '').strip()
+    scope_of_work = (payload.get('scope_of_work') or '').strip()
+    if not file_name and len(image_files) == 1:
+        file_name = image_files[0].filename
 
-    if not source and not project_name and not file_name:
+    if not source and not project_name and not file_name and not image_files:
         return jsonify({'error': 'Entry is empty'}), 400
 
     try:
@@ -250,17 +313,27 @@ def api_entries():
         conn = get_db_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute(
-                '''
-                INSERT INTO project_entries (file_name, image_path, source, project_name)
-                VALUES (%s, %s, %s, %s)
-                ''',
-                (file_name, image_name, source, project_name),
-            )
+            files_to_save = image_files or [None]
+            for image_file in files_to_save:
+                image_name = save_uploaded_file(image_file, project_name) if image_file else ''
+                current_file_name = file_name or (image_file.filename if image_file else '')
+                cursor.execute(
+                    '''
+                    INSERT INTO project_entries (
+                        file_name, image_path, source, project_name, location, status, description, scope_of_work
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ''',
+                    (current_file_name, image_name, source, project_name, location, status, description,
+                     scope_of_work),
+                )
             conn.commit()
-            return jsonify({'status': 'success', 'message': 'Entry saved successfully.'}), 200
+            saved_count = len(files_to_save)
+            message = f'{saved_count} image(s) saved successfully.' if image_files else 'Entry saved successfully.'
+            return jsonify({'status': 'success', 'message': message, 'saved_count': saved_count}), 200
         finally:
             conn.close()
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
     except Error as exc:
         app.logger.exception('Unable to save entry: %s', exc)
         return jsonify({'error': 'Failed to save entry'}), 500

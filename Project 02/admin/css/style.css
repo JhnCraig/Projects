@@ -212,6 +212,11 @@ h1, h2, h3, h4, h5 {
     border: 1px solid var(--brand-blue);
 }
 
+.upload-image-button {
+    min-width: 165px;
+    white-space: nowrap;
+}
+
 .btn-brand-action:hover, .btn-brand-action:focus-visible {
     color: #ffffff;
     background: #245ed5;
@@ -262,10 +267,13 @@ h1, h2, h3, h4, h5 {
     background: var(--brand-surface);
     border: 0;
     border-radius: 16px 0 0 16px;
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: #b6c9e8 #edf3ff;
 }
 
-.main-table-wrapper::-webkit-scrollbar { width: 0; }
+.main-table-wrapper::-webkit-scrollbar { width: 10px; height: 10px; }
+.main-table-wrapper::-webkit-scrollbar-thumb { background: #b6c9e8; border-radius: 999px; }
+.main-table-wrapper::-webkit-scrollbar-track { background: #edf3ff; }
 
 .user-action-panel {
     flex: 0 0 120px;
@@ -282,8 +290,8 @@ h1, h2, h3, h4, h5 {
 }
 
 .table-premium {
-    width: 100%;
-    min-width: 100%;
+    width: max-content;
+    min-width: 1570px;
     margin: 0;
     border-collapse: separate;
     border-spacing: 0;
@@ -307,6 +315,7 @@ h1, h2, h3, h4, h5 {
 }
 
 .table-premium td {
+    max-width: 500px;
     color: #536887;
     font-size: 0.9rem;
     overflow-wrap: anywhere;
@@ -315,7 +324,24 @@ h1, h2, h3, h4, h5 {
 }
 
 .table-premium tbody tr:last-child td { border-bottom: 0; }
+.accounting-table tbody tr,
+.action-table tbody tr {
+    height: 76px;
+}
+
+.accounting-table tbody td,
+.action-table tbody td {
+    height: 76px;
+}
+
 .accounting-table { table-layout: fixed; }
+.accounting-table .column-image { width: 130px; }
+.accounting-table .column-category { width: 220px; }
+.accounting-table .column-date { width: 150px; }
+.accounting-table .column-project { width: 240px; }
+.accounting-table .column-location { width: 180px; }
+.accounting-table .column-status { width: 150px; }
+.accounting-table .column-description { width: 500px; }
 
 .entry-image-preview {
     max-width: 90px;
@@ -325,7 +351,12 @@ h1, h2, h3, h4, h5 {
     cursor: zoom-in;
 }
 
-.action-table { width: 100%; margin: 0; table-layout: fixed; }
+.action-table {
+    width: 100%;
+    min-width: 100%;
+    margin: 0;
+    table-layout: fixed;
+}
 .action-table th, .action-table td { padding: 12px 10px; }
 .action-table .action-buttons { display: flex; align-items: center; justify-content: center; gap: 6px; }
 

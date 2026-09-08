@@ -1,11 +1,11 @@
-const saveAccountingBtn = document.getElementById('saveAccountingBtn');
+const saveEntryBtn = document.getElementById('saveEntryBtn');
 const fileInput = document.getElementById('newEntryFileInput');
 const selectedFileName = document.getElementById('selectedFileName');
 const newEntryUploadBtn = document.getElementById('newEntryUploadBtn');
 const newBtn = document.getElementById('newBtn');
 const entryModalLabel = document.getElementById('newEntryModalLabel');
 const deleteConfirmBtn = document.getElementById('confirmDeleteBtn');
-const accountingTableBody = document.getElementById('accountingTableBody');
+const entriesTableBody = document.getElementById('accountingTableBody');
 const actionTableBody = document.getElementById('actionTableBody');
 const accountingTableWrapper = document.getElementById('accountingTableWrapper');
 const actionPanel = document.getElementById('actionPanel');
@@ -63,14 +63,16 @@ function formatDate(value) {
 }
 
 function resetForm() {
-    const fields = ['source', 'project_name', 'file_name'];
+    const fields = ['source', 'project_name', 'location', 'scope_of_work', 'description', 'file_name'];
     fields.forEach((id) => {
         const element = document.getElementById(id);
         if (element) element.value = '';
     });
 
     if (fileInput) fileInput.value = '';
-    if (selectedFileName) selectedFileName.textContent = 'No file chosen';
+    if (selectedFileName) selectedFileName.textContent = 'No files chosen';
+    const statusField = document.getElementById('status');
+    if (statusField) statusField.value = '';
 }
 
 function getFieldValue(id) {
@@ -81,16 +83,24 @@ function setEntryModalMode(mode) {
     const isEdit = mode === 'edit';
     editingEntryId = isEdit ? editingEntryId : null;
     if (entryModalLabel) entryModalLabel.textContent = isEdit ? 'Edit Entry' : 'New Entry';
-    if (saveAccountingBtn) saveAccountingBtn.textContent = isEdit ? 'Update' : 'Save';
+    if (saveEntryBtn) saveEntryBtn.textContent = isEdit ? 'Update' : 'Save';
 }
 
 function openEditModal(entry) {
     editingEntryId = entry.id;
     const sourceField = document.getElementById('source');
     const projectNameField = document.getElementById('project_name');
+    const locationField = document.getElementById('location');
+    const statusField = document.getElementById('status');
+    const descriptionField = document.getElementById('description');
+    const scopeOfWorkField = document.getElementById('scope_of_work');
     const fileNameField = document.getElementById('file_name');
     if (sourceField) sourceField.value = entry.source || '';
     if (projectNameField) projectNameField.value = entry.project_name || '';
+    if (locationField) locationField.value = entry.location || '';
+    if (statusField) statusField.value = entry.status || 'Pending';
+    if (descriptionField) descriptionField.value = entry.description || '';
+    if (scopeOfWorkField) scopeOfWorkField.value = entry.scope_of_work || '';
     if (fileNameField) fileNameField.value = entry.file_name || '';
     if (fileInput) fileInput.value = '';
     if (selectedFileName) selectedFileName.textContent = entry.image_path || 'Current image will be kept';
@@ -141,6 +151,12 @@ function syncTableRowHeights() {
         const rowHeight = Math.max(row.getBoundingClientRect().height, actionRow.getBoundingClientRect().height);
         row.style.height = `${rowHeight}px`;
         actionRow.style.height = `${rowHeight}px`;
+        row.querySelectorAll('td').forEach((cell) => {
+            cell.style.height = `${rowHeight}px`;
+        });
+        actionRow.querySelectorAll('td').forEach((cell) => {
+            cell.style.height = `${rowHeight}px`;
+        });
     });
 }
 
@@ -152,14 +168,23 @@ function syncTableScroll(source, target) {
     const targetMaxScroll = target.scrollHeight - target.clientHeight;
     const scrollRatio = sourceMaxScroll > 0 ? source.scrollTop / sourceMaxScroll : 0;
     target.scrollTop = scrollRatio * Math.max(targetMaxScroll, 0);
-    syncingTableScroll = false;
+    requestAnimationFrame(() => {
+        syncingTableScroll = false;
+    });
+}
+
+function refreshTableLayout() {
+    syncTableRowHeights();
+    if (accountingTableWrapper && actionPanel) {
+        syncTableScroll(accountingTableWrapper, actionPanel);
+    }
 }
 
 async function loadEntries() {
     const tbody = document.getElementById('accountingTableBody');
     if (!tbody) return;
 
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Loading records...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Loading records...</td></tr>';
 
     try {
         const response = await fetch('/api/entries');
@@ -169,7 +194,7 @@ async function loadEntries() {
         const rows = Array.isArray(result.data) ? result.data : [];
         loadedEntries = rows;
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No records found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No records found.</td></tr>';
             renderActionPanel([]);
             return;
         }
@@ -185,14 +210,18 @@ async function loadEntries() {
                     <td>${escapeHtml(row.source || '')}</td>
                     <td>${escapeHtml(formatDate(row.created_at))}</td>
                     <td>${escapeHtml(row.project_name || '')}</td>
+                    <td>${escapeHtml(row.location || '')}</td>
+                    <td>${escapeHtml(row.status || 'Pending')}</td>
+                    <td>${escapeHtml(row.scope_of_work || '')}</td>
+                    <td>${escapeHtml(row.description || '')}</td>
                 </tr>
             `;
         }).join('');
 
         renderActionPanel(rows);
-        requestAnimationFrame(syncTableRowHeights);
+        requestAnimationFrame(refreshTableLayout);
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${escapeHtml(error.message || 'Unable to load records')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">${escapeHtml(error.message || 'Unable to load records')}</td></tr>`;
         renderActionPanel([]);
     }
 }
@@ -202,21 +231,34 @@ async function submitEntry() {
     const source = getFieldValue('source');
     const projectName = getFieldValue('project_name');
     const fileName = getFieldValue('file_name');
+    const location = getFieldValue('location');
+    const status = getFieldValue('status');
+    const description = getFieldValue('description');
+    const scopeOfWork = getFieldValue('scope_of_work');
 
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-        formData.append('image', fileInput.files[0]);
+    if (fileInput && fileInput.files && fileInput.files.length) {
+        Array.from(fileInput.files).forEach((file) => formData.append('image', file));
     }
     if (source) formData.append('source', source);
     if (projectName) formData.append('project_name', projectName);
     if (fileName) formData.append('file_name', fileName);
+    if (location) formData.append('location', location);
+    formData.append('status', status);
+    if (description) formData.append('description', description);
+    if (scopeOfWork) formData.append('scope_of_work', scopeOfWork);
 
-    if (!source && !projectName && !fileName && (!fileInput || !fileInput.files || !fileInput.files.length)) {
+    if (!source && !projectName && !location && !scopeOfWork && !description && !fileName && (!fileInput || !fileInput.files || !fileInput.files.length)) {
         showToast('Please fill in at least one field.', 'danger');
         return;
     }
 
+    if (!status) {
+        showToast('Please select a status.', 'danger');
+        return;
+    }
+
     if (editingEntryId) formData.append('id', editingEntryId);
-    if (saveAccountingBtn) saveAccountingBtn.disabled = true;
+    if (saveEntryBtn) saveEntryBtn.disabled = true;
 
     try {
         const response = await fetch('/api/entries', {
@@ -237,7 +279,7 @@ async function submitEntry() {
     } catch (error) {
         showToast(error.message || 'Unable to save entry.', 'danger');
     } finally {
-        if (saveAccountingBtn) saveAccountingBtn.disabled = false;
+        if (saveEntryBtn) saveEntryBtn.disabled = false;
     }
 }
 
@@ -268,15 +310,21 @@ async function deleteEntry() {
 if (newEntryUploadBtn && fileInput) {
     newEntryUploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => {
-        const file = fileInput.files && fileInput.files[0];
-        if (selectedFileName) selectedFileName.textContent = file ? file.name : 'No file chosen';
+        const files = Array.from(fileInput.files || []);
+        const file = files[0];
+        if (selectedFileName) {
+            selectedFileName.textContent = files.length ? `${files.length} file(s) selected` : 'No files chosen';
+        }
         const fileNameInput = document.getElementById('file_name');
-        if (fileNameInput) fileNameInput.value = file ? file.name : '';
+        if (fileNameInput) {
+            fileNameInput.value = files.map((selectedFile) => selectedFile.name).join(', ');
+            fileNameInput.title = fileNameInput.value;
+        }
     });
 }
 
-if (saveAccountingBtn) {
-    saveAccountingBtn.addEventListener('click', submitEntry);
+if (saveEntryBtn) {
+    saveEntryBtn.addEventListener('click', submitEntry);
 }
 
 if (newBtn) {
@@ -286,8 +334,8 @@ if (newBtn) {
     });
 }
 
-if (accountingTableBody) {
-    accountingTableBody.addEventListener('click', (event) => {
+if (entriesTableBody) {
+    entriesTableBody.addEventListener('click', (event) => {
         const image = event.target.closest('.entry-image-preview');
         if (image && imagePreview && imagePreviewModal) {
             imagePreview.src = image.dataset.fullImage;
@@ -298,22 +346,20 @@ if (accountingTableBody) {
     });
 }
 
-if (actionTableBody) {
-    actionTableBody.addEventListener('click', (event) => {
-        const button = event.target.closest('button[data-entry-id]');
-        if (!button) return;
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('#actionTableBody button[data-entry-id]');
+    if (!button) return;
 
-        const entryId = Number(button.dataset.entryId);
-        const entry = loadedEntries.find((item) => Number(item.id) === entryId);
-        if (!entry) return;
+    const entryId = Number(button.dataset.entryId);
+    const entry = loadedEntries.find((item) => Number(item.id) === entryId);
+    if (!entry) return;
 
-        if (button.classList.contains('edit-entry-btn')) {
-            openEditModal(entry);
-        } else if (button.classList.contains('delete-entry-btn')) {
-            openDeleteModal(entryId);
-        }
-    });
-}
+    if (button.classList.contains('edit-entry-btn')) {
+        openEditModal(entry);
+    } else if (button.classList.contains('delete-entry-btn')) {
+        openDeleteModal(entryId);
+    }
+});
 
 if (deleteConfirmBtn) {
     deleteConfirmBtn.addEventListener('click', deleteEntry);
@@ -324,6 +370,6 @@ if (accountingTableWrapper && actionPanel) {
     actionPanel.addEventListener('scroll', () => syncTableScroll(actionPanel, accountingTableWrapper));
 }
 
-window.addEventListener('resize', syncTableRowHeights);
+window.addEventListener('resize', refreshTableLayout);
 
 document.addEventListener('DOMContentLoaded', loadEntries);
