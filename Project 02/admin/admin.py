@@ -26,9 +26,9 @@ ALLOWED_IMAGE_EXTENSIONS = {'.gif', '.jpeg', '.jpg', '.png', '.webp'}
 # =========================================================
 
 MYSQL_HOST = os.getenv('MYSQL_HOST', '127.0.0.1')
-MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3306'))
+MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3301'))
 MYSQL_USER = os.getenv('MYSQL_USER', 'root')
-MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', 'craig013006')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', 'kwin1818')
 MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'sbdc_web')
 
 # ===========================================================
