@@ -118,6 +118,41 @@ def is_admin_status(status):
     return normalized_status in {'admin', 'administrator', 'superadmin', 'admin_user'}
 
 
+VALID_DEPARTMENTS = ('Accounting', 'Sales', 'Sales / Marketing', 'Purchasing', 'Engineering')
+
+
+def normalize_departments(departments):
+    if isinstance(departments, (list, tuple, set)):
+        values = departments
+    else:
+        values = str(departments or '').split(',')
+
+    normalized = []
+    for value in values:
+        department = str(value).strip()
+        if department in VALID_DEPARTMENTS and department not in normalized:
+            normalized.append(department)
+    return normalized
+
+
+def serialize_departments(departments):
+    return ','.join(normalize_departments(departments))
+
+
+def normalize_department(department):
+    return normalize_departments(department)[0] if normalize_departments(department) else ''
+
+
+def require_employee_department(department):
+    if not session.get('user_id'):
+        return jsonify({'error': 'You must be logged in.'}), 401
+    if is_admin_status(session.get('user_status')):
+        return None
+    if department not in normalize_departments(session.get('user_departments', session.get('user_department'))):
+        return jsonify({'error': 'Your account is not assigned to this department.'}), 403
+    return None
+
+
 def require_dashboard_role(role):
     if not session.get('user_id'):
         return redirect('/login.html')
@@ -127,6 +162,24 @@ def require_dashboard_role(role):
         return redirect('/employee')
     if role == 'employee' and is_admin:
         return redirect('/index.html')
+    return None
+
+
+def require_employee_page(department):
+    access_redirect = require_dashboard_role('employee')
+    if access_redirect:
+        return access_redirect
+
+    assigned_departments = normalize_departments(session.get('user_departments', session.get('user_department')))
+    if department == 'Accounting' and department not in assigned_departments:
+        department_pages = {
+            'Accounting': '/employee/accounting',
+            'Sales': '/employee/sales',
+            'Sales / Marketing': '/employee/marketing',
+            'Purchasing': '/employee/purchasing',
+            'Engineering': '/employee/engineering',
+        }
+        return redirect(department_pages.get(assigned_departments[0], '/employee/index') if assigned_departments else '/employee/index')
     return None
 
 # =========================================================
@@ -149,6 +202,7 @@ def init_db():
                 password VARCHAR(255) NOT NULL,
                 password_hash VARCHAR(255),
                 status VARCHAR(50) NOT NULL DEFAULT 'Employee',
+                department VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             '''
@@ -179,6 +233,21 @@ def init_db():
 
         if cursor.fetchone()[0] == 0:
             cursor.execute('ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)')
+
+
+        cursor.execute(
+            '''
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = %s AND table_name = 'users' AND column_name = 'department'
+            ''',
+            (MYSQL_DATABASE,),
+        )
+
+
+        if cursor.fetchone()[0] == 0:
+            cursor.execute('ALTER TABLE users ADD COLUMN department VARCHAR(255) NULL')
+        else:
+            cursor.execute('ALTER TABLE users MODIFY COLUMN department VARCHAR(255) NULL')
 
 
         cursor.execute(
@@ -420,7 +489,7 @@ def employee_index():
 
 @app.route('/employee/accounting')
 def employee_accounting():
-    access_redirect = require_dashboard_role('employee')
+    access_redirect = require_employee_page('Accounting')
     if access_redirect:
         return access_redirect
     return send_from_directory(
@@ -430,7 +499,7 @@ def employee_accounting():
 
 @app.route('/employee/sales')
 def employee_sales():
-    access_redirect = require_dashboard_role('employee')
+    access_redirect = require_employee_page('Sales')
     if access_redirect:
         return access_redirect
     return send_from_directory(
@@ -440,7 +509,7 @@ def employee_sales():
 
 @app.route('/employee/marketing')
 def employee_marketing():
-    access_redirect = require_dashboard_role('employee')
+    access_redirect = require_employee_page('Sales / Marketing')
     if access_redirect:
         return access_redirect
     return send_from_directory(
@@ -450,7 +519,7 @@ def employee_marketing():
 
 @app.route('/employee/purchasing')
 def employee_purchasing():
-    access_redirect = require_dashboard_role('employee')
+    access_redirect = require_employee_page('Purchasing')
     if access_redirect:
         return access_redirect
     return send_from_directory(
@@ -460,7 +529,7 @@ def employee_purchasing():
 
 @app.route('/employee/engineering')
 def employee_engineering():
-    access_redirect = require_dashboard_role('employee')
+    access_redirect = require_employee_page('Engineering')
     if access_redirect:
         return access_redirect
     return send_from_directory(
@@ -1276,6 +1345,13 @@ def delete_sales_entry(sales_id):
 @app.route('/api/accounting', methods=['GET', 'POST'])
 def api_accounting(data=None):
     if request.method == 'GET':
+        permission_error = require_employee_department('Accounting')
+        if permission_error:
+            return permission_error
+        if request.args.get('export') == '1':
+            permission_error = require_employee_department('Accounting')
+            if permission_error:
+                return permission_error
         try:
             init_db()
             rows = get_accounting_entries()
@@ -1283,6 +1359,10 @@ def api_accounting(data=None):
         except Error as exc:
             app.logger.exception('Unable to fetch accounting entries: %s', exc)
             return jsonify({'error': 'Failed to fetch accounting entries'}), 500
+
+    permission_error = require_employee_department('Accounting')
+    if permission_error:
+        return permission_error
 
     if data is None:
         data = request.get_json(silent=True)
@@ -1313,6 +1393,9 @@ def api_accounting(data=None):
 
 @app.route('/api/accounting/<int:entry_id>', methods=['DELETE'])
 def delete_accounting_route(entry_id):
+    permission_error = require_employee_department('Accounting')
+    if permission_error:
+        return permission_error
     try:
         init_db()
         delete_accounting_entry(entry_id)
@@ -1326,6 +1409,10 @@ def delete_accounting_route(entry_id):
 @app.route('/api/sales_marketing', methods=['GET', 'POST'])
 def api_sales_marketing(data=None):
     if request.method == 'GET':
+        if request.args.get('export') == '1':
+            permission_error = require_employee_department('Sales / Marketing')
+            if permission_error:
+                return permission_error
         try:
             init_db()
             rows = get_sales_marketing_entries()
@@ -1333,6 +1420,10 @@ def api_sales_marketing(data=None):
         except Error as exc:
             app.logger.exception('Unable to fetch sales_marketing entries: %s', exc)
             return jsonify({'error': 'Failed to fetch sales_marketing entries'}), 500
+
+    permission_error = require_employee_department('Sales / Marketing')
+    if permission_error:
+        return permission_error
 
     if data is None:
         if request.form:
@@ -1373,6 +1464,10 @@ def api_sales_marketing(data=None):
 @app.route('/api/engineering', methods=['GET', 'POST'])
 def api_engineering(data=None):
     if request.method == 'GET':
+        if request.args.get('export') == '1':
+            permission_error = require_employee_department('Engineering')
+            if permission_error:
+                return permission_error
         try:
             init_db()
             rows = get_engineering_entries()
@@ -1380,6 +1475,10 @@ def api_engineering(data=None):
         except Error as exc:
             app.logger.exception('Unable to fetch engineering entries: %s', exc)
             return jsonify({'error': 'Failed to fetch engineering entries'}), 500
+
+    permission_error = require_employee_department('Engineering')
+    if permission_error:
+        return permission_error
 
     if data is None:
         data = request.form.to_dict() if request.form else request.get_json(silent=True)
@@ -1410,6 +1509,9 @@ def api_engineering(data=None):
 
 @app.route('/api/engineering/<int:entry_id>', methods=['DELETE'])
 def delete_engineering_route(entry_id):
+    permission_error = require_employee_department('Engineering')
+    if permission_error:
+        return permission_error
     try:
         init_db()
         delete_engineering_entry(entry_id)
@@ -1421,6 +1523,9 @@ def delete_engineering_route(entry_id):
 
 @app.route('/api/sales_marketing/<int:entry_id>', methods=['DELETE'])
 def delete_sales_marketing_route(entry_id):
+    permission_error = require_employee_department('Sales / Marketing')
+    if permission_error:
+        return permission_error
     try:
         init_db()
         delete_sales_marketing_entry(entry_id)
@@ -1434,6 +1539,10 @@ def delete_sales_marketing_route(entry_id):
 @app.route('/api/purchasing', methods=['GET', 'POST'])
 def api_purchasing(data=None):
     if request.method == 'GET':
+        if request.args.get('export') == '1':
+            permission_error = require_employee_department('Purchasing')
+            if permission_error:
+                return permission_error
         try:
             init_db()
             rows = get_purchasing_entries()
@@ -1441,6 +1550,10 @@ def api_purchasing(data=None):
         except Error as exc:
             app.logger.exception('Unable to fetch purchasing entries: %s', exc)
             return jsonify({'error': 'Failed to fetch purchasing entries'}), 500
+
+    permission_error = require_employee_department('Purchasing')
+    if permission_error:
+        return permission_error
 
     if data is None:
         if request.form:
@@ -1479,6 +1592,9 @@ def api_purchasing(data=None):
 
 @app.route('/api/purchasing/<int:entry_id>', methods=['DELETE'])
 def delete_purchasing_route(entry_id):
+    permission_error = require_employee_department('Purchasing')
+    if permission_error:
+        return permission_error
     try:
         init_db()
         delete_purchasing_entry(entry_id)
@@ -1492,6 +1608,10 @@ def delete_purchasing_route(entry_id):
 @app.route('/api/sales', methods=['GET', 'POST'])
 def api_sales(data=None):
     if request.method == 'GET':
+        if request.args.get('export') == '1':
+            permission_error = require_employee_department('Sales')
+            if permission_error:
+                return permission_error
         try:
             init_db()
             conn = get_db_connection()
@@ -1513,6 +1633,10 @@ def api_sales(data=None):
         except Error as exc:
             app.logger.exception('Unable to fetch sales entries: %s', exc)
             return jsonify({'error': 'Failed to fetch sales entries'}), 500
+
+    permission_error = require_employee_department('Sales')
+    if permission_error:
+        return permission_error
 
     if data is None:
         data = request.get_json(silent=True)
@@ -1562,6 +1686,9 @@ def api_sales(data=None):
 
 @app.route('/api/sales/<int:sales_id>', methods=['DELETE'])
 def delete_sales_route(sales_id):
+    permission_error = require_employee_department('Sales')
+    if permission_error:
+        return permission_error
     try:
         init_db()
         delete_sales_entry(sales_id)
@@ -1631,6 +1758,7 @@ def signup():
     password = data.get('password') or ''
     confirm_password = data.get('confirm_password') or ''
     admin_setup_requested = (data.get('admin_setup') or '').lower() == 'true'
+    department = serialize_departments(data.get('department'))
 
     if not all([fname, lname, contact, email, password]):
         return render_template('signup.html', error='Please complete all required fields.'), 400
@@ -1650,10 +1778,10 @@ def signup():
                 account_status = 'Admin'
         cursor.execute(
             '''
-            INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status, department)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''',
-            (fname, mname, lname, contact, email, password, generate_password_hash(password), account_status),
+            (fname, mname, lname, contact, email, password, generate_password_hash(password), account_status, department),
         )
     except Error:
         return render_template('signup.html', error='Unable to create account.'), 409
@@ -1688,6 +1816,8 @@ def login():
     session['user_id'] = user['id']
     session['user_name'] = user.get('fname') or 'User'
     session['user_status'] = status
+    session['user_departments'] = normalize_departments(user.get('department'))
+    session['user_department'] = session['user_departments'][0] if session['user_departments'] else ''
 
     return redirect(get_dashboard_redirect_for_status(status))
 
@@ -1739,7 +1869,23 @@ def api_current_user():
         return jsonify({'error': 'Not logged in.'}), 401
 
     user_status = session.get('user_status', 'Employee')
-    return jsonify({'status': 'success', 'name': session.get('user_name', ''), 'user_status': user_status}), 200
+    if 'user_department' not in session:
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute('SELECT department FROM users WHERE id=%s LIMIT 1', (user_id,))
+            user = cursor.fetchone() or {}
+            session['user_departments'] = normalize_departments(user.get('department'))
+            session['user_department'] = session['user_departments'][0] if session['user_departments'] else ''
+        finally:
+            conn.close()
+    return jsonify({
+        'status': 'success',
+        'name': session.get('user_name', ''),
+        'user_status': user_status,
+        'department': session.get('user_department', ''),
+        'departments': normalize_departments(session.get('user_departments', session.get('user_department'))),
+    }), 200
 
 
 @app.route('/api/users', methods=['GET', 'POST'])
@@ -1753,6 +1899,7 @@ def api_users():
         email = (data.get('email') or '').strip().lower()
         password = data.get('password') or ''
         status = (data.get('status') or 'Employee').strip()
+        department = serialize_departments(data.get('department'))
 
         if not fname or not lname or not contact or not email or not password:
             return jsonify({'error': 'First name, last name, contact, email, and password are required.'}), 400
@@ -1762,10 +1909,10 @@ def api_users():
             cursor = conn.cursor()
             cursor.execute(
                 '''
-                INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status, department)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''',
-                (fname, mname, lname, contact, email, password, generate_password_hash(password), status),
+                (fname, mname, lname, contact, email, password, generate_password_hash(password), status, department),
             )
             conn.commit()
             return jsonify({'status': 'success'}), 201
@@ -1777,7 +1924,7 @@ def api_users():
     conn = get_db_connection()
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT id, fname, mname, lname, contact, email, password, status, created_at FROM users ORDER BY id DESC')
+        cursor.execute('SELECT id, fname, mname, lname, contact, email, password, status, department, created_at FROM users ORDER BY id DESC')
         return jsonify({'status': 'success', 'data': cursor.fetchall()}), 200
     finally:
         conn.close()
@@ -1791,13 +1938,14 @@ def api_update_user(user_id):
     lname = (data.get('lname') or '').strip()
     contact = (data.get('contact') or '').strip()
     status = (data.get('status') or 'Employee').strip()
+    department = serialize_departments(data.get('department'))
     if not fname or not lname or not contact:
         return jsonify({'error': 'First name, last name, and contact are required.'}), 400
 
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        cursor.execute('UPDATE users SET fname=%s, mname=%s, lname=%s, contact=%s, status=%s WHERE id=%s', (fname, mname, lname, contact, status, user_id))
+        cursor.execute('UPDATE users SET fname=%s, mname=%s, lname=%s, contact=%s, status=%s, department=%s WHERE id=%s', (fname, mname, lname, contact, status, department, user_id))
         conn.commit()
         return jsonify({'status': 'success'}), 200
     finally:

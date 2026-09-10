@@ -83,6 +83,19 @@
         fetch('/api/current-user')
             .then((response) => response.ok ? response.json() : null)
             .then((user) => {
+                const departmentCards = {
+                    Accounting: '.accounting-card',
+                    Sales: '.sales-card',
+                    'Sales / Marketing': '.marketing-card',
+                    Purchasing: '.purchasing-card',
+                    Engineering: '.engineering-card'
+                };
+                const assignedDepartments = user?.departments || [];
+                document.querySelectorAll('.department-card').forEach((card) => {
+                    card.hidden = card.matches(departmentCards.Accounting)
+                        ? !assignedDepartments.includes('Accounting')
+                        : false;
+                });
                 if (user?.name) {
                     if (profileUserName) profileUserName.textContent = user.name;
                     if (profileDropdownUserName) profileDropdownUserName.textContent = user.name;

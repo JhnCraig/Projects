@@ -74,7 +74,8 @@ function initDataExport({ buttonId, endpoint, dateKey, title, filenamePrefix, co
 
         confirmButton.disabled = true;
         try {
-            const response = await fetch(endpoint, { cache: 'no-store' });
+            const exportEndpoint = `${endpoint}${endpoint.includes('?') ? '&' : '?'}export=1`;
+            const response = await fetch(exportEndpoint, { cache: 'no-store' });
             const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.error || `Unable to load ${title.toLowerCase()} data.`);
             const rows = (Array.isArray(result.data) ? result.data : []).filter((row) => {

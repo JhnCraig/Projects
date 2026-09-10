@@ -135,7 +135,7 @@ async function loadUsers() {
         if (!users.length) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center text-muted">No users registered yet.</td>
+                    <td colspan="8" class="text-center text-muted">No users registered yet.</td>
                 </tr>
             `;
             if (actionPanel) actionPanel.innerHTML = '';
@@ -145,10 +145,6 @@ async function loadUsers() {
         /* RENDER ACTIONS OUTSIDE TABLE */
         renderUserActionPanel(users);
         syncUserTableScroll();
-        syncTableRowHeights(
-            tableBody.closest('table'),
-            actionPanel.querySelector('.action-table')
-        );
 
         /* RENDER TABLE */
         tableBody.innerHTML = users.map(user => {
@@ -158,6 +154,7 @@ async function loadUsers() {
             const maskedPassword = maskPassword(passwordValue);
             const displayPassword = passwordValue ? maskedPassword : 'No saved password';
             const status = user.status || 'Employee';
+            const departments = (user.department || '').split(',').map((department) => department.trim()).filter(Boolean);
 
             return `
                 <tr>
@@ -166,6 +163,7 @@ async function loadUsers() {
                     <td>${user.contact || 'N/A'}</td>
                     <td>${user.email || 'N/A'}</td>
                     <td><span class="badge-admin-status status-active">${status}</span></td>
+                    <td>${departments.length ? departments.join(', ') : 'No Department'}</td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <span class="user-password" data-password="${passwordValue}" data-masked="${maskedPassword}">${displayPassword}</span>
@@ -178,6 +176,13 @@ async function loadUsers() {
                 </tr>
             `;
         }).join('');
+
+        const syncUserRows = () => syncTableRowHeights(
+            tableBody.closest('table'),
+            actionPanel.querySelector('.action-table')
+        );
+        requestAnimationFrame(syncUserRows);
+        window.addEventListener('resize', syncUserRows, { passive: true });
 
         /* =========================================
            SHOW / HIDE PASSWORD
@@ -216,6 +221,11 @@ async function loadUsers() {
                 document.getElementById('editUserLname').value = user.lname || '';
                 document.getElementById('editUserContact').value = user.contact || '';
                 document.getElementById('editUserStatus').value = user.status || 'Employee';
+                const editDepartmentCheckboxes = document.querySelectorAll('#editUserDepartment input[type="checkbox"]');
+                const assignedDepartments = (user.department || '').split(',').map((department) => department.trim());
+                editDepartmentCheckboxes.forEach((checkbox) => {
+                    checkbox.checked = assignedDepartments.includes(checkbox.value);
+                });
                 document.getElementById('setPasswordUserId').value = userId || '';
 
                 const modalEl = document.getElementById('editModal');
@@ -240,7 +250,7 @@ async function loadUsers() {
     } catch (error) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-danger">Failed to load users.</td>
+                <td colspan="8" class="text-center text-danger">Failed to load users.</td>
             </tr>
         `;
 
@@ -260,7 +270,8 @@ document.getElementById('saveNewUserBtn')?.addEventListener('click', async () =>
         contact: document.getElementById('newUserContact')?.value.trim() || '',
         email: document.getElementById('newUserEmail')?.value.trim() || '',
         password: document.getElementById('newUserPassword')?.value || '',
-        status: document.getElementById('newUserStatus')?.value || 'Employee'
+        status: document.getElementById('newUserStatus')?.value || 'Employee',
+        department: Array.from(document.querySelectorAll('#newUserDepartment input[type="checkbox"]:checked')).map((checkbox) => checkbox.value)
     };
 
     if (!payload.fname || !payload.lname || !payload.contact || !payload.email || !payload.password) {
@@ -296,6 +307,7 @@ document.getElementById('saveEditedUserBtn')?.addEventListener('click', async ()
     const lname = document.getElementById('editUserLname').value.trim();
     const contact = document.getElementById('editUserContact').value.trim();
     const status = document.getElementById('editUserStatus').value;
+    const department = Array.from(document.querySelectorAll('#editUserDepartment input[type="checkbox"]:checked')).map((checkbox) => checkbox.value);
 
     if (!userId || !fname || !lname || !contact) {
         alert('First name, last name, and contact are required.');
@@ -305,7 +317,7 @@ document.getElementById('saveEditedUserBtn')?.addEventListener('click', async ()
     const response = await fetch(`/api/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fname, mname, lname, contact, status })
+        body: JSON.stringify({ fname, mname, lname, contact, status, department })
     });
 
     const result = await response.json().catch(() => ({}));
@@ -379,7 +391,11 @@ const newUserModal = document.getElementById('newEntryModal');
 if (newUserModal) {
     const clearNewUserFields = () => {
         newUserModal.querySelectorAll('input, select, textarea').forEach((field) => {
-            if (field.type !== 'hidden' && field.type !== 'button' && field.type !== 'submit') field.value = '';
+            if (field.type === 'checkbox') {
+                field.checked = false;
+            } else if (field.type !== 'hidden' && field.type !== 'button' && field.type !== 'submit') {
+                field.value = '';
+            }
         });
     };
 
