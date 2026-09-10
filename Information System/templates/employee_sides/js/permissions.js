@@ -18,7 +18,13 @@
     const restrictedSelectors = [
         '#newBtn',
         '#uploadBtn',
+        '#importFileBtn',
+        '#newEntryUploadBtn',
+        '#editUploadBtn',
+        '#editEntryUploadBtn',
+        '#confirmImportBtn',
         '[id^="exportEmployee"]',
+        'input[type="file"]',
         '.edit-entry-btn',
         '.edit-sales-btn',
         '.edit-marketing-btn',
@@ -33,17 +39,17 @@
 
     const setRestrictedControlsVisibility = (isRestricted) => {
         body.classList.toggle('no-department', isRestricted);
-        if (!isRestricted) return;
         document.querySelectorAll(restrictedSelectors.join(',')).forEach((control) => {
-            control.hidden = true;
-            control.disabled = true;
+            control.hidden = isRestricted;
+            control.disabled = isRestricted;
         });
     };
 
     fetch('/api/current-user')
         .then((response) => response.ok ? response.json() : null)
         .then((user) => setRestrictedControlsVisibility(!(user?.departments || []).includes(expectedDepartment)))
-        .catch(() => setRestrictedControlsVisibility(true));
+        .catch(() => setRestrictedControlsVisibility(true))
+        .finally(() => body.classList.remove('permissions-pending'));
 
     const observer = new MutationObserver(() => {
         if (body.classList.contains('no-department')) setRestrictedControlsVisibility(true);

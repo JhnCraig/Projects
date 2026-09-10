@@ -1,3 +1,15 @@
+.permissions-pending #newBtn,
+.permissions-pending #uploadBtn,
+.permissions-pending #importFileBtn,
+.permissions-pending #newEntryUploadBtn,
+.permissions-pending #editUploadBtn,
+.permissions-pending #editEntryUploadBtn,
+.permissions-pending #confirmImportBtn,
+.permissions-pending [id^="exportEmployee"],
+.permissions-pending input[type="file"] {
+    visibility: hidden;
+}
+
 :root {
     --navy: #142458;
     --blue: #2588ee;

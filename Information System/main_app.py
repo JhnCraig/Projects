@@ -396,10 +396,11 @@ def init_db():
 # Flask app setup and static file routing
 # =========================================================
 # ====== Admin Side ======
-# Use admin_sides as the template folder
-ADMIN_SIDES_DIR = os.path.join(BASE_DIR, 'admin_sides')
+# Use templates/admin_sides as the admin template folder
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
+ADMIN_SIDES_DIR = os.path.join(TEMPLATES_DIR, 'admin_sides')
 
-app = Flask(__name__, template_folder='admin_sides')
+app = Flask(__name__, template_folder=ADMIN_SIDES_DIR)
 app.secret_key = os.getenv('SECRET_KEY', 'sbdc-development-key')
 
 # Determine which admin pages are available
@@ -460,7 +461,7 @@ def _normalize_date_value(value):
         except ValueError:
             return raw
 
-EMPLOYEE_SIDES_DIR = os.path.join(BASE_DIR, 'employee_sides')
+EMPLOYEE_SIDES_DIR = os.path.join(TEMPLATES_DIR, 'employee_sides')
 
 
 # =========================================================
@@ -2001,6 +2002,12 @@ def import_file():
     table = table_map.get(kind.lower())
     if not table:
         return jsonify({'error': 'Unsupported kind for import'}), 400
+
+    permission_error = require_employee_department(
+        {'accounting': 'Accounting', 'sales': 'Sales'}[kind.lower()]
+    )
+    if permission_error:
+        return permission_error
 
     try:
         # parse CSV
