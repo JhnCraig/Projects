@@ -1,6 +1,7 @@
 // Admin accounting table and entry actions
 //Loads, renders, filters, saves, edits, and deletes accounting records.
 
+// CHANGE ACCOUNTING DISPLAY DATA HERE: update the API fields, cards, table rows, or chart values below.
 //Initialize accounting controls and shared record state.
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");

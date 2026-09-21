@@ -1,6 +1,8 @@
 //Admin user management
 //Manages user listing, account creation, editing, password changes, and deletion.
 
+// CHANGE USERS DISPLAY DATA HERE: update the user summary cards, table fields, or online-account display below.
+
 //Mask credentials and show operation feedback.
 function maskPassword(value) {
     if (!value) return '';

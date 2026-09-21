@@ -1,7 +1,7 @@
 //Admin dashboard charts and summaries
 //Loads each department API and renders overview summary cards and charts.
 
-//Define dashboard data sources and chart display settings.
+// CHANGE DATA SOURCE HERE: update the current-user endpoint or profile display values.
 const userNameTargets = document.querySelectorAll('[data-user-display]');
 
 fetch('/api/current-user')
@@ -23,6 +23,7 @@ fetch('/api/current-user')
 /* =================================
         For dashboard charts
 ================================= */
+// CHANGE DASHBOARD DATA HERE: edit endpoint, labelKey, valueKeys, and canvasId for each card/graph.
 const dashboardCharts = {};
 
 const dashboardChartConfigs = [

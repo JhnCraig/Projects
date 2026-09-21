@@ -18,34 +18,35 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
+<body class="accounting-page">
 
     <div class="container-fluid p-0">
         <div class="row g-0 shadow">
 
             <!-- SIDEBAR PANEL SECTION -->
-            <div class="col-10 col-md-3 col-xl-2 admin-sidebar d-flex flex-column">
-                <img src="img/Logo.svg" class="card-svg mt-3 mb-5" style="width: 100%; height: auto;" alt="SBDC logo">
+            <aside class="col-10 col-md-3 col-xl-2 admin-sidebar d-flex flex-column">
+                <div class="brand-wrap">
+                    <img src="img/Logo.svg" class="card-svg" alt="SBDC logo">
+                </div>
 
-                <ul class="nav flex-column nav-admin flex-grow-1">
-                    <li><a href="index.html" class="nav-link mt-5"><i class="bi bi-sliders"></i> Overview</a></li>
-                    <li><a href="accounting.html" class="nav-link active"><i class="bi bi-receipt"></i> Accounting</a>
-                    </li>
-                    <li><a href="sales.html" class="nav-link"><i class="bi bi-graph-up"></i> Sales</a></li>
-                    <li><a href="marketing.html" class="nav-link "><i class="bi bi-bar-chart"></i>Sales / Marketing</a>
-                    </li>
-                    <li><a href="purchasing.html" class="nav-link"><i class="bi bi-cart"></i> Purchasing</a></li>
-                    <li><a href="engineering.html" class="nav-link"><i class="bi bi-cpu"></i> Engineering</a></li>
-                    <li><a href="users.html" class="nav-link"><i class="bi bi-people"></i> User's Management</a></li>
-                </ul>
+                <nav class="nav flex-column nav-admin flex-grow-1">
+                    <a href="index.html" class="nav-link"><i class="bi bi-house-door"></i> Dashboard</a>
+                    <a href="accounting.html" class="nav-link active"><i class="bi bi-wallet2"></i> Accounting</a>
+                    <a href="sales.html" class="nav-link"><i class="bi bi-graph-up-arrow"></i> Sales</a>
+                    <a href="marketing.html" class="nav-link"><i class="bi bi-bar-chart"></i> Sales / Marketing</a>
+                    <a href="purchasing.html" class="nav-link"><i class="bi bi-bag"></i> Purchasing</a>
+                    <a href="engineering.html" class="nav-link"><i class="bi bi-gear-wide-connected"></i> Engineering</a>
+                    <a href="users.html" class="nav-link"><i class="bi bi-people"></i> User's Management</a>
+                </nav>
 
-                <div class="pt-3 border-top border-secondary border-opacity-20">
+                <div class="sidebar-footer">
                     <div class="dropup sidebar-profile-dropdown">
                         <button type="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="d-flex align-items-center">
-                                <i class="bi bi-person-circle me-2"></i>
-                                <span data-user-display>User</span>
+                                <span class="profile-icon">J</span>
+                                <span class="profile-text">JANNA</span>
                             </span>
+                            <i class="bi bi-chevron-up"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i><span
@@ -58,13 +59,13 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </aside>
 
             <!-- MAIN WORKSPACE DESK AREA -->
             <div class="col-12 col-md-9 col-xl-10 workspace-panel">
 
                 <!-- System Area Greeting Header -->
-                <div class="d-flex justify-content-between align-items-center mb-5">
+                <div class="accounting-page-header d-flex justify-content-between align-items-center mb-5">
                     <div>
                         <h1 class="h3 fw-bold mb-1">Accounting</h1>
                         <p class="text-muted small mb-0">Track and manage your accounting records</p>
@@ -89,6 +90,13 @@
                         <input id="fileInput" type="file" style="display:none;" />
                     </div>
                 </div>
+
+                <section class="accounting-summary-grid department-summary-grid" aria-label="Accounting summary">
+                    <article class="accounting-summary-card"><span class="summary-icon blue"><i class="bi bi-receipt"></i></span><div><span class="summary-label">Total Transactions</span><strong id="accountingTotalTransactions">0</strong><small>Live records</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                    <article class="accounting-summary-card"><span class="summary-icon green"><i class="bi bi-cash-stack"></i></span><div><span class="summary-label">Total Amount</span><strong id="accountingTotalAmount">₱ 0.00</strong><small>From all entries</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                    <article class="accounting-summary-card"><span class="summary-icon pale-blue"><i class="bi bi-briefcase"></i></span><div><span class="summary-label">Active Projects</span><strong id="accountingProjectCount">0</strong><small>Unique projects</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                    <article class="accounting-summary-card"><span class="summary-icon orange"><i class="bi bi-journal-check"></i></span><div><span class="summary-label">Recorded Vouchers</span><strong id="accountingVoucherCount">0</strong><small>CV numbers</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>
+                </section>
 
                 <!-- New Entry Modal -->
                 <div class="modal fade" id="newEntryModal" tabindex="-1" aria-labelledby="newEntryModalLabel"
@@ -268,7 +276,7 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+                <div class="accounting-toolbar d-flex justify-content-end align-items-center gap-2 mb-3">
 
                     <!-- Filter -->
                     <div class="dropdown">

@@ -18,6 +18,8 @@ function syncTableRowHeights(mainTable, actionTable) {
 
 let engineeringRows = [];
 
+// CHANGE ENGINEERING DISPLAY DATA HERE: update the API endpoint, summary-card values, table fields, or chart mapping below.
+
 function setupActionPanel(table) {
     const wrapper = table.closest('.main-table-wrapper'); const header = Array.from(table.querySelectorAll('thead th')).find((cell) => /actions?/i.test(cell.textContent.trim()));
     if (!wrapper || !header || wrapper.dataset.actionPanelReady) return; wrapper.dataset.actionPanelReady = 'true'; const actionIndex = header.cellIndex;

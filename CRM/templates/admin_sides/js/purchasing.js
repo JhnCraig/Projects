@@ -2,6 +2,8 @@
 //Loads, renders, filters, saves, edits, and deletes purchasing records.
 let purchasingRows = [];
 
+// CHANGE PURCHASING DISPLAY DATA HERE: update the API endpoint, summary-card values, table fields, or chart mapping below.
+
 // SUBSECTION: Keep the data table and action panel aligned.
 function syncTableRowHeights(mainTable, actionTable) {
     const mainRows = Array.from(mainTable.tBodies[0]?.rows || []);

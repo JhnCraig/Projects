@@ -249,6 +249,16 @@ def init_db():
         else:
             cursor.execute('ALTER TABLE users MODIFY COLUMN department VARCHAR(255) NULL')
 
+        cursor.execute(
+            '''
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema=%s AND table_name='users' AND column_name='last_seen'
+            ''',
+            (MYSQL_DATABASE,),
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute('ALTER TABLE users ADD COLUMN last_seen TIMESTAMP NULL')
+
 
         cursor.execute(
             '''
@@ -1870,6 +1880,14 @@ def api_current_user():
         return jsonify({'error': 'Not logged in.'}), 401
 
     user_status = session.get('user_status', 'Employee')
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET last_seen=NOW() WHERE id=%s', (user_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
     if 'user_department' not in session:
         conn = get_db_connection()
         try:
@@ -1887,6 +1905,21 @@ def api_current_user():
         'department': session.get('user_department', ''),
         'departments': normalize_departments(session.get('user_departments', session.get('user_department'))),
     }), 200
+
+
+@app.route('/api/users/online', methods=['GET'])
+def api_users_online():
+    if not session.get('user_id'):
+        return jsonify({'error': 'Not logged in.'}), 401
+
+    init_db()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM users WHERE last_seen >= NOW() - INTERVAL 5 MINUTE")
+        return jsonify({'status': 'success', 'online_count': cursor.fetchone()[0]}), 200
+    finally:
+        conn.close()
 
 
 @app.route('/api/users', methods=['GET', 'POST'])
