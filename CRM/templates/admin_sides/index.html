@@ -6,466 +6,219 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBDC Admin - Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="img/mainLogo.svg">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-
 </head>
 
-<body>
+<body class="dashboard-page">
+    <div class="dashboard-app">
 
-    <div class="container-fluid p-0 dashboard-shell">
-        <div class="row g-0">
+        <aside class="admin-sidebar d-flex flex-column">
+            <div class="brand-wrap"><img src="img/Logo.svg" class="card-svg" alt="SBDC logo"></div>
+            <nav class="nav flex-column nav-admin flex-grow-1" aria-label="Main navigation">
+                <a href="index.html" class="nav-link active"><i class="bi bi-house-door"></i>Dashboard</a><a
+                    href="accounting.html" class="nav-link"><i class="bi bi-wallet2"></i>Accounting</a><a
+                    href="sales.html" class="nav-link"><i class="bi bi-graph-up-arrow"></i>Sales</a><a
+                    href="marketing.html" class="nav-link"><i class="bi bi-bar-chart"></i>Sales / Marketing</a><a
+                    href="purchasing.html" class="nav-link"><i class="bi bi-bag"></i>Purchasing</a><a
+                    href="engineering.html" class="nav-link"><i class="bi bi-gear-wide-connected"></i>Engineering</a><a
+                    href="users.html" class="nav-link"><i class="bi bi-people"></i>User's Management</a>
+            </nav>
 
-            <aside class="col-10 col-md-3 col-xl-2 admin-sidebar d-flex flex-column">
-                <div class="brand-wrap">
-                    <img src="img/Logo.svg" class="card-svg" alt="SBDC logo">
+            <div class="sidebar-footer">
+                <div class="dropup sidebar-profile-dropdown"><button type="button" class="dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false"><span class="d-flex align-items-center"><span
+                                class="profile-icon">U</span><span class="profile-text">USER</span></span><i
+                            class="bi bi-chevron-up"></i></button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i><span
+                                    data-user-display>User</span></a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="/logout"><i
+                                    class="bi bi-box-arrow-left me-2"></i>Log Out</a></li>
+                    </ul>
                 </div>
+            </div>
+        </aside>
 
-                <nav class="nav flex-column nav-admin flex-grow-1">
-                    <a href="index.html" class="nav-link active"><i class="bi bi-house-door"></i> Dashboard</a>
-                    <a href="accounting.html" class="nav-link"><i class="bi bi-wallet2"></i> Accounting</a>
-                    <a href="sales.html" class="nav-link"><i class="bi bi-graph-up-arrow"></i> Sales</a>
-                    <a href="marketing.html" class="nav-link"><i class="bi bi-bar-chart"></i> Sales / Marketing</a>
-                    <a href="purchasing.html" class="nav-link"><i class="bi bi-bag"></i> Purchasing</a>
-                    <a href="engineering.html" class="nav-link"><i class="bi bi-gear-wide-connected"></i>
-                        Engineering</a>
-                    <a href="users.html" class="nav-link"><i class="bi bi-people"></i> User's Management</a>
-                </nav>
-
-                <div class="sidebar-footer">
-                    <div class="dropup sidebar-profile-dropdown">
-                        <button type="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="d-flex align-items-center">
-                                <span class="profile-icon">J</span>
-                                <span class="profile-text">JANNA</span>
-                            </span>
-                            <i class="bi bi-chevron-up"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i><span
-                                        data-user-display>User</span></a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item text-danger" href="/logout"><i
-                                        class="bi bi-box-arrow-left me-2"></i>Log Out</a></li>
-                        </ul>
-                    </div>
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Overview of your business operations and customer activities.</p>
                 </div>
-            </aside>
+            </header>
 
-            <main class="col-12 col-md-9 col-xl-10 workspace-panel">
-                <header class="topbar">
-                    <div>
-                        <h1>Dashboard</h1>
-                        <p>Overview of your business operations</p>
+            <section class="metric-grid" aria-label="Dashboard totals">
+                <article class="metric-card blue">
+                    <div class="metric-icon"><i class="bi bi-people"></i></div>
+                    <div><span>Total Clients</span><strong id="totalClients">0</strong><small><i
+                                class="bi bi-arrow-up"></i> From sales and leads</small></div>
+                </article>
+
+                <article class="metric-card teal">
+                    <div class="metric-icon"><i class="bi bi-cash-stack"></i></div>
+                    <div><span>Total Amount</span><strong id="totalAmount">₱0.00</strong><small><i
+                                class="bi bi-arrow-up"></i> Recorded revenue</small></div>
+                </article>
+
+                <article class="metric-card purple">
+                    <div class="metric-icon"><i class="bi bi-folder2-open"></i></div>
+                    <div><span>Active Projects</span><strong id="activeProjects">0</strong><small><i
+                                class="bi bi-arrow-up"></i> Engineering projects</small></div>
+                </article>
+
+                <article class="metric-card orange">
+                    <div class="metric-icon"><i class="bi bi-clock-history"></i></div>
+                    <div><span>Pending Tasks</span><strong id="pendingTasks">0</strong><small><i
+                                class="bi bi-exclamation-circle"></i> Needs follow-up</small></div>
+                </article>
+
+                <article class="metric-card emerald">
+                    <div class="metric-icon"><i class="bi bi-bullseye"></i></div>
+                    <div><span>Conversion Rate</span><strong id="conversionRate">0%</strong><small><i
+                                class="bi bi-arrow-up"></i> Won opportunities</small></div>
+                </article>
+
+            </section>
+
+            <section class="dashboard-grid upper-grid">
+                <article class="dash-card project-card">
+                    <div class="card-heading">
+                        <div><span class="heading-icon"><i class="bi bi-calendar-check"></i></span>
+                            <h2>Project Accomplishment</h2>
+                            <p>Overall progress of ongoing projects</p>
+                        </div>
+                        <div class="progress-ring"><strong id="overallProgress">0%</strong><small>Overall</small></div>
+                    </div>
+                    <div class="project-list" id="projectList">
+                        <p class="empty-state">Loading projects…</p>
+                    </div>
+                </article>
+
+                <article class="dash-card pipeline-card">
+                    <div class="card-heading">
+                        <div><span class="heading-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                            <h2>Sales Pipeline</h2>
+                            <p>Opportunities by stage</p>
+                        </div>
+                    </div>
+                    <div class="pipeline" id="pipeline">
+                        <p class="empty-state">Loading pipeline…</p>
+                    </div>
+                    <div class="pipeline-summary">
+                        <div><span>Total opportunities</span><strong id="totalOpportunities">0</strong></div>
+                        <div><span>Win rate</span><strong id="winRate">0%</strong></div>
+                        <div><span>Pipeline value</span><strong id="pipelineValue">₱0.00</strong></div>
+                    </div>
+                </article>
+
+                <article class="dash-card followup-card">
+                    <div class="card-heading">
+                        <div><span class="heading-icon"><i class="bi bi-person-check"></i></span>
+                            <h2>Upcoming Follow-ups</h2>
+                        </div><a href="marketing.html">View all</a>
+                    </div>
+                    <div id="followupList" class="followup-list">
+                        <p class="empty-state">Loading follow-ups…</p>
+                    </div>
+                </article>
+
+            </section>
+
+            <section class="dashboard-grid lower-grid">
+                <article class="dash-card source-card">
+                    <div class="card-heading">
+                        <div><span class="heading-icon"><i class="bi bi-pie-chart"></i></span>
+                            <h2>Sales / Marketing</h2>
+                            <p>Leads by source</p>
+                        </div>
                     </div>
 
-                </header>
-
-                <section class="stats-grid">
-                    <article class="stat-card stat-card-blue">
-                        <div class="stat-row">
-                            <div class="stat-icon"><i class="bi bi-receipt"></i></div>
-                            <div class="stat-meta">
-                                <h3>Total Transactions</h3>
-                                <div class="stat-number" id="totalTransactions">0</div>
-                                <div class="stat-trend positive"><span>↑</span> 12% vs. last month</div>
-                            </div>
+                    <div class="chart-layout">
+                        <div class="donut-wrap"><canvas id="sourceChart"></canvas>
+                            <div><strong id="totalLeads">0</strong><small>Total leads</small></div>
                         </div>
-                    </article>
-
-                    <article class="stat-card stat-card-green">
-                        <div class="stat-row">
-                            <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
-                            <div class="stat-meta">
-                                <h3>Total Amount</h3>
-                                <div class="stat-number" id="totalAmount">₱ 0.00</div>
-                                <div class="stat-trend positive"><span>↑</span> 8% vs. last month</div>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stat-card stat-card-purple">
-                        <div class="stat-row">
-                            <div class="stat-icon"><i class="bi bi-briefcase"></i></div>
-                            <div class="stat-meta">
-                                <h3>Active Projects</h3>
-                                <div class="stat-number" id="activeProjects">0</div>
-                                <div class="stat-trend positive"><span>↑</span> 20% vs. last month</div>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="stat-card stat-card-orange">
-                        <div class="stat-row">
-                            <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
-                            <div class="stat-meta">
-                                <h3>Pending Tasks</h3>
-                                <div class="stat-number" id="pendingTasks">0</div>
-                                <div class="stat-trend positive"><span>↑</span> 2 vs. last week</div>
-                            </div>
-                        </div>
-                    </article>
-                </section>
-
-                <section class="content-grid top-grid">
-                    <article class="info-panel panel-large">
-                        <div class="panel-header-row">
-                            <div class="panel-title-wrap">
-                                <div class="panel-icon"><i class="bi bi-receipt"></i></div>
-                                <h2>Accounting Overview</h2>
-                            </div>
-                            <div class="dropdown chart-filter">
-                                <button class="select-button dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                                    data-filter="accounting" aria-expanded="false">All <i
-                                        class="bi bi-chevron-down"></i></button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><button class="dropdown-item active" type="button"
-                                            data-filter-value="all">All</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="week">Last 7
-                                            Days</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="month">This
-                                            Month</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="year">This
-                                            Year</button></li>
-
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="panel-figure-row">
-                            <div class="figure-stack">
-                                <span class="figure-label">Total Amount by Project</span>
-                                <strong id="accountingChartTotal">₱ 0.00</strong>
-                            </div>
-                            <div class="mini-metric">
-                                <div class="mini-metric-icon"><i class="bi bi-journal-text"></i></div>
-                                <div>
-                                    <span>Total Entries</span>
-                                    <strong id="accountingEntries">0</strong>
-                                </div>
-                            </div>
-                            <div class="mini-metric">
-                                <div class="mini-metric-icon"><i class="bi bi-briefcase"></i></div>
-                                <div>
-                                    <span>Projects</span>
-                                    <strong id="accountingProjects">0</strong>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bars-chart dashboard-chart-area" aria-label="Accounting overview chart">
-                            <canvas id="accountingDashboardChart" aria-label="Accounting amount by project"></canvas>
-                            <div class="y-axis">
-                                <span>₱ 600K</span>
-                                <span>₱ 450K</span>
-                                <span>₱ 300K</span>
-                                <span>₱ 150K</span>
-                                <span>₱ 0</span>
-                            </div>
-                            <div class="bars-wrap">
-                                <div class="bar-group">
-                                    <div class="bar bar-a" style="height: 48%"></div>
-                                    <div class="bar bar-b" style="height: 56%"></div>
-                                    <span>Jan</span>
-                                </div>
-                                <div class="bar-group">
-                                    <div class="bar bar-a" style="height: 58%"></div>
-                                    <div class="bar bar-b" style="height: 44%"></div>
-                                    <span>Feb</span>
-                                </div>
-                                <div class="bar-group">
-                                    <div class="bar bar-a" style="height: 63%"></div>
-                                    <div class="bar bar-b" style="height: 52%"></div>
-                                    <span>Mar</span>
-                                </div>
-                                <div class="bar-group">
-                                    <div class="bar bar-a" style="height: 70%"></div>
-                                    <div class="bar bar-b" style="height: 61%"></div>
-                                    <span>Apr</span>
-                                </div>
-                                <div class="bar-group">
-                                    <div class="bar bar-a" style="height: 54%"></div>
-                                    <div class="bar bar-b" style="height: 65%"></div>
-                                    <span>May</span>
-                                </div>
-                                <div class="bar-group">
-                                    <div class="bar bar-a" style="height: 72%"></div>
-                                    <div class="bar bar-b" style="height: 68%"></div>
-                                    <span>Jun</span>
-                                </div>
-                                <div class="bar-group">
-                                    <div class="bar bar-a" style="height: 80%"></div>
-                                    <div class="bar bar-b" style="height: 78%"></div>
-                                    <span>Jul</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="legend-row">
-                            <span><i class="legend-swatch blue"></i> Project Alpha</span>
-                            <span><i class="legend-swatch teal"></i> Project Beta</span>
-                        </div>
-                    </article>
-
-                    <article class="info-panel panel-large">
-                        <div class="panel-header-row">
-                            <div class="panel-title-wrap">
-                                <div class="panel-icon panel-icon-green"><i class="bi bi-bar-chart"></i></div>
-                                <h2>Sales Overview</h2>
-                            </div>
-                            <div class="dropdown chart-filter">
-                                <button class="select-button dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                                    data-filter="sales" aria-expanded="false">All <i
-                                        class="bi bi-chevron-down"></i></button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><button class="dropdown-item active" type="button"
-                                            data-filter-value="all">All</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="week">Last 7
-                                            Days</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="month">This
-                                            Month</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="year">This
-                                            Year</button></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="panel-figure-row sales-row">
-                            <div class="figure-stack">
-                                <span class="figure-label">Sales Trend</span>
-                                <strong id="salesChartTotal">₱ 0.00</strong>
-                            </div>
-                            <div class="mini-metric revenue-card">
-                                <div class="mini-metric-icon"><i class="bi bi-journal-text"></i></div>
-                                <div>
-                                    <span>Total Records</span>
-                                    <strong id="salesRecords">0</strong>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="line-chart dashboard-chart-area" aria-label="Sales overview chart">
-                            <canvas id="salesDashboardChart" aria-label="Sales value over time"></canvas>
-                            <div class="line-grid"></div>
-                            <svg viewBox="0 0 440 180" preserveAspectRatio="none" aria-hidden="true">
-                                <path class="area"
-                                    d="M10,120 C50,100,72,118,98,105 S155,80,178,98 S233,50,264,70 S320,35,352,58 S405,75,430,62 L430,170 L10,170 Z">
-                                </path>
-                                <path class="line"
-                                    d="M10,120 C50,100,72,118,98,105 S155,80,178,98 S233,50,264,70 S320,35,352,58 S405,75,430,62">
-                                </path>
-                                <g class="points">
-                                    <circle cx="178" cy="98" r="4"></circle>
-                                    <circle cx="264" cy="70" r="4"></circle>
-                                    <circle cx="352" cy="58" r="4"></circle>
-                                    <circle cx="430" cy="62" r="4"></circle>
-                                </g>
-                            </svg>
-                            <div class="x-labels">
-                                <span>Jul 02</span>
-                                <span>Jul 03</span>
-                                <span>Jul 04</span>
-                                <span>Jul 05</span>
-                                <span>Jul 06</span>
-                                <span>Jul 07</span>
-                                <span>Jul 08</span>
-                            </div>
-                        </div>
-
-                        <div class="sales-footer">
-                            <div class="mini-stat">
-                                <span>Income Total</span>
-                                <strong>₱ 4,444.00</strong>
-                            </div>
-                            <div class="mini-stat">
-                                <span>Cash in Bank</span>
-                                <strong>₱ 62,000,000.00</strong>
-                            </div>
-                        </div>
-                    </article>
-                </section>
-
-                <section class="content-grid bottom-grid">
-                    <div class="marketing-stack">
-                        <article class="info-panel donut-panel">
-                            <div class="panel-header-row compact">
-                                <div class="panel-title-wrap">
-                                    <div class="panel-icon panel-icon-indigo"><i class="bi bi-bullseye"></i></div>
-                                    <h2>Sales / Marketing</h2>
-                                </div>
-                                <div class="dropdown chart-filter">
-                                    <button class="select-button dropdown-toggle" type="button"
-                                        data-bs-toggle="dropdown" data-filter="marketing" aria-expanded="false">All <i
-                                            class="bi bi-chevron-down"></i></button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><button class="dropdown-item active" type="button"
-                                                data-filter-value="all">All</button></li>
-                                        <li><button class="dropdown-item" type="button" data-filter-value="week">Last 7
-                                                Days</button></li>
-                                        <li><button class="dropdown-item" type="button" data-filter-value="month">This
-                                                Month</button></li>
-                                        <li><button class="dropdown-item" type="button" data-filter-value="year">This
-                                                Year</button></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="donut-layout">
-                                <div class="donut-chart">
-                                    <canvas id="marketingDashboardChart"
-                                        aria-label="Leads by marketing source"></canvas>
-                                    <div class="donut-center">
-                                        <strong id="marketingLeads">0</strong>
-                                        <span>Total Leads</span>
-                                    </div>
-                                </div>
-                                <div class="donut-legend" id="marketingLegend">
-                                    <div class="legend-item"><span class="legend-swatch purple"></span> Website
-                                        <strong>50%</strong>
-                                    </div>
-                                    <div class="legend-item"><span class="legend-swatch blue"></span> Referral
-                                        <strong>25%</strong>
-                                    </div>
-                                    <div class="legend-item"><span class="legend-swatch teal"></span> Social Media
-                                        <strong>25%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
+                        <div id="sourceLegend" class="legend-list"></div>
                     </div>
 
-                    <article class="info-panel donut-panel">
-                        <div class="panel-header-row compact">
-                            <div class="panel-title-wrap">
-                                <div class="panel-icon panel-icon-orange"><i class="bi bi-cart"></i></div>
-                                <h2>Purchasing</h2>
-                            </div>
-                            <div class="dropdown chart-filter">
-                                <button class="select-button dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                                    data-filter="purchasing" aria-expanded="false">All <i
-                                        class="bi bi-chevron-down"></i></button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><button class="dropdown-item active" type="button"
-                                            data-filter-value="all">All</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="week">Last 7
-                                            Days</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="month">This
-                                            Month</button></li>
-                                    <li><button class="dropdown-item" type="button" data-filter-value="year">This
-                                            Year</button></li>
-                                </ul>
-                            </div>
-                        </div>
+                </article>
 
-                        <div class="donut-layout">
-                            <div class="donut-chart purchasing-chart">
-                                <canvas id="purchasingDashboardChart" aria-label="Purchasing spend by item"></canvas>
-                                <div class="donut-center">
-                                    <strong id="purchasingSpend">₱ 0.00</strong>
-                                    <span>Total Spend</span>
-                                </div>
-                            </div>
-                            <div class="donut-legend" id="purchasingLegend">
-                                <div class="legend-item"><span class="legend-swatch orange"></span> Materials
-                                    <strong>60%</strong>
-                                </div>
-                                <div class="legend-item"><span class="legend-swatch pink"></span> Equipment
-                                    <strong>25%</strong>
-                                </div>
-                                <div class="legend-item"><span class="legend-swatch green"></span> Services
-                                    <strong>10%</strong>
-                                </div>
-                                <div class="legend-item"><span class="legend-swatch gray"></span> Others
-                                    <strong>5%</strong>
-                                </div>
-                            </div>
+                <article class="dash-card finance-card">
+                    <div class="card-heading">
+                        <div><span class="heading-icon"><i class="bi bi-wallet2"></i></span>
+                            <h2>Financial Summary</h2>
+                            <p>Income, expenses and profit</p>
                         </div>
-                    </article>
+                    </div>
 
-                    <aside class="activity-panel">
-                        <div class="panel-header-row compact activity-header">
+                    <div class="finance-grid">
+                        <div><span>Total revenue</span><strong id="totalRevenue">₱0.00</strong></div>
+                        <div><span>Total expense</span><strong id="totalExpense">₱0.00</strong></div>
+                        <div><span>Net income</span><strong id="netIncome">₱0.00</strong></div>
+                        <div><span>Purchase orders</span><strong id="purchaseOrders">0</strong></div>
+                    </div>
+
+                </article>
+
+                <article class="dash-card recent-card">
+                    <div class="card-heading">
+                        <div><span class="heading-icon"><i class="bi bi-clock"></i></span>
                             <h2>Recent Activity</h2>
-                            <a href="#">View All</a>
+                        </div><a href="sales.html">View all</a>
+                    </div>
+
+                    <div id="recentActivityList" class="recent-list">
+                        <p class="empty-state">Loading activity…</p>
+                    </div>
+
+                </article>
+
+                <article class="dash-card attention-card">
+                    <div class="card-heading">
+                        <div><span class="attention-icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                            <h2>Needs Attention</h2>
                         </div>
+                    </div>
 
-                        <div class="activity-list" id="recentActivityList" aria-live="polite">
-                            <div class="activity-item">
-                                <div class="activity-icon"><i class="bi bi-receipt"></i></div>
-                                <div class="activity-details">
-                                    <div class="activity-main">
-                                        <span class="activity-name">CV-1005</span>
-                                        <span class="activity-date">Jul 08, 2026</span>
-                                    </div>
-                                    <div class="activity-sub">
-                                        <span>Accounting</span>
-                                        <strong>₱ 85,000.00</strong>
-                                    </div>
-                                </div>
-                                <span class="activity-tag posted">Posted</span>
-                            </div>
+                    <div id="attentionList" class="attention-list">
+                        <p class="empty-state">Nothing needs attention.</p>
+                    </div>
 
-                            <div class="activity-item">
-                                <div class="activity-icon"><i class="bi bi-bag"></i></div>
-                                <div class="activity-details">
-                                    <div class="activity-main">
-                                        <span class="activity-name">PO-1021</span>
-                                        <span class="activity-date">Jul 07, 2026</span>
-                                    </div>
-                                    <div class="activity-sub">
-                                        <span>Purchasing</span>
-                                        <strong>₱ 24,500.00</strong>
-                                    </div>
-                                </div>
-                                <span class="activity-tag approved">Approved</span>
-                            </div>
+                </article>
 
-                            <div class="activity-item">
-                                <div class="activity-icon"><i class="bi bi-cpu"></i></div>
-                                <div class="activity-details">
-                                    <div class="activity-main">
-                                        <span class="activity-name">Project Alpha</span>
-                                        <span class="activity-date">Jul 06, 2026</span>
-                                    </div>
-                                    <div class="activity-sub">
-                                        <span>Engineering</span>
-                                        <strong>75%</strong>
-                                    </div>
-                                </div>
-                                <span class="activity-tag ongoing">Ongoing</span>
-                            </div>
+            </section>
 
-                            <div class="activity-item">
-                                <div class="activity-icon"><i class="bi bi-graph-up-arrow"></i></div>
-                                <div class="activity-details">
-                                    <div class="activity-main">
-                                        <span class="activity-name">SI-1003</span>
-                                        <span class="activity-date">Jul 05, 2026</span>
-                                    </div>
-                                    <div class="activity-sub">
-                                        <span>Sales</span>
-                                        <strong>₱ 120,000.00</strong>
-                                    </div>
-                                </div>
-                                <span class="activity-tag pending">Pending</span>
-                            </div>
-                        </div>
-                    </aside>
-                </section>
+            <section class="business-summary business-insights" aria-labelledby="businessInsightsTitle">
+                <header class="insights-header">
+                    <div class="insights-title"><span class="insights-title-icon"><i class="bi bi-file-earmark-text"></i></span><i class="bi bi-stars"></i><span><h2 id="businessInsightsTitle">Automatic Business Insights</h2><small>AI-powered based on your data</small></span></div>
+                    <div class="insights-actions"><small>Last updated: live dashboard data</small><a href="engineering.html" title="Open the detailed engineering report">View full report <i class="bi bi-arrow-right"></i></a></div>
+                </header>
+                <div class="insights-grid">
+                    <article class="insight-tile health"><h3><i class="bi bi-activity"></i> Business Health</h3><strong><i class="bi bi-check-circle-fill"></i> Good</strong><p>Your business is performing well with this month’s live records.</p><div class="health-bar"><i></i><span>Live</span></div></article>
+                    <article class="insight-tile performance"><h3><i class="bi bi-bar-chart-fill"></i> Key Performance</h3><dl><div><dt>Total Revenue</dt><dd id="insightRevenue">₱0.00</dd></div><div><dt>Project Accomplishment</dt><dd id="insightProgress">0%</dd></div><div><dt>Sales Conversion</dt><dd id="insightConversion">0%</dd></div><div><dt>Client Growth</dt><dd id="insightClients">0</dd></div></dl></article>
+                    <article class="insight-tile important"><h3><i class="bi bi-lightbulb"></i> Important Insights</h3><ul><li>Revenue and sales figures are updated from current records.</li><li>Project progress is calculated from engineering entries.</li><li>Client leads are tracked by marketing source.</li></ul></article>
+                    <article class="insight-tile attention"><h3><i class="bi bi-exclamation-triangle-fill"></i> Needs Attention</h3><ul><li>Review projects marked pending or at risk.</li><li>Follow up on overdue customer activities.</li><li>Approve outstanding purchase orders.</li></ul></article>
+                    <article class="insight-tile recommendations"><h3><i class="bi bi-stars"></i> Recommendations</h3><ul><li>Prioritize follow-ups with active leads.</li><li>Monitor upcoming project deadlines.</li><li>Consider increasing marketing efforts for the best lead sources.</li></ul></article>
+                </div>
+            </section>
 
-            </main>
-        </div>
+        </main>
+
     </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="js/index.js"></script>
+    <script src="js/business-insights.js"></script>
+
 </body>
 
 </html>

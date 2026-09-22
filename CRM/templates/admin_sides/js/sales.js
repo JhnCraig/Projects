@@ -2,7 +2,28 @@
 //Loads, renders, filters, saves, edits, and deletes sales records.
 let salesRows = [];
 
-// CHANGE SALES DISPLAY DATA HERE: update the API endpoint, summary-card values, table fields, or chart mapping below.
+document.addEventListener('DOMContentLoaded', () => {
+    const config = { endpoint: '/api/sales', amountKey: 'inv_amount', projectKey: 'project_code', metricKey: 'cash_in_bank', metricType: 'amount', entryLabel: 'Sales records', amountLabel: 'Invoice total', metricSubLabel: 'Available cash', icons: ['bi-journal-text', 'bi-cash-stack', 'bi-bank', 'bi-kanban'] };
+    const number = (value) => Number.parseFloat(String(value ?? '').replace(/[^\d.-]/g, '')) || 0;
+    const money = (value) => `₱ ${number(value).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const header = document.querySelector('.workspace-panel > .d-flex.justify-content-between.align-items-center.mb-5');
+    if (!header) return;
+    const cards = document.createElement('section');
+    cards.className = 'accounting-summary-grid department-summary-grid';
+    cards.setAttribute('aria-label', 'Department summary');
+    cards.innerHTML = `<article class="accounting-summary-card"><span class="summary-icon blue"><i class="bi ${config.icons[0]}"></i></span><div><span class="summary-label">Total Entries</span><strong data-summary="entries">0</strong><small>${config.entryLabel}</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon green"><i class="bi ${config.icons[1]}"></i></span><div><span class="summary-label">Total Amount</span><strong data-summary="amount">₱ 0.00</strong><small>${config.amountLabel}</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon pale-blue"><i class="bi ${config.icons[2]}"></i></span><div><span class="summary-label">Cash in Bank</span><strong data-summary="metric">0</strong><small>${config.metricSubLabel}</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon orange"><i class="bi ${config.icons[3]}"></i></span><div><span class="summary-label">Total Projects</span><strong data-summary="projects">0</strong><small>Unique projects</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>`;
+    header.insertAdjacentElement('afterend', cards);
+    const refreshSalesSummary = () => fetch(config.endpoint).then((response) => response.ok ? response.json() : null).then((result) => {
+        const rows = Array.isArray(result?.data) ? result.data : [];
+        const projects = new Set(rows.map((row) => String(row[config.projectKey] || '').trim()).filter(Boolean));
+        cards.querySelector('[data-summary="entries"]').textContent = rows.length;
+        cards.querySelector('[data-summary="amount"]').textContent = money(rows.reduce((sum, row) => sum + number(row[config.amountKey]), 0));
+        cards.querySelector('[data-summary="metric"]').textContent = money(rows.reduce((sum, row) => sum + number(row[config.metricKey]), 0));
+        cards.querySelector('[data-summary="projects"]').textContent = projects.size;
+    }).catch(() => {});
+    refreshSalesSummary();
+    document.addEventListener('sales-data-updated', refreshSalesSummary);
+});
 
 //Keep the data table and action panel aligned.
 function syncTableRowHeights(mainTable, actionTable) {
@@ -373,6 +394,7 @@ async function loadSalesRows() {
 
         const rows = Array.isArray(result.data) ? result.data : [];
         salesRows = rows;
+        document.dispatchEvent(new Event('sales-data-updated'));
         const tableWrapper = tbody.closest('.main-table-wrapper');
         tableWrapper?.classList.toggle('is-empty', !rows.length);
         tableWrapper?.parentElement.querySelector('.user-action-panel')?.classList.toggle('is-empty', !rows.length);
@@ -637,7 +659,7 @@ function setupTableChart(config) {
 }
 
 setupTableChart({
-    buttonId: 'chartToggleBtn',
+    buttonId: 'salesChartToggleBtn',
     modalId: 'salesChartModal',
     canvasId: 'salesChart',
     getRows: () => salesRows,
@@ -758,6 +780,12 @@ fetch('/api/current-user')
         const firstName = name.split(' ')[0] || 'User';
         userNameTargets.forEach((element) => {
             element.textContent = firstName;
+        });
+        document.querySelectorAll('.profile-text').forEach((element) => {
+            element.textContent = firstName.toUpperCase();
+        });
+        document.querySelectorAll('.profile-icon').forEach((element) => {
+            element.textContent = firstName.charAt(0).toUpperCase();
         });
     })
     .catch(() => {

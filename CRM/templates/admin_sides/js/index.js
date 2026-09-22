@@ -1,227 +1,40 @@
-//Admin dashboard charts and summaries
-//Loads each department API and renders overview summary cards and charts.
-
-// CHANGE DATA SOURCE HERE: update the current-user endpoint or profile display values.
-const userNameTargets = document.querySelectorAll('[data-user-display]');
-
-fetch('/api/current-user')
-    .then((response) => response.ok ? response.json() : null)
-    .then((user) => {
-        const name = user?.name || 'User';
-        const firstName = name.split(' ')[0] || 'User';
-        userNameTargets.forEach((element) => {
-            element.textContent = firstName;
-        });
-    })
-    .catch(() => {
-        userNameTargets.forEach((element) => {
-            element.textContent = 'User';
-        });
-    });
-
-    
-/* =================================
-        For dashboard charts
-================================= */
-// CHANGE DASHBOARD DATA HERE: edit endpoint, labelKey, valueKeys, and canvasId for each card/graph.
-const dashboardCharts = {};
-
-const dashboardChartConfigs = [
-    {
-        id: 'accounting',
-        endpoint: '/api/accounting',
-        canvasId: 'accountingDashboardChart',
-        labelKey: 'project',
-        fallbackLabelKey: 'account_name',
-        valueKeys: ['amount', 'net_of_vat', 'vat_exempt', 'non_vat', 'vat_12', 'wtax']
-    },
-    {
-        id: 'sales',
-        endpoint: '/api/sales',
-        canvasId: 'salesDashboardChart',
-        labelKey: 'project_code',
-        valueKeys: ['inv_amount']
-    },
-    {
-        id: 'marketing',
-        endpoint: '/api/sales_marketing',
-        canvasId: 'marketingDashboardChart',
-        labelKey: 'source',
-        valueKeys: ['project_value']
-    },
-    {
-        id: 'purchasing',
-        endpoint: '/api/purchasing',
-        canvasId: 'purchasingDashboardChart',
-        labelKey: 'item_name',
-        valueKeys: ['total_amount']
-    },
-    {
-        id: 'engineering',
-        endpoint: '/api/engineering',
-        canvasId: 'engineeringDashboardChart',
-        labelKey: 'status',
-        countOnly: true
-    }
-];
-
-const chartColors = ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc', '#858796', '#fd7e14', '#6f42c1'];
-
-function formatAmount(value) {
-    return Number(value || 0).toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+const amount = value => Number.parseFloat(String(value ?? '').replace(/[^\d.-]/g, '')) || 0;
+const peso = value => `₱${amount(value).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+const escapeHtml = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const dateTime = value => { const date = new Date(value); return Number.isNaN(date.getTime()) ? 0 : date.getTime(); };
+const formatDate = value => { const date = new Date(value); return Number.isNaN(date.getTime()) ? 'No date' : date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }); };
+let sourceChart;
+async function rows(endpoint) { const response = await fetch(endpoint); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || `Unable to load ${endpoint}`); return Array.isArray(result.data) ? result.data : []; }
+function renderProjects(engineering) {
+  const active = engineering.filter(row => /active|ongoing|progress/i.test(row.status || ''));
+  const progress = active.length ? active.reduce((sum, row) => sum + amount(row.accomplishment_percentage), 0) / active.length : 0;
+  set('overallProgress', `${Math.round(progress)}%`); set('activeProjects', active.length);
+  document.getElementById('projectList').innerHTML = engineering.slice(0, 4).map(row => { const value = Math.min(100, amount(row.accomplishment_percentage)); const status = row.status || 'Ongoing'; return `<div class="project-row"><div><div class="project-name"><span>${escapeHtml(row.project_name || `Project #${row.id}`)}</span><b>${Math.round(value)}%</b></div><div class="progress"><i style="width:${value}%"></i></div></div><em class="status">${escapeHtml(status)}</em></div>`; }).join('') || '<p class="empty-state">No engineering projects yet.</p>';
 }
-
-function getTotal(rows, keys) {
-    return rows.reduce((total, entry) => total + getEntryValue(entry, keys), 0);
+function renderPipeline(marketing) {
+  const stages = [['Pending', 'Pending'], ['Ongoing', 'Qualified'], ['Submitted', 'Proposal'], ['Won', 'Won'], ['Lost', 'Lost']];
+  const counts = stages.map(([status]) => marketing.filter(row => String(row.status).toLowerCase() === status.toLowerCase()).length);
+  document.getElementById('pipeline').innerHTML = stages.map(([, label], i) => `<div class="pipeline-step step-${i}"><span>${label}</span><strong>${counts[i]}</strong></div>`).join('');
+  const won = counts[3], lost = counts[4], decided = won + lost, pipelineValue = marketing.filter(row => !/lost|cancelled/i.test(row.status || '')).reduce((sum, row) => sum + amount(row.project_value), 0);
+  set('totalOpportunities', marketing.length); set('winRate', `${decided ? Math.round(won / decided * 100) : 0}%`); set('conversionRate', `${marketing.length ? (won / marketing.length * 100).toFixed(1) : 0}%`); set('pipelineValue', peso(pipelineValue));
 }
-
-//Calculate and render department summary metrics.
-function renderDashboardSummary(config, rows) {
-    const summary = document.getElementById(`${config.id}DashboardSummary`);
-    if (!summary) return;
-
-    let items;
-    if (config.id === 'accounting') {
-        items = [
-            ['Entries', rows.length],
-            ['Total amount', formatAmount(getTotal(rows, ['amount']))],
-            ['Projects', Object.keys(getChartGroups(rows, config)).length]
-        ];
-    } else if (config.id === 'sales') {
-        items = [
-            ['Records', rows.length],
-            ['Invoice total', formatAmount(getTotal(rows, ['inv_amount']))],
-            ['Cash in bank', formatAmount(getTotal(rows, ['cash_in_bank']))]
-        ];
-    } else if (config.id === 'marketing') {
-        const won = rows.filter((entry) => String(entry.status || '').toLowerCase() === 'won').length;
-        items = [
-            ['Opportunities', rows.length],
-            ['Pipeline value', formatAmount(getTotal(rows, ['project_value']))],
-            ['Won', won]
-        ];
-    } else if (config.id === 'purchasing') {
-        items = [
-            ['Orders', rows.length],
-            ['Total spend', formatAmount(getTotal(rows, ['total_amount']))],
-            ['Items', Object.keys(getChartGroups(rows, config)).length]
-        ];
-    } else {
-        const averageProgress = rows.length
-            ? rows.reduce((total, entry) => total + (Number(entry.accomplishment_percentage) || 0), 0) / rows.length
-            : 0;
-        items = [
-            ['Projects', rows.length],
-            ['Avg. progress', `${averageProgress.toFixed(1)}%`],
-            ['Statuses', Object.keys(getChartGroups(rows, config)).length]
-        ];
-    }
-
-    summary.innerHTML = items.map(([label, value]) => `
-        <div class="dashboard-summary-item">
-            <span class="dashboard-summary-value">${value}</span>
-            <span class="dashboard-summary-label">${label}</span>
-        </div>
-    `).join('');
+function renderFollowups(marketing) {
+  const followups = marketing.filter(row => row.follow_up_date).sort((a, b) => dateTime(a.follow_up_date) - dateTime(b.follow_up_date)).slice(0, 4);
+  set('pendingTasks', marketing.filter(row => /pending|ongoing/i.test(row.status || '')).length + followups.filter(row => dateTime(row.follow_up_date) <= Date.now()).length);
+  document.getElementById('followupList').innerHTML = followups.map(row => `<div class="followup-row"><span class="avatar">${escapeHtml((row.client_company || row.project_name || 'C').charAt(0))}</span><div><strong>${escapeHtml(row.client_company || row.project_name)}</strong><small>${escapeHtml(row.project_name || 'Follow-up')}</small></div><time>${formatDate(row.follow_up_date)}</time></div>`).join('') || '<p class="empty-state">No scheduled follow-ups.</p>';
 }
-
-function getEntryValue(entry, keys) {
-    let fallbackValue = 0;
-
-    for (const key of keys) {
-        const cleaned = String(entry[key] ?? '')
-            .replace(/[₱PpHh$\s,]/g, '')
-            .replace(/[^\d.-]/g, '')
-            .trim();
-        const value = Number.parseFloat(cleaned);
-
-        if (!Number.isFinite(value)) continue;
-        if (value !== 0) return value;
-        fallbackValue = value;
-    }
-
-    return fallbackValue;
+function renderSources(marketing) {
+  const grouped = marketing.reduce((all, row) => { const source = row.source || 'Unspecified'; all[source] = (all[source] || 0) + 1; return all; }, {}), labels = Object.keys(grouped), values = Object.values(grouped), colors = ['#1479f8', '#12bdae', '#8c52df', '#ffad36', '#ef6074'];
+  set('totalLeads', marketing.length); sourceChart?.destroy();
+  if (window.Chart) sourceChart = new Chart(document.getElementById('sourceChart'), { type: 'doughnut', data: { labels: labels.length ? labels : ['No data'], datasets: [{ data: values.length ? values : [1], backgroundColor: values.length ? colors : ['#dce9f9'], borderWidth: 2, borderColor: '#fff' }] }, options: { cutout: '68%', plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false } });
+  const total = marketing.length || 1; document.getElementById('sourceLegend').innerHTML = labels.map((label, i) => `<div><i style="background:${colors[i % colors.length]}"></i><span>${escapeHtml(label)}</span><b>${Math.round(grouped[label] / total * 100)}%</b><small>${grouped[label]}</small></div>`).join('') || '<p class="empty-state">No lead sources.</p>';
 }
-
-function getChartGroups(rows, config) {
-    const groups = {};
-
-    rows.forEach((entry) => {
-        const rawLabel = entry[config.labelKey] || entry[config.fallbackLabelKey] || 'Unassigned';
-        const label = String(rawLabel).trim() || 'Unassigned';
-        const value = config.countOnly ? 1 : getEntryValue(entry, config.valueKeys);
-        groups[label] = (groups[label] || 0) + value;
-    });
-
-    return groups;
+function renderFinance(accounting, sales, purchasing) { const revenue = sales.reduce((sum, row) => sum + amount(row.inv_amount || row.net_amount), 0), expense = accounting.reduce((sum, row) => sum + amount(row.amount), 0) + purchasing.reduce((sum, row) => sum + amount(row.total_amount), 0); set('totalRevenue', peso(revenue)); set('totalExpense', peso(expense)); set('netIncome', peso(revenue - expense)); set('purchaseOrders', purchasing.length); set('totalAmount', peso(revenue)); }
+function renderActivity(accounting, sales, marketing, purchasing, engineering) {
+  const items = [...accounting.map(row => ({ name: row.cv_no || `Accounting #${row.id}`, dept: 'Accounting', date: row.transaction_date, value: peso(row.amount), icon: 'bi-receipt' })), ...sales.map(row => ({ name: row.client_name || row.project_code || `Sales #${row.id}`, dept: 'Sales', date: row.transaction_date || row.si_date, value: peso(row.inv_amount), icon: 'bi-graph-up-arrow' })), ...marketing.map(row => ({ name: row.project_name || row.client_company || `Lead #${row.id}`, dept: 'Sales / Marketing', date: row.date_received, value: row.status || 'Pending', icon: 'bi-megaphone' })), ...purchasing.map(row => ({ name: row.po_no || row.item_name || `PO #${row.id}`, dept: 'Purchasing', date: row.purchase_date, value: peso(row.total_amount), icon: 'bi-cart3' })), ...engineering.map(row => ({ name: row.project_name || `Project #${row.id}`, dept: 'Engineering', date: row.created_at || row.date, value: `${amount(row.accomplishment_percentage)}%`, icon: 'bi-gear' }))].sort((a,b) => dateTime(b.date) - dateTime(a.date)).slice(0, 4);
+  document.getElementById('recentActivityList').innerHTML = items.map(row => `<div class="recent-row"><span class="recent-icon"><i class="bi ${row.icon}"></i></span><div><strong>${escapeHtml(row.name)}</strong><small>${escapeHtml(row.dept)} · ${escapeHtml(row.value)}</small></div><time>${formatDate(row.date)}</time></div>`).join('') || '<p class="empty-state">No recent activity.</p>';
 }
-
-//Group department data and render overview charts.
-function renderDashboardChart(config, rows) {
-    const canvas = document.getElementById(config.canvasId);
-    if (!canvas || typeof Chart === 'undefined') return;
-
-    const groups = getChartGroups(rows, config);
-    const labels = Object.keys(groups);
-    const values = Object.values(groups);
-
-    dashboardCharts[config.id]?.destroy();
-    dashboardCharts[config.id] = new Chart(canvas, {
-        type: config.countOnly ? 'doughnut' : 'pie',
-        data: {
-            labels: labels.length ? labels : ['No data'],
-            datasets: [{
-                data: values.length ? values : [1],
-                backgroundColor: labels.length
-                    ? labels.map((_, index) => chartColors[index % chartColors.length])
-                    : ['#dfe3e8'],
-                borderColor: '#ffffff',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 1400, easing: 'easeOutCubic', animateRotate: true, animateScale: true },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { boxWidth: 12 }
-                },
-                tooltip: {
-                    callbacks: {
-                        label(context) {
-                            const value = Number(context.parsed || 0);
-                            return config.countOnly
-                                ? `${context.label}: ${value}`
-                                : `${context.label}: ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-    dashboardCharts[config.id].reset();
-    dashboardCharts[config.id].update();
-}
-
-//Fetch department records and refresh each dashboard card.
-async function loadDashboardChart(config) {
-    try {
-        const response = await fetch(config.endpoint);
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(result.error || 'Unable to load records');
-        const rows = Array.isArray(result.data) ? result.data : [];
-        renderDashboardSummary(config, rows);
-        renderDashboardChart(config, rows);
-    } catch (error) {
-        renderDashboardSummary(config, []);
-        renderDashboardChart(config, []);
-        console.error(`Unable to load ${config.id} dashboard chart:`, error);
-    }
-}
-
-dashboardChartConfigs.forEach(loadDashboardChart);
+function renderAttention(marketing, engineering, purchasing) { const items = [...marketing.filter(row => row.follow_up_date && dateTime(row.follow_up_date) < Date.now()).map(row => ({name: row.client_company || row.project_name, text: 'Follow-up is overdue', tone: 'red'})), ...engineering.filter(row => /risk|delay|issue|pending/i.test(row.status || '')).map(row => ({name: row.project_name, text: row.status || 'Project needs review', tone: 'orange'})), ...purchasing.filter(row => !row.approved_by).map(row => ({name: row.po_no || row.item_name, text: 'Awaiting approval', tone: 'yellow'}))].slice(0,4); document.getElementById('attentionList').innerHTML = items.map(row => `<div><i class="${row.tone}"></i><span><strong>${escapeHtml(row.name || 'Unnamed record')}</strong><small>${escapeHtml(row.text)}</small></span></div>`).join('') || '<p class="empty-state">Nothing needs attention.</p>'; }
+async function loadDashboard() { try { const [accounting, sales, marketing, purchasing, engineering] = await Promise.all(['/api/accounting', '/api/sales', '/api/sales_marketing', '/api/purchasing', '/api/engineering'].map(rows)); const clients = new Set([...sales.map(row => row.client_name), ...marketing.map(row => row.client_company)].filter(Boolean)); set('totalClients', clients.size); renderProjects(engineering); renderPipeline(marketing); renderFollowups(marketing); renderSources(marketing); renderFinance(accounting, sales, purchasing); renderActivity(accounting, sales, marketing, purchasing, engineering); renderAttention(marketing, engineering, purchasing); set('businessSummary', `${engineering.filter(row => /active|ongoing|progress/i.test(row.status || '')).length} projects are currently active. ${marketing.length} customer opportunities are being tracked, with ${marketing.filter(row => /won/i.test(row.status || '')).length} marked as won. ${purchasing.filter(row => !row.approved_by).length} purchase orders are awaiting approval.`); } catch (error) { console.error(error); document.querySelectorAll('.empty-state').forEach(el => el.textContent = 'Unable to load dashboard data. Please refresh.'); } }
+document.addEventListener('DOMContentLoaded', () => { loadDashboard(); fetch('/api/current-user').then(r => r.ok ? r.json() : null).then(user => { const name = String(user?.name || '').trim(); if (!name) return; const first = name.split(' ')[0]; document.querySelectorAll('[data-user-display]').forEach(el => el.textContent = first); document.querySelectorAll('.profile-text').forEach(el => el.textContent = first.toUpperCase()); document.querySelectorAll('.profile-icon').forEach(el => el.textContent = first.charAt(0).toUpperCase()); }).catch(() => {}); });

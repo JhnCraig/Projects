@@ -1,8 +1,6 @@
 //Admin table filtering and sorting
 //Applies selected field filters and preserves the active filter state.
 
-// CHANGE TABLE FILTER DATA HERE: update aliases, filter matching, or the table fields used by the admin pages.
-
 //Normalize filter values and connect filter-menu actions.
 (() => {
     const defaultOrders = new WeakMap();

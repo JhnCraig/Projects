@@ -18,7 +18,27 @@ function syncTableRowHeights(mainTable, actionTable) {
 
 let engineeringRows = [];
 
-// CHANGE ENGINEERING DISPLAY DATA HERE: update the API endpoint, summary-card values, table fields, or chart mapping below.
+document.addEventListener('DOMContentLoaded', () => {
+    const config = { endpoint: '/api/engineering', projectKey: 'project_name', metricKey: 'status', icons: ['bi-clipboard-data', 'bi-graph-up-arrow', 'bi-list-check', 'bi-tools'] };
+    const number = (value) => Number.parseFloat(String(value ?? '').replace(/[^\d.-]/g, '')) || 0;
+    const header = document.querySelector('.workspace-panel > .d-flex.justify-content-between.align-items-center.mb-5');
+    if (!header) return;
+    const cards = document.createElement('section'); cards.className = 'accounting-summary-grid department-summary-grid'; cards.setAttribute('aria-label', 'Department summary');
+    cards.innerHTML = `<article class="accounting-summary-card"><span class="summary-icon blue"><i class="bi ${config.icons[0]}"></i></span><div><span class="summary-label">Total Entries</span><strong data-summary="entries">0</strong><small>Engineering records</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon green"><i class="bi ${config.icons[1]}"></i></span><div><span class="summary-label">Average Progress</span><strong data-summary="amount">0.0%</strong><small>Average progress</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon pale-blue"><i class="bi ${config.icons[2]}"></i></span><div><span class="summary-label">Project Statuses</span><strong data-summary="metric">0</strong><small>Distinct statuses</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon orange"><i class="bi ${config.icons[3]}"></i></span><div><span class="summary-label">Total Projects</span><strong data-summary="projects">0</strong><small>Unique projects</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>`;
+    header.insertAdjacentElement('afterend', cards);
+    const refreshEngineeringSummary = () => fetch(config.endpoint).then((response) => response.ok ? response.json() : null).then((result) => {
+        const rows = Array.isArray(result?.data) ? result.data : [];
+        const projects = new Set(rows.map((row) => String(row[config.projectKey] || '').trim()).filter(Boolean));
+        const statuses = new Set(rows.map((row) => String(row[config.metricKey] || '').trim()).filter(Boolean));
+        const progress = rows.length ? rows.reduce((sum, row) => sum + number(row.accomplishment_percentage), 0) / rows.length : 0;
+        cards.querySelector('[data-summary="entries"]').textContent = rows.length;
+        cards.querySelector('[data-summary="amount"]').textContent = `${progress.toFixed(1)}%`;
+        cards.querySelector('[data-summary="metric"]').textContent = statuses.size;
+        cards.querySelector('[data-summary="projects"]').textContent = projects.size;
+    }).catch(() => {});
+    refreshEngineeringSummary();
+    document.addEventListener('engineering-data-updated', refreshEngineeringSummary);
+});
 
 function setupActionPanel(table) {
     const wrapper = table.closest('.main-table-wrapper'); const header = Array.from(table.querySelectorAll('thead th')).find((cell) => /actions?/i.test(cell.textContent.trim()));
@@ -178,6 +198,7 @@ async function loadEngineeringRows() {
 
         const rows = Array.isArray(result.data) ? result.data : [];
         engineeringRows = rows;
+        document.dispatchEvent(new Event('engineering-data-updated'));
         const tableWrapper = tbody.closest('.main-table-wrapper');
         tableWrapper?.classList.toggle('is-empty', !rows.length);
         tableWrapper?.parentElement.querySelector('.user-action-panel')?.classList.toggle('is-empty', !rows.length);
@@ -454,6 +475,12 @@ fetch('/api/current-user')
         const firstName = name.split(' ')[0] || 'User';
         userNameTargets.forEach((element) => {
             element.textContent = firstName;
+        });
+        document.querySelectorAll('.profile-text').forEach((element) => {
+            element.textContent = firstName.toUpperCase();
+        });
+        document.querySelectorAll('.profile-icon').forEach((element) => {
+            element.textContent = firstName.charAt(0).toUpperCase();
         });
     })
     .catch(() => {

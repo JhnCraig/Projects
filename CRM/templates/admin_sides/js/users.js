@@ -1,7 +1,27 @@
 //Admin user management
 //Manages user listing, account creation, editing, password changes, and deletion.
 
-// CHANGE USERS DISPLAY DATA HERE: update the user summary cards, table fields, or online-account display below.
+document.addEventListener('DOMContentLoaded', () => {
+    const config = { endpoint: '/api/users', icons: ['bi-people', 'bi-person-x', 'bi-person-check', 'bi-person-check-fill'] };
+    const header = document.querySelector('.workspace-panel > .d-flex.justify-content-between.align-items-center.mb-5');
+    if (!header) return;
+    const cards = document.createElement('section'); cards.className = 'accounting-summary-grid department-summary-grid'; cards.setAttribute('aria-label', 'Department summary');
+    cards.innerHTML = `<article class="accounting-summary-card"><span class="summary-icon blue"><i class="bi ${config.icons[0]}"></i></span><div><span class="summary-label">Total Entries</span><strong data-summary="entries">0</strong><small>User accounts</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon green"><i class="bi ${config.icons[1]}"></i></span><div><span class="summary-label">No Department</span><strong data-summary="amount">0</strong><small>Users not assigned</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon pale-blue"><i class="bi ${config.icons[2]}"></i></span><div><span class="summary-label">User Statuses</span><strong data-summary="metric">0</strong><small>Distinct statuses</small></div><i class="bi bi-chevron-right summary-chevron"></i></article><article class="accounting-summary-card"><span class="summary-icon orange"><i class="bi ${config.icons[3]}"></i></span><div><span class="summary-label">Currently Online</span><strong data-summary="online">0</strong><small>Active accounts</small></div><i class="bi bi-chevron-right summary-chevron"></i></article>`;
+    header.insertAdjacentElement('afterend', cards);
+    const refreshUsersSummary = () => fetch(config.endpoint).then((response) => response.ok ? response.json() : null).then((result) => {
+        const rows = Array.isArray(result?.data) ? result.data : [];
+        const statuses = new Set(rows.map((row) => String(row.status || '').trim()).filter(Boolean));
+        cards.querySelector('[data-summary="entries"]').textContent = rows.length;
+        cards.querySelector('[data-summary="amount"]').textContent = rows.filter((row) => !String(row.department || '').trim()).length;
+        cards.querySelector('[data-summary="metric"]').textContent = statuses.size;
+        return fetch('/api/current-user').then((response) => response.ok ? response.json() : null).then(() => fetch('/api/users/online'));
+    }).then((response) => response?.ok ? response.json() : null).then((result) => {
+        cards.querySelector('[data-summary="online"]').textContent = Number(result?.online_count || 0);
+    }).catch(() => {});
+    refreshUsersSummary();
+    document.addEventListener('users-data-updated', refreshUsersSummary);
+    window.setInterval(refreshUsersSummary, 60000);
+});
 
 //Mask credentials and show operation feedback.
 function maskPassword(value) {
@@ -130,6 +150,7 @@ async function loadUsers() {
         }
 
         const users = result.data || [];
+        document.dispatchEvent(new Event('users-data-updated'));
         const tableWrapper = tableBody.closest('.main-table-wrapper');
         tableWrapper?.classList.toggle('is-empty', !users.length);
         actionPanel?.classList.toggle('is-empty', !users.length);
@@ -412,6 +433,12 @@ fetch('/api/current-user')
         const firstName = name.split(' ')[0] || 'User';
         userNameTargets.forEach((element) => {
             element.textContent = firstName;
+        });
+        document.querySelectorAll('.profile-text').forEach((element) => {
+            element.textContent = firstName.toUpperCase();
+        });
+        document.querySelectorAll('.profile-icon').forEach((element) => {
+            element.textContent = firstName.charAt(0).toUpperCase();
         });
     })
     .catch(() => {

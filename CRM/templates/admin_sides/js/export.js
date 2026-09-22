@@ -1,8 +1,6 @@
 //Admin data export
 //Converts department API records into downloadable spreadsheet files.
 
-// CHANGE EXPORT DATA HERE: update endpoint, dateKey, columns, or filename settings in each export configuration.
-
 //Configure export buttons and build spreadsheet downloads.
 function initDataExport({ buttonId, endpoint, dateKey, title, filenamePrefix, columns }) {
     const button = document.getElementById(buttonId);

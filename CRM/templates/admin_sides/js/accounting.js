@@ -1,7 +1,6 @@
 // Admin accounting table and entry actions
 //Loads, renders, filters, saves, edits, and deletes accounting records.
 
-// CHANGE ACCOUNTING DISPLAY DATA HERE: update the API fields, cards, table rows, or chart values below.
 //Initialize accounting controls and shared record state.
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
@@ -82,6 +81,21 @@ function getAccountingChartValue(row) {
     }
 
     return 0;
+}
+
+function updateAccountingOverview(rows) {
+    const setValue = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    };
+    const totalAmount = rows.reduce((sum, row) => sum + parseChartNumber(row.amount), 0);
+    const projectCount = new Set(rows.map((row) => String(row.project || '').trim()).filter(Boolean)).size;
+    const voucherCount = new Set(rows.map((row) => String(row.cv_no || '').trim()).filter(Boolean)).size;
+
+    setValue('accountingTotalTransactions', rows.length);
+    setValue('accountingTotalAmount', `₱ ${totalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+    setValue('accountingProjectCount', projectCount);
+    setValue('accountingVoucherCount', voucherCount);
 }
 
 function showToast(message, type = 'success', persistent = false) {
@@ -187,6 +201,23 @@ function syncAccountingRowHeights() {
 }
 
 window.addEventListener('resize', syncAccountingRowHeights);
+
+// Keep the fixed Action panel vertically aligned when the records table scrolls.
+const accountingTableWrapper = document.getElementById('accountingTableWrapper');
+const accountingActionPanel = document.getElementById('actionPanel');
+let syncingAccountingScroll = false;
+
+function syncAccountingScroll(source, target) {
+    if (syncingAccountingScroll || !source || !target) return;
+    syncingAccountingScroll = true;
+    const sourceRange = source.scrollHeight - source.clientHeight;
+    const targetRange = target.scrollHeight - target.clientHeight;
+    target.scrollTop = sourceRange > 0 ? (source.scrollTop / sourceRange) * Math.max(targetRange, 0) : 0;
+    requestAnimationFrame(() => { syncingAccountingScroll = false; });
+}
+
+accountingTableWrapper?.addEventListener('scroll', () => syncAccountingScroll(accountingTableWrapper, accountingActionPanel));
+accountingActionPanel?.addEventListener('scroll', () => syncAccountingScroll(accountingActionPanel, accountingTableWrapper));
 
 //Configure the accounting chart and summary modal.
 function setupTableChart(config) {
@@ -369,6 +400,7 @@ async function loadAccountingRows() {
 
         const rows = Array.isArray(result.data) ? result.data : [];
         accountingRows = rows;
+        updateAccountingOverview(rows);
         renderActionPanel(rows);
         document.getElementById('accountingTableWrapper')?.classList.toggle('is-empty', !rows.length);
         document.getElementById('actionPanel')?.classList.toggle('is-empty', !rows.length);
@@ -681,6 +713,12 @@ fetch('/api/current-user')
         const firstName = name.split(' ')[0] || 'User';
         userNameTargets.forEach((element) => {
             element.textContent = firstName;
+        });
+        document.querySelectorAll('.profile-text').forEach((element) => {
+            element.textContent = firstName.toUpperCase();
+        });
+        document.querySelectorAll('.profile-icon').forEach((element) => {
+            element.textContent = firstName.charAt(0).toUpperCase();
         });
     })
     .catch(() => {
