@@ -2,8 +2,6 @@
 # Note: Flask and mysql-connector-python are need to be installed in the environment for this script to work.
 # Note: pip install Flask or py -m install Flask if the  first command does not work.
 # Note: pip install mysql-connector-python or py -m install mysql-connector-python if the first command does not work.
-
-# Note: Change the Password in 47 so it can connect to the Database (DB)
 #=======================================================================================================================
 
 
@@ -13,6 +11,29 @@ from datetime import datetime
 import csv
 import io
 import uuid
+import secrets
+import re
+import time
+
+
+def load_local_env():
+    """Load simple KEY=value settings from an ignored local .env file if present."""
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if not os.path.isfile(env_path):
+        return
+    with open(env_path, encoding='utf-8') as env_file:
+        for line in env_file:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key:
+                os.environ.setdefault(key, value)
+
+
+load_local_env()
 
 try:
     from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, session
@@ -25,11 +46,13 @@ try:
     import mysql.connector
     from mysql.connector import Error
     from werkzeug.security import check_password_hash, generate_password_hash
+    from werkzeug.utils import secure_filename
 except ImportError:  # pragma: no cover - import fallback for environments without the package
     mysql = None
     Error = Exception
     try:
         from werkzeug.security import check_password_hash, generate_password_hash
+        from werkzeug.utils import secure_filename
     except ImportError:
         def generate_password_hash(password):
             return password
@@ -43,9 +66,23 @@ CSS_DIR = os.path.join(BASE_DIR, 'css')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
 MYSQL_HOST = os.getenv('MYSQL_HOST', '127.0.0.1')
 MYSQL_PORT = int(os.getenv('MYSQL_PORT', '3306'))
-MYSQL_USER = os.getenv('MYSQL_USER', 'root')
-MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', 'craig013006')
+MYSQL_USER = os.getenv('MYSQL_USER')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'sbdc')
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+ALLOWED_UPLOAD_EXTENSIONS = {'.pdf', '.csv', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'}
+IMPORT_COLUMNS = {
+    'accounting': {
+        'cv_no', 'transaction_date', 'payee', 'transaction_details', 'supplier_name',
+        'tin', 'address', 'amount', 'vat_12', 'net_of_vat', 'vat_exempt', 'non_vat',
+        'wtax', 'si_no', 'si_date', 'acct_code', 'acct_name', 'project', 'remark',
+    },
+    'sales': {
+        'month', 'client_name', 'proj_code', 'tin', 'address', 'po_amount', 'si_no',
+        'si_date', 'inv_amount', 'vat', 'net_of_vat', 'wtax_2', 'net_amount',
+        'cash_in_bank', 'transaction_date', 'bank', 'remarks', 'po_no', 'description',
+    },
+}
 
 # =========================================================
 # Shared utilities and upload helpers
@@ -73,8 +110,12 @@ def save_uploaded_file(file_storage):
         return ''
 
     ensure_upload_dir()
-    filename = os.path.basename(file_storage.filename)
+    filename = secure_filename(file_storage.filename)
+    if not filename:
+        raise ValueError('Invalid file name.')
     stem, ext = os.path.splitext(filename)
+    if ext.lower() not in ALLOWED_UPLOAD_EXTENSIONS:
+        raise ValueError('This file type is not allowed.')
     saved_name = f"{stem}-{uuid.uuid4().hex}{ext}"
     target_path = os.path.join(UPLOAD_DIR, saved_name)
     file_storage.save(target_path)
@@ -86,6 +127,9 @@ def get_db_connection():
         raise RuntimeError(
             'mysql-connector-python is required. Install it with: pip install mysql-connector-python'
         )
+
+    if not MYSQL_USER or not MYSQL_PASSWORD:
+        raise RuntimeError('MYSQL_USER and MYSQL_PASSWORD must be configured as environment variables.')
 
     return mysql.connector.connect(
         host=MYSQL_HOST,
@@ -163,6 +207,27 @@ def require_dashboard_role(role):
     if role == 'employee' and is_admin:
         return redirect('/index.html')
     return None
+
+
+def require_admin_api():
+    """Return an API error unless the current session is an administrator."""
+    if not session.get('user_id'):
+        return jsonify({'error': 'You must be logged in.'}), 401
+    if not is_admin_status(session.get('user_status')):
+        return jsonify({'error': 'Administrator access is required.'}), 403
+    return None
+
+
+def valid_password(password):
+    """Use a modest, predictable password policy for all new credentials."""
+    return (
+        isinstance(password, str)
+        and len(password) >= 12
+        and len(password) <= 128
+        and re.search(r'[a-z]', password)
+        and re.search(r'[A-Z]', password)
+        and re.search(r'\d', password)
+    )
 
 
 def require_employee_page(department):
@@ -411,7 +476,45 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 ADMIN_SIDES_DIR = os.path.join(TEMPLATES_DIR, 'admin_sides')
 
 app = Flask(__name__, template_folder=ADMIN_SIDES_DIR)
-app.secret_key = os.getenv('SECRET_KEY', 'sbdc-development-key')
+secret_key = os.getenv('SECRET_KEY')
+if not secret_key:
+    # Never use a predictable key. Set SECRET_KEY in the deployment environment so
+    # sessions survive restarts; this temporary key is only safe for local setup.
+    secret_key = secrets.token_urlsafe(48)
+    app.logger.warning('SECRET_KEY is not configured; all sessions will end on restart.')
+app.secret_key = secret_key
+app.config.update(
+    MAX_CONTENT_LENGTH=MAX_UPLOAD_BYTES,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=os.getenv('SESSION_COOKIE_SECURE', 'false').lower() == 'true',
+    PERMANENT_SESSION_LIFETIME=1800,
+)
+LOGIN_ATTEMPTS = {}
+LOGIN_WINDOW_SECONDS = 15 * 60
+LOGIN_MAX_ATTEMPTS = 5
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'DENY')
+    response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    response.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    if request.path.startswith(('/api/', '/uploads/')):
+        response.headers.setdefault('Cache-Control', 'no-store, max-age=0')
+    return response
+
+
+@app.before_request
+def reject_cross_site_writes():
+    """Block browser-based cross-site form/API submissions (CSRF)."""
+    if request.method not in {'POST', 'PUT', 'PATCH', 'DELETE'}:
+        return None
+    origin = request.headers.get('Origin')
+    if origin and origin.rstrip('/') != request.host_url.rstrip('/'):
+        return jsonify({'error': 'Cross-site requests are not allowed.'}), 403
+    return None
 
 # Determine which admin pages are available
 EXCLUDED_TEMPLATES = set()
@@ -449,8 +552,10 @@ def serve_js(filename):
 
 @app.route('/uploads/<path:filename>')
 def serve_upload(filename):
+    if not session.get('user_id'):
+        abort(401)
     safe_name = os.path.basename(filename)
-    return send_from_directory(UPLOAD_DIR, safe_name)
+    return send_from_directory(UPLOAD_DIR, safe_name, as_attachment=True)
 
 
 def _normalize_date_value(value):
@@ -1420,10 +1525,9 @@ def delete_accounting_route(entry_id):
 @app.route('/api/sales_marketing', methods=['GET', 'POST'])
 def api_sales_marketing(data=None):
     if request.method == 'GET':
-        if request.args.get('export') == '1':
-            permission_error = require_employee_department('Sales / Marketing')
-            if permission_error:
-                return permission_error
+        permission_error = require_employee_department('Sales / Marketing')
+        if permission_error:
+            return permission_error
         try:
             init_db()
             rows = get_sales_marketing_entries()
@@ -1475,10 +1579,9 @@ def api_sales_marketing(data=None):
 @app.route('/api/engineering', methods=['GET', 'POST'])
 def api_engineering(data=None):
     if request.method == 'GET':
-        if request.args.get('export') == '1':
-            permission_error = require_employee_department('Engineering')
-            if permission_error:
-                return permission_error
+        permission_error = require_employee_department('Engineering')
+        if permission_error:
+            return permission_error
         try:
             init_db()
             rows = get_engineering_entries()
@@ -1550,10 +1653,9 @@ def delete_sales_marketing_route(entry_id):
 @app.route('/api/purchasing', methods=['GET', 'POST'])
 def api_purchasing(data=None):
     if request.method == 'GET':
-        if request.args.get('export') == '1':
-            permission_error = require_employee_department('Purchasing')
-            if permission_error:
-                return permission_error
+        permission_error = require_employee_department('Purchasing')
+        if permission_error:
+            return permission_error
         try:
             init_db()
             rows = get_purchasing_entries()
@@ -1619,10 +1721,9 @@ def delete_purchasing_route(entry_id):
 @app.route('/api/sales', methods=['GET', 'POST'])
 def api_sales(data=None):
     if request.method == 'GET':
-        if request.args.get('export') == '1':
-            permission_error = require_employee_department('Sales')
-            if permission_error:
-                return permission_error
+        permission_error = require_employee_department('Sales')
+        if permission_error:
+            return permission_error
         try:
             init_db()
             conn = get_db_connection()
@@ -1775,24 +1876,28 @@ def signup():
         return render_template('signup.html', error='Please complete all required fields.'), 400
     if password != confirm_password:
         return render_template('signup.html', error='Passwords do not match.'), 400
+    if not valid_password(password):
+        return render_template('signup.html', error='Use 12+ characters with upper-case, lower-case, and a number.'), 400
 
     init_db()
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
         account_status = 'Employee'
-        if admin_setup_requested:
-            cursor.execute(
-                "SELECT COUNT(*) FROM users WHERE LOWER(TRIM(status)) IN ('admin', 'administrator', 'superadmin', 'admin_user')"
-            )
-            if cursor.fetchone()[0] == 0:
-                account_status = 'Admin'
+        cursor.execute(
+            "SELECT COUNT(*) FROM users WHERE LOWER(TRIM(status)) IN ('admin', 'administrator', 'superadmin', 'admin_user')"
+        )
+        if cursor.fetchone()[0] > 0:
+            return render_template('signup.html', error='Registration is closed. Ask an administrator to create your account.'), 403
+        if not admin_setup_requested:
+            return render_template('signup.html', error='The first account must be created as an administrator.'), 403
+        account_status = 'Admin'
         cursor.execute(
             '''
             INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status, department)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''',
-            (fname, mname, lname, contact, email, password, generate_password_hash(password), account_status, department),
+            (fname, mname, lname, contact, email, generate_password_hash(password), generate_password_hash(password), account_status, department),
         )
     except Error:
         return render_template('signup.html', error='Unable to create account.'), 409
@@ -1803,25 +1908,54 @@ def signup():
 
 @app.route('/api/admin-status', methods=['GET'])
 def api_admin_status():
-    init_db()
-    conn = get_db_connection()
     try:
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT COUNT(*) FROM users WHERE LOWER(TRIM(status)) IN ('admin', 'administrator', 'superadmin', 'admin_user')"
-        )
-        return jsonify({'has_admin': cursor.fetchone()[0] > 0}), 200
-    finally:
-        conn.close()
+        init_db()
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT COUNT(*) FROM users WHERE LOWER(TRIM(status)) IN ('admin', 'administrator', 'superadmin', 'admin_user')"
+            )
+            return jsonify({'has_admin': cursor.fetchone()[0] > 0}), 200
+        finally:
+            conn.close()
+    except (Error, RuntimeError) as exc:
+        app.logger.error('Admin-status database connection failed: %s', exc)
+        return jsonify({'error': 'Database is unavailable.'}), 503
 
 
 @app.route('/login', methods=['POST'])
 def login():
     email = (request.form.get('email') or '').strip().lower()
     password = request.form.get('password') or ''
-    user = get_user_by_email(email) if email else None
+    attempt_key = f'{request.remote_addr}:{email}'
+    now = time.monotonic()
+    attempts = [stamp for stamp in LOGIN_ATTEMPTS.get(attempt_key, []) if now - stamp < LOGIN_WINDOW_SECONDS]
+    if len(attempts) >= LOGIN_MAX_ATTEMPTS:
+        return render_template('login.html', error='Too many attempts. Please try again later.'), 429
+    try:
+        user = get_user_by_email(email) if email else None
+    except (Error, RuntimeError) as exc:
+        app.logger.error('Login database connection failed: %s', exc)
+        return render_template(
+            'login.html',
+            error='The database is not configured or is unavailable. Ask the system administrator to check the server settings.',
+        ), 503
     if not user or not (user.get('password') == password or (user.get('password_hash') and check_password_hash(user['password_hash'], password))):
+        LOGIN_ATTEMPTS[attempt_key] = attempts + [now]
         return render_template('login.html', error='Invalid email or password.'), 401
+
+    LOGIN_ATTEMPTS.pop(attempt_key, None)
+    # Transparently remove a legacy clear-text password at the next successful login.
+    if user.get('password') == password:
+        password_hash = generate_password_hash(password)
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute('UPDATE users SET password=%s, password_hash=%s WHERE id=%s', (password_hash, password_hash, user['id']))
+            conn.commit()
+        finally:
+            conn.close()
 
     status = (user.get('status') or 'Employee').strip()
     session['user_id'] = user['id']
@@ -1829,42 +1963,14 @@ def login():
     session['user_status'] = status
     session['user_departments'] = normalize_departments(user.get('department'))
     session['user_department'] = session['user_departments'][0] if session['user_departments'] else ''
+    session.permanent = True
 
     return redirect(get_dashboard_redirect_for_status(status))
 
 
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
-    data = request.get_json(silent=True) or request.form.to_dict()
-    email = (data.get('email') or '').strip().lower()
-    contact = (data.get('contact') or '').strip()
-    password = data.get('password') or ''
-    confirm_password = data.get('confirm_password') or ''
-
-    if not email or not contact or not password:
-        return jsonify({'error': 'Email, contact number, and new password are required.'}), 400
-    if password != confirm_password:
-        return jsonify({'error': 'Passwords do not match.'}), 400
-
-    conn = get_db_connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT id FROM users WHERE LOWER(TRIM(email))=%s AND TRIM(contact)=%s LIMIT 1',
-            (email, contact),
-        )
-        user = cursor.fetchone()
-        if not user:
-            return jsonify({'error': 'The email and contact number do not match an account.'}), 400
-
-        cursor.execute(
-            'UPDATE users SET password=%s, password_hash=%s WHERE id=%s',
-            (password, generate_password_hash(password), user[0]),
-        )
-        conn.commit()
-        return jsonify({'status': 'success'}), 200
-    finally:
-        conn.close()
+    return jsonify({'error': 'Password reset is disabled until a verified email-reset flow is configured. Contact an administrator.'}), 403
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -1909,8 +2015,9 @@ def api_current_user():
 
 @app.route('/api/users/online', methods=['GET'])
 def api_users_online():
-    if not session.get('user_id'):
-        return jsonify({'error': 'Not logged in.'}), 401
+    permission_error = require_admin_api()
+    if permission_error:
+        return permission_error
 
     init_db()
     conn = get_db_connection()
@@ -1924,6 +2031,9 @@ def api_users_online():
 
 @app.route('/api/users', methods=['GET', 'POST'])
 def api_users():
+    permission_error = require_admin_api()
+    if permission_error:
+        return permission_error
     if request.method == 'POST':
         data = request.get_json(silent=True) or request.form.to_dict()
         fname = (data.get('fname') or '').strip()
@@ -1937,6 +2047,8 @@ def api_users():
 
         if not fname or not lname or not contact or not email or not password:
             return jsonify({'error': 'First name, last name, contact, email, and password are required.'}), 400
+        if not valid_password(password):
+            return jsonify({'error': 'Password must have 12+ characters, including upper-case, lower-case, and a number.'}), 400
 
         conn = get_db_connection()
         try:
@@ -1946,7 +2058,7 @@ def api_users():
                 INSERT INTO users (fname, mname, lname, contact, email, password, password_hash, status, department)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''',
-                (fname, mname, lname, contact, email, password, generate_password_hash(password), status, department),
+                (fname, mname, lname, contact, email, generate_password_hash(password), generate_password_hash(password), status, department),
             )
             conn.commit()
             return jsonify({'status': 'success'}), 201
@@ -1958,7 +2070,7 @@ def api_users():
     conn = get_db_connection()
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT id, fname, mname, lname, contact, email, password, status, department, created_at FROM users ORDER BY id DESC')
+        cursor.execute('SELECT id, fname, mname, lname, contact, email, status, department, created_at FROM users ORDER BY id DESC')
         return jsonify({'status': 'success', 'data': cursor.fetchall()}), 200
     finally:
         conn.close()
@@ -1966,6 +2078,9 @@ def api_users():
 
 @app.route('/api/users/<int:user_id>', methods=['PUT'])
 def api_update_user(user_id):
+    permission_error = require_admin_api()
+    if permission_error:
+        return permission_error
     data = request.get_json(silent=True) or request.form.to_dict()
     fname = (data.get('fname') or '').strip()
     mname = (data.get('mname') or '').strip()
@@ -1988,14 +2103,20 @@ def api_update_user(user_id):
 
 @app.route('/api/users/<int:user_id>/password', methods=['PUT'])
 def api_update_user_password(user_id):
+    permission_error = require_admin_api()
+    if permission_error:
+        return permission_error
     data = request.get_json(silent=True) or request.form.to_dict()
     password = (data.get('password') or '').strip()
     if not password:
         return jsonify({'error': 'Password is required.'}), 400
+    if not valid_password(password):
+        return jsonify({'error': 'Password must have 12+ characters, including upper-case, lower-case, and a number.'}), 400
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        cursor.execute('UPDATE users SET password=%s, password_hash=%s WHERE id=%s', (password, generate_password_hash(password), user_id))
+        password_hash = generate_password_hash(password)
+        cursor.execute('UPDATE users SET password=%s, password_hash=%s WHERE id=%s', (password_hash, password_hash, user_id))
         conn.commit()
         return jsonify({'status': 'success'}), 200
     finally:
@@ -2004,6 +2125,11 @@ def api_update_user_password(user_id):
 
 @app.route('/api/users/<int:user_id>', methods=['DELETE'])
 def api_delete_user(user_id):
+    permission_error = require_admin_api()
+    if permission_error:
+        return permission_error
+    if user_id == session.get('user_id'):
+        return jsonify({'error': 'You cannot delete your own account.'}), 400
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
@@ -2028,13 +2154,12 @@ def import_file():
     if not kind:
         return jsonify({'error': 'Missing kind parameter (accounting|sales)'}), 400
 
-    table_map = {
-        'accounting': 'accounting_entries',
-        'sales': 'sales_entries',
-    }
+    table_map = {'accounting': 'accounting', 'sales': 'sales'}
     table = table_map.get(kind.lower())
     if not table:
         return jsonify({'error': 'Unsupported kind for import'}), 400
+    if not file.filename or os.path.splitext(file.filename)[1].lower() != '.csv':
+        return jsonify({'error': 'Only CSV files are accepted.'}), 400
 
     permission_error = require_employee_department(
         {'accounting': 'Accounting', 'sales': 'Sales'}[kind.lower()]
@@ -2046,27 +2171,24 @@ def import_file():
         # parse CSV
         stream = io.TextIOWrapper(file.stream, encoding='utf-8')
         reader = csv.DictReader(stream)
+        if not reader.fieldnames:
+            return jsonify({'error': 'The CSV must include a header row.'}), 400
+        allowed_columns = IMPORT_COLUMNS[kind.lower()]
+        columns = [column.strip() for column in reader.fieldnames if column and column.strip() in allowed_columns]
+        if not columns:
+            return jsonify({'error': 'The CSV has no recognized columns.'}), 400
 
         init_db()
         conn = get_db_connection()
         try:
             cursor = conn.cursor()
             for row in reader:
-                # build dynamic insert based on CSV headers
-                cols = []
-                vals = []
-                # always include timestamp
-                cols.append('timestamp')
-                vals.append(datetime.utcnow().isoformat() + 'Z')
-                for k, v in row.items():
-                    if k and v is not None and v != '':
-                        cols.append(k)
-                        vals.append(v)
-
-                placeholders = ','.join(['%s'] * len(vals))
-                cols_sql = ','.join(cols)
-                sql = f"INSERT INTO {table} ({cols_sql}) VALUES ({placeholders})"
+                vals = [row.get(column) or None for column in columns]
+                placeholders = ','.join(['%s'] * len(columns))
+                # table and columns come only from fixed server-side allow-lists.
+                sql = f"INSERT INTO {table} ({','.join(columns)}) VALUES ({placeholders})"
                 cursor.execute(sql, tuple(vals))
+            conn.commit()
         finally:
             conn.close()
     except Error as exc:
@@ -2082,9 +2204,9 @@ def import_file():
 try:
     init_db()
 except Exception as exc:
-    app.logger.exception('MySQL initialization failed: %s', exc)
+    app.logger.error('MySQL initialization failed: %s', exc)
 
     
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host=os.getenv('FLASK_HOST', '127.0.0.1'), debug=False)

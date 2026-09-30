@@ -30,6 +30,10 @@
                     </p>
                 </div>
 
+                {% if error %}
+                <div class="alert alert-danger" role="alert">{{ error }}</div>
+                {% endif %}
+
                 <form action="/login" method="POST" autocomplete="off">
 
                     <div class="form-floating mb-3">
