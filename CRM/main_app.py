@@ -14,6 +14,8 @@ import uuid
 import secrets
 import re
 import time
+import smtplib
+from email.message import EmailMessage
 
 
 def load_local_env():
@@ -149,6 +151,38 @@ def get_user_by_email(email):
         return cursor.fetchone()
     finally:
         conn.close()
+
+
+def send_login_notification(user):
+    """Email the configured administrator after a successful account login."""
+    smtp_host = os.getenv('SMTP_HOST')
+    smtp_username = os.getenv('SMTP_USERNAME')
+    smtp_password = os.getenv('SMTP_PASSWORD')
+    recipient = os.getenv('LOGIN_NOTIFICATION_EMAIL', 'pupstc.ojt@gmail.com')
+    if not all((smtp_host, smtp_username, smtp_password)):
+        app.logger.warning('Login notification not sent: SMTP_HOST, SMTP_USERNAME, and SMTP_PASSWORD must be configured.')
+        return
+
+    full_name = ' '.join(
+        str(user.get(key) or '').strip()
+        for key in ('fname', 'mname', 'lname')
+        if str(user.get(key) or '').strip()
+    ) or 'Name unavailable'
+    message = EmailMessage()
+    message['Subject'] = 'CRM account login notification'
+    message['From'] = os.getenv('SMTP_FROM', smtp_username)
+    message['To'] = recipient
+    message.set_content(
+        f'A user has successfully logged in to the CRM.\n\n'
+        f'Full name: {full_name}\n'
+        f'Account email: {user.get("email") or "Email unavailable"}\n'
+    )
+
+    smtp_port = int(os.getenv('SMTP_PORT', '587'))
+    with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as smtp:
+        smtp.starttls()
+        smtp.login(smtp_username, smtp_password)
+        smtp.send_message(message)
 
 
 def get_dashboard_redirect_for_status(status):
@@ -1965,6 +1999,12 @@ def login():
     session['user_department'] = session['user_departments'][0] if session['user_departments'] else ''
     session.permanent = True
 
+    try:
+        send_login_notification(user)
+    except Exception:
+        # An email service outage should not prevent a valid user from signing in.
+        app.logger.exception('Unable to send login notification for user id %s', user.get('id'))
+
     return redirect(get_dashboard_redirect_for_status(status))
 
 
@@ -2209,4 +2249,15 @@ except Exception as exc:
     
 
 if __name__ == '__main__':
-    app.run(host=os.getenv('FLASK_HOST', '127.0.0.1'), debug=False)
+    # Listen on the LAN interface by default so other devices can reach this
+    # machine. Use the host PC's LAN IP/name in the browser; 0.0.0.0 is a bind
+    # address and is not itself a browser address.
+    flask_host = os.getenv('FLASK_HOST', '0.0.0.0')
+    flask_port = int(os.getenv('FLASK_PORT', '5000'))
+    app.logger.info(
+        'Starting CRM on all network interfaces at port %s. '
+        'On another device, use http://<this-PC-LAN-IP>:%s/; HTTPS and a hostname require network/DNS and certificate setup.',
+        flask_port,
+        flask_port,
+    )
+    app.run(host=flask_host, port=flask_port, debug=False)

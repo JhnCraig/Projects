@@ -111,6 +111,13 @@
         </div>
     </div>
 
+    <div id="adminSetupFallback" class="alert alert-warning position-fixed top-0 start-50 translate-middle-x mt-3 shadow d-none" style="z-index: 1100; width: min(560px, calc(100% - 2rem));" role="alert">
+        <strong>Admin account required.</strong> No admin account exists yet.
+        <a href="signup.html?admin_setup=1" class="alert-link">Create the first admin account</a>.
+    </div>
+
+    <div id="adminStatusError" class="alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3 shadow d-none" style="z-index: 1100; width: min(560px, calc(100% - 2rem));" role="alert"></div>
+
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class=" forgot-password modal-content">
@@ -175,14 +182,30 @@
             }
         });
 
-        fetch('/api/admin-status')
-            .then(response => response.ok ? response.json() : Promise.reject(response))
-            .then(result => {
-                if (!result.has_admin) {
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('adminSetupModal')).show();
+        async function checkAdminStatus() {
+            const fallback = document.getElementById('adminSetupFallback');
+            const errorNotice = document.getElementById('adminStatusError');
+            try {
+                const response = await fetch('/api/admin-status', { cache: 'no-store' });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(result.error || `Unable to check admin status (HTTP ${response.status}).`);
                 }
-            })
-            .catch(() => {});
+                if (result.has_admin === false) {
+                    if (window.bootstrap?.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('adminSetupModal')).show();
+                    } else {
+                        fallback.classList.remove('d-none');
+                    }
+                }
+            } catch (error) {
+                errorNotice.textContent = `${error.message} Check the database configuration and connection, then reload this page.`;
+                errorNotice.classList.remove('d-none');
+                console.error('Unable to determine whether an admin account exists:', error);
+            }
+        }
+
+        checkAdminStatus();
     </script>
 
 </body>
